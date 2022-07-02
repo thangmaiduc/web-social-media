@@ -33,13 +33,16 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.Post, {
         through: models.CommentPost,
         foreignKey: "userId",
+        otherKey: "postId",
         onDelete: "CASCADE",
       });
       User.belongsToMany(models.Post, {
-        through: models.LikedPost,
-        foreignKey: "userId",
+        // foreignKey: "userId",
+        through: models.LikePost,
+        otherKey: "postId",
         onDelete: "CASCADE",
       });
+      
     }
   }
   User.init(
