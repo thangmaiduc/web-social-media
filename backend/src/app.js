@@ -11,7 +11,7 @@ dotenv.config();
 app.use(morgan("common"));
 app.use(cors());
 app.use(express.json());
-app.use("/api", indexRouter);
+// app.use("/api", indexRouter);
 
 app.use(function (req, res, next) {
   try {
@@ -45,7 +45,7 @@ app.use((error, req, res, next) => {
 
 const db = require("./models").sequelize;
 
-db.sync({ force: true, alter: false })
+db.sync({ force: true, alter: true })
   .then()
   .catch((err) => {
     console.log(err);
