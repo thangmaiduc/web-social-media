@@ -6,6 +6,13 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: "mysql",
   },
+  development1: {
+    username: "admin",
+    password: "123",
+    database: "test",
+    host: "localhost",
+    dialect: "mysql",
+  },
   test: {
     username: process.env.CI_DB_USERNAME,
     password: process.env.CI_DB_PASSWORD,

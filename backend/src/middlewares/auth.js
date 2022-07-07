@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const User = require("../model/user");
+const User = require("../models").User;
+const api401Error = require("../utils/errors/api401Error");
 
 const authUser = async (req, res, next) => {
   try {
@@ -10,9 +11,9 @@ const authUser = async (req, res, next) => {
       const error = new Error("Bạn chưa đăng nhập, vui lòng đăng nhập");
       error.statusCode = 417;
     }
-    const decode = jwt.verify(token, process.env.JWT_SECRET);
-
-    const user = await User.findOne({ _id: decode.userId });
+    const decode = jwt.verify(token, process.env.JWT_KEY);
+    console.log(decode);
+    const user = await User.findOne({ where: { id: decode.userId } });
     if (!user) {
       const error = new Error("Tài khoản không tồn tài");
       error.statusCode = 401;

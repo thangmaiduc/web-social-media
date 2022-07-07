@@ -2,6 +2,7 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
+    
     static associate(models) {
       User.hasMany(models.Post, {
         foreignKey: "userId",
@@ -42,7 +43,6 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: "postId",
         onDelete: "CASCADE",
       });
-      
     }
   }
   User.init(
@@ -54,9 +54,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       username: {
         type: DataTypes.STRING,
-
         unique: true,
         allowNull: false,
+      },
+      fullName: {
+        type: DataTypes.STRING,
       },
       password: {
         type: DataTypes.STRING,

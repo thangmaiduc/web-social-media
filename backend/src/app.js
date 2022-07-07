@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const multer = require("multer");
 const path = require("path");
 const indexRouter = require("./routes/index");
+const authRouter = require("./routes/auth");
 const express = require("express");
 const app = express();
 
@@ -11,7 +12,8 @@ dotenv.config();
 app.use(morgan("common"));
 app.use(cors());
 app.use(express.json());
-// app.use("/api", indexRouter);
+app.use("/api", indexRouter);
+app.use("/api/auth", authRouter);
 
 app.use(function (req, res, next) {
   try {
@@ -45,7 +47,7 @@ app.use((error, req, res, next) => {
 
 const db = require("./models").sequelize;
 
-db.sync({ force: true, alter: true })
+db.sync({ force: false, alter: false })
   .then()
   .catch((err) => {
     console.log(err);

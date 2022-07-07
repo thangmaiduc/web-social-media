@@ -1,13 +1,9 @@
+const router = require("express").Router();
+const authController = require("../controller/auth");
 
-//login
-exports.login = async (req, res,next) => {
-  try {
-    
-  } catch (error) {
-    next(error)
-  }
-};
-//register
+router.post("/login", authController.login);
+router.post("/register", authController.register);
 
+// get friends
 
-
+module.exports = router;
