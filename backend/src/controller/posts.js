@@ -130,3 +130,25 @@ exports.getProfilePost = async (req, res, next) => {
     next(error);
   }
 };
+exports.getProfilePost = async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    const user = await User.findOne({ where: { username } });
+    const userPost = await Post.findAll({ where: { userId: user.id } });
+
+    res.status(200).json({ data: userPost });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.getProfilePost = async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    const user = await User.findOne({ where: { username } });
+    const userPost = await Post.findAll({ where: { userId: user.id } });
+
+    res.status(200).json({ data: userPost });
+  } catch (error) {
+    next(error);
+  }
+};

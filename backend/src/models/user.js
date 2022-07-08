@@ -31,10 +31,8 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
 
-      User.belongsToMany(models.Post, {
-        through: models.CommentPost,
+      User.hasMany(models.CommentPost, {
         foreignKey: "userId",
-        otherKey: "postId",
         onDelete: "CASCADE",
       });
       User.belongsToMany(models.Post, {

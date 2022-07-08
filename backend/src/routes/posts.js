@@ -20,7 +20,11 @@ router.get("/profile/:username", postController.getProfilePost);
 router.get("/:id", postController.get);
 // like a post
 router.put("/:id/like", postController.like);
-// get posts timeline
+// // comment a post
+// router.post("/:id/comment", postController.addComment);
+// // edit a comment
+// router.get("/:id/comment", postController.getComments);
+
 
 const userController = require("../controller/users");
 
