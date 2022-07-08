@@ -12,7 +12,7 @@ const authUser = async (req, res, next) => {
       error.statusCode = 417;
     }
     const decode = jwt.verify(token, process.env.JWT_KEY);
-    console.log(decode);
+    // console.log(decode);
     const user = await User.findOne({ where: { id: decode.userId } });
     if (!user) {
       const error = new Error("Tài khoản không tồn tài");

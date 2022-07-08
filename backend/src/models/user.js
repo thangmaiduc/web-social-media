@@ -82,7 +82,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      desc: {
+      description: {
         type: DataTypes.STRING,
         max: 50,
       },

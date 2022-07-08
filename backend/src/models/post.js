@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "",
       },
 
-      desc: {
+      description: {
         type: DataTypes.STRING,
         max: 500,
       },

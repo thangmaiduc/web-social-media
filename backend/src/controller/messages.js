@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const Message = require('../model/messages')
+const Message = require('../models/').Message
 
 
 router.get('/:conversationId',async (req, res)=>{

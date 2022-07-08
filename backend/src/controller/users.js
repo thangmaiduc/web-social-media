@@ -1,5 +1,7 @@
 const User = require("../models/").User;
 const Follower = require("../models/").Follower;
+const sequelize = require("../models/").sequelize;
+const { QueryTypes } = require("sequelize");
 const api400Error = require("../utils/errors/api400Error");
 
 //update
@@ -22,8 +24,7 @@ exports.delete = async (req, res, next) => {
 //get a user
 exports.get = async (req, res, next) => {
   try {
-
-    
+    res.json(req.user);
   } catch (error) {
     next(error);
   }
@@ -33,20 +34,15 @@ exports.get = async (req, res, next) => {
 exports.getFriends = async (req, res, next) => {
   try {
     let followingId = req.user.id;
-    let friends =await Follower.findAll({
-      where:{
-        followingId
-      },
-      include:{
-        model: 'Users',
-        where:{
-          followedId: followingId
-        }
+    const users = await sequelize.query(
+      `select followedId, username, profilePicture, coverPicture,  fullName from followers fw
+      join users  u on fw.followedId = u.id`,
+      {
+        type: QueryTypes.SELECT,
       }
-    })
-    res.json({friends});
+    );
 
-
+    res.json({ data: { users } });
   } catch (error) {
     next(error);
   }
@@ -100,7 +96,7 @@ exports.unfollow = async (req, res, next) => {
     if (!followerCheck) {
       throw new api400Error("Bạn chưa theo dõi người này");
     }
-     await Follower.destroy({
+    await Follower.destroy({
       where: { followedId: unfollowingId, followingId },
     });
 
