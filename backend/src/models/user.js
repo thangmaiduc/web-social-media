@@ -2,13 +2,12 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    
     static associate(models) {
       User.hasMany(models.Post, {
         foreignKey: "userId",
         as: "posts",
       });
-      User.hasOne(models.Participant, {
+      User.hasMany(models.Participant, {
         foreignKey: "userId",
       });
       User.hasMany(models.Message, {
@@ -41,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: "postId",
         onDelete: "CASCADE",
       });
+      // User.belongsToMany(models.Conversation, {
+      //   foreignKey: "userId",
+      //   through: models.Participant,
+      //   onDelete: "CASCADE",
+      // });
     }
   }
   User.init(

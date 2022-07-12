@@ -4,6 +4,7 @@ module.exports = {
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
+    logging: false,
     dialect: "mysql",
   },
   development1: {
@@ -12,6 +13,7 @@ module.exports = {
     database: "test",
     host: "localhost",
     dialect: "mysql",
+    logging: false,
   },
   test: {
     username: process.env.CI_DB_USERNAME,
@@ -19,6 +21,7 @@ module.exports = {
     database: process.env.CI_DB_NAME,
     host: "127.0.0.1",
     dialect: "mysql",
+    logging: false,
   },
   production: {
     username: process.env.PROD_DB_USERNAME,
@@ -26,5 +29,6 @@ module.exports = {
     database: process.env.PROD_DB_NAME,
     host: process.env.PROD_DB_HOSTNAME,
     dialect: "mysql",
+    logging: false,
   },
 };

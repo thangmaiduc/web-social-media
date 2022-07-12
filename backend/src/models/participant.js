@@ -27,8 +27,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      type: {
+        type: DataTypes.ENUM("public", "private"),
+      },
     },
     {
+      // indexes: [
+      //   {
+      //     unique: true,
+      //     fields: ["userId", "conversationId", "type"],
+      //   },
+      // ],
       sequelize,
       modelName: "Participant",
       timestamps: true,

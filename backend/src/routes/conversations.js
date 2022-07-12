@@ -3,14 +3,17 @@ const router = require("express").Router();
 const conversationController = require("../controller/conversations");
 
 //add member
-router.post("/member", conversationController.addParticipant);
+router.post("/members/:id", conversationController.addParticipant);
+//new private chat
+// router.post("/", conversationController.createPrivate);
+
 //new group chat
 
 router.post("/", conversationController.create);
 
 //get conv of a user
 
-router.get("/:userId", conversationController.get);
+router.get("/", conversationController.get);
 
 // get conv includes two userId
 
