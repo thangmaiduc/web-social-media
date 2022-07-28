@@ -1,15 +1,14 @@
 const morgan = require("morgan");
 const cors = require("cors");
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
 const multer = require("multer");
 const path = require("path");
 const indexRouter = require("./routes/index");
 
-
 const express = require("express");
 const app = express();
 
-dotenv.config();
+// dotenv.config();
 app.use(morgan("common"));
 app.use(cors());
 app.use(express.json());
