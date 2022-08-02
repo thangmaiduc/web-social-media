@@ -19,7 +19,6 @@ function App() {
         <Route path="/messenger" element={<Messenger />} />
         <Route path="/profile/:username" element={<Profile />} />
       </Routes>
-      
     </div>
   );
 }
