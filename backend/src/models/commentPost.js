@@ -1,18 +1,8 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class CommentPost extends Model {
-    static associate(models) {
-      //   CommentPost.belongsTo(models.Classroom, {
-      //     foreignKey: "classroom_id",
-      //     as: "classroom",
-      //   });
-      //   CommentPost.belongsToMany(models.Course, {
-      //     through: "CommentPostCourse",
-      //     as: "courses",
-      //     foreignKey: "CommentPost_id",
-      //   });
-    }
+    static associate(models) {}
   }
   CommentPost.init(
     {
@@ -36,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "CommentPost",
+      modelName: 'CommentPost',
     }
   );
   return CommentPost;

@@ -1,14 +1,13 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Participant extends Model {
     static associate(models) {
       Participant.belongsTo(models.Conversation, {
-        foreignKey: "conversationId",
-        // as: "classroom",
+        foreignKey: 'conversationId',
       });
       Participant.belongsTo(models.User, {
-        foreignKey: "userId",
+        foreignKey: 'userId',
       });
     }
   }
@@ -28,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       type: {
-        type: DataTypes.ENUM("public", "private"),
+        type: DataTypes.ENUM('public', 'private'),
       },
     },
     {
@@ -39,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       //   },
       // ],
       sequelize,
-      modelName: "Participant",
+      modelName: 'Participant',
       timestamps: true,
     }
   );

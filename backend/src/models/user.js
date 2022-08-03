@@ -1,50 +1,42 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       User.hasMany(models.Post, {
-        foreignKey: "userId",
-        as: "posts",
+        foreignKey: 'userId',
+        as: 'posts',
       });
       User.hasMany(models.Participant, {
-        foreignKey: "userId",
+        foreignKey: 'userId',
       });
       User.hasMany(models.Message, {
-        foreignKey: "senderId",
+        foreignKey: 'senderId',
       });
       User.hasMany(models.Conversation, {
-        foreignKey: "creatorId",
+        foreignKey: 'creatorId',
       });
       User.belongsToMany(models.User, {
-        as: "Following",
+        as: 'Following',
         through: models.Follower,
-        foreignKey: "followingId",
-        onDelete: "CASCADE",
+        foreignKey: 'followingId',
+        onDelete: 'CASCADE',
       });
-
       User.belongsToMany(models.User, {
-        as: "Followed",
+        as: 'Followed',
         through: models.Follower,
-        foreignKey: "followedId",
-        onDelete: "CASCADE",
+        foreignKey: 'followedId',
+        onDelete: 'CASCADE',
       });
-
       User.hasMany(models.CommentPost, {
-        foreignKey: "userId",
-        onDelete: "CASCADE",
+        foreignKey: 'userId',
+        onDelete: 'CASCADE',
       });
       User.belongsToMany(models.Post, {
-        // foreignKey: "userId",
         through: models.LikePost,
-        otherKey: "postId",
-        onDelete: "CASCADE",
+        otherKey: 'postId',
+        onDelete: 'CASCADE',
       });
-      // User.belongsToMany(models.Conversation, {
-      //   foreignKey: "userId",
-      //   through: models.Participant,
-      //   onDelete: "CASCADE",
-      // });
     }
   }
   User.init(
@@ -73,11 +65,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       profilePicture: {
         type: DataTypes.STRING,
-        defaultValue: "",
+        defaultValue: '',
       },
       coverPicture: {
         type: DataTypes.STRING,
-        defaultValue: "",
+        defaultValue: '',
       },
 
       isAdmin: {
@@ -99,7 +91,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "User",
+      modelName: 'User',
       timestamps: true,
     }
   );

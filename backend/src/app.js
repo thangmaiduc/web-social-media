@@ -1,22 +1,40 @@
-const morgan = require("morgan");
-const cors = require("cors");
+const morgan = require('morgan');
+const cors = require('cors');
 // const dotenv = require("dotenv");
-const multer = require("multer");
-const path = require("path");
-const indexRouter = require("./routes/index");
+const multer = require('multer');
+const path = require('path');
+const indexRouter = require('./routes/index');
+const helmet = require('helmet');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('../swagger_output.json');
 
-const express = require("express");
+const express = require('express');
 const app = express();
 
 // dotenv.config();
-app.use(morgan("common"));
+app.use(helmet());
+app.use(morgan('common'));
 app.use(cors());
 app.use(express.json());
-app.use("/api", indexRouter);
+app.use(
+  '/api',
+  indexRouter
+  // #swagger.tags = ['Api']
+  /* #swagger.security = [{
+        "Bearer": []
+    }] */
+);
 
+app.use(
+  '/doc',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerFile, {
+    swaggerOptions: { persistAuthorization: true },
+  })
+);
 app.use(function (req, res, next) {
   try {
-    let err = new Error("Không tìm thấy trang");
+    let err = new Error('Không tìm thấy trang');
     err.statusCode = 404;
     throw err;
   } catch (error) {
@@ -44,16 +62,16 @@ app.use((error, req, res, next) => {
   res.status(status).json({ message: message });
 });
 
-const db = require("./models").sequelize;
+const db = require('./models').sequelize;
 
 db.sync({ force: false, alter: false })
   .then()
   .catch((err) => {
     console.log(err);
-    console.log("Syncing database was fail");
+    console.log('Syncing database was fail');
   });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("app listening on port " + PORT);
+  console.log('app listening on port ' + PORT);
 });
