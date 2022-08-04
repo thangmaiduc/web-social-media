@@ -17,7 +17,7 @@ function App() {
   // let user =null;
   const user = useSelector(userSlice.userSelector);
   const fetch = useSelector(userSlice.fetchSelector);
-  console.log('user', user);
+ 
   // console.log('fetch', fetch);
   // const user = {
   //   id: 1,
@@ -33,14 +33,14 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path="/">
+        <Route exact path='/'>
           {user ? <Home /> : <Login />}
         </Route>
-        <Route path="/login">{user ? <Redirect to="/" /> : <Login />}</Route>
-        <Route path="/register">
-          {user ? <Redirect to="/" /> : <Register />}
+        <Route path='/login'>{user ? <Redirect to='/' /> : <Login />}</Route>
+        <Route path='/register'>
+          {user ? <Redirect to='/' /> : <Register />}
         </Route>
-        <Route path="/profile/:username">
+        <Route path='/profile/:username'>
           <Profile />
         </Route>
       </Switch>

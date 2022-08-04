@@ -16,13 +16,26 @@ exports.update = async (req, res, next) => {
 //delete a user
 exports.delete = async (req, res, next) => {
   try {
-    res.json(req.user);
+    res.json({data:req.user});
   } catch (error) {
     next(error);
   }
 };
 //get a user
 exports.get = async (req, res, next) => {
+  try {
+    let username = req.params.username;
+    let user = await User.findOne({
+      where: { username },
+    });
+    const {  profilePicture, coverPicture,  fullName} = user;
+    res.json({ data:  {  profilePicture, coverPicture,  fullName}  });
+  } catch (error) {
+    next(error);
+  }
+};
+//get me
+exports.getMe = async (req, res, next) => {
   try {
     res.json(req.user);
   } catch (error) {

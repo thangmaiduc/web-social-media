@@ -9,7 +9,9 @@ router.put("/",  userController.update);
 //delete a user
 router.delete("/:id", userController.delete);
 //get a user
-router.get("/",);
+router.get("/:username",userController.get);
+//getme
+router.get("/me",userController.getMe);
 //get all user's friends
 router.get("/friends/:username", userController.getFriends);
 

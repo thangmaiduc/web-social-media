@@ -11,14 +11,19 @@ const userApi = {
   getFriends: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = api.GET_FRIENDS+payload;
-    const response =  axiosClient.get(url, payload);
+    const response =  axiosClient.get(url);
     console.log(response);
     return response;
   },
 
-  getMe: async (payload) => {
+  getUser:  (payload) => {
+    const url = api.GET_FRIENDS+payload;
+    const response =  axiosClient.get(url);
+    return response.data;
+  },
+  getMe:  (payload) => {
     const url = '/me';
-    const response = await axiosClient.get(url, payload);
+    const response =  axiosClient.get(url, payload);
     return response.data;
   },
 };

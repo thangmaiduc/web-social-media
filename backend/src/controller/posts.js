@@ -102,21 +102,36 @@ exports.getTimeLine = async (req, res, next) => {
     const userPost = await Post.findAll({ where: { userId } });
     // console.log(userPost);
     const friends = await sequelize.query(
-      `select followedId from Followers fw
+      `select followedId, fullName, profilePicture from Followers fw
       join Users  u on fw.followedId = u.id WHERE fw.followingId = ${userId}`,
       {
         type: QueryTypes.SELECT,
       }
     );
-
+console.log(friends);
     const friendPosts = await Promise.all(
       friends.map(async (friend) => {
         return Post.findAll({ where: { userId: friend.followedId } });
       })
     );
+    
+    
     console.log(friendPosts);
     data = userPost.concat(...friendPosts);
-    console.log(data.length);
+    _.forEach(data,(item)=>{
+      const friend = _.find(friends,{'followedId': item.userId})
+      if(friend){
+        _.set(item,'profilePicture', friend.profilePicture);
+        _.set(item,'fullName', friend.fullName);
+        item.profilePicture = _.get(friend, 'profilePicture', '');
+        item.fullName =_.get(friend, 'fullName', '');
+      }else{
+        item.profilePicture = _.get(req.user, 'profilePicture', '');
+        item.fullName =_.get(req.user, 'fullName', '');
+      }
+      console.log(item);
+    })
+    console.log(JSON.stringify(data));
     data.sort((p1, p2) => {
       return new Date(p2.createdAt) - new Date(p1.createdAt);
     });

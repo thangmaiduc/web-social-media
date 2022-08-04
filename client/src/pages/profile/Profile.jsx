@@ -3,8 +3,21 @@ import Topbar from "../../components/topbar/Topbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Feed from "../../components/feed/Feed";
 import Rightbar from "../../components/rightbar/Rightbar";
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import userApi from '../../api/userApi';
 
 export default function Profile() {
+  const {username} = useParams();
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await userApi.getUser(username);
+      console.log(res);
+      setUser(res.data);
+    };
+    fetchUser();
+  }, [username]);
   return (
     <>
       <Topbar />
@@ -25,12 +38,12 @@ export default function Profile() {
               />
             </div>
             <div className="profileInfo">
-                <h4 className="profileInfoName">Safak Kocaoglu</h4>
-                <span className="profileInfoDesc">Hello my friends!</span>
+                <h4 className="profileInfoName">{user.fullname}</h4>
+                <span className="profileInfoDesc">{user.description}</span>
             </div>
           </div>
           <div className="profileRightBottom">
-            <Feed />
+            <Feed username={username} />
             <Rightbar profile/>
           </div>
         </div>

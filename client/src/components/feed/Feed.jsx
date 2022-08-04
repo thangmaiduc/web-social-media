@@ -15,7 +15,7 @@ export default function Feed({ username }) {
     ? api.GET_POST_TIMELINE
     : api.GET_POST_PROFILE + username;
   let { data, loading, error } = useQuery(url);
-  let Posts = data;
+  console.log(url);
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -24,7 +24,7 @@ export default function Feed({ username }) {
     <div className="feed">
       <div className="feedWrapper">
         <Share />
-        {Posts && Posts.map((p) => (
+        {data && data.map((p) => (
           <Post key={p.id} post={p} />
         ))}
       </div>
