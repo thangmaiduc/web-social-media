@@ -1,6 +1,6 @@
 import "./register.css";
 import { useRef, useEffect, useContext } from 'react';
-import { AuthContext } from '../../store/AuthContext';
+// import { AuthContext } from '../../store/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 function Register() {
@@ -8,7 +8,7 @@ function Register() {
   const email = useRef();
     const password = useRef();
     const cfPassword = useRef();
-    const [state, dispatch]= useContext(AuthContext)
+    // const [state, dispatch]= useContext(AuthContext)
     const navigate =useNavigate();
     const handleSubmit = async(e)=>{
       e.preventDefault();

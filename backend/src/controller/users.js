@@ -33,16 +33,20 @@ exports.get = async (req, res, next) => {
 //get all user's friends
 exports.getFriends = async (req, res, next) => {
   try {
-    let followingId = req.user.id;
+    let username = req.params.username;
+    let user = await User.findOne({
+      where: { username },
+    });
+    let followingId = user.id;
     const users = await sequelize.query(
-      `select followedId, username, profilePicture, coverPicture,  fullName from followers fw
-      join users  u on fw.followedId = u.id`,
+      `select followedId, username, profilePicture, coverPicture,  fullName from Followers fw
+      join Users  u on fw.followedId = u.id WHERE fw.followingId = ${followingId}`,
       {
         type: QueryTypes.SELECT,
       }
     );
 
-    res.json({ data: { users } });
+    res.json({ data:  users  });
   } catch (error) {
     next(error);
   }

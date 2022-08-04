@@ -1,21 +1,27 @@
-import "./sidebar.css";
+import './sidebar.css';
 import {
-  Bookmark,
-  Chat,
-  Event,
-  Group,
-  HelpOutline,
-  PlayCircleFilledOutlined,
   RssFeed,
-  School,
+  Chat,
+  PlayCircleFilledOutlined,
+  Group,
+  Bookmark,
+  HelpOutline,
   WorkOutline,
-} from "@material-ui/icons";
-import { Users } from "../../dummyData";
-import CloseFriend from "../closeFriend/CloseFriend";
-function Sidebar() {
+  Event,
+  School,
+} from '@material-ui/icons';
+import CloseFriend from '../closeFriend/CloseFriend';
+import {  useSelector } from 'react-redux';
+import {
+  friendSelector,
+} from '../../redux/slices/userSlice';
+
+export default function Sidebar() {
+  let friends = useSelector(friendSelector);
+
   return (
     <div className="sidebar">
-      <div className="wrapperSidebar">
+      <div className="sidebarWrapper">
         <ul className="sidebarList">
           <li className="sidebarListItem">
             <RssFeed className="sidebarIcon" />
@@ -54,16 +60,14 @@ function Sidebar() {
             <span className="sidebarListItemText">Courses</span>
           </li>
         </ul>
-        <button className="sidebarButton">Show more</button>
+        <button className="sidebarButton">Show More</button>
         <hr className="sidebarHr" />
         <ul className="sidebarFriendList">
-          {Users.map((u) => (
-            <CloseFriend key={u.id} user={u} />
-          ))}
+          {friends &&
+            friends.length > 0 &&
+            friends.map((u) => <CloseFriend key={u.followedId} user={u} />)}
         </ul>
       </div>
     </div>
   );
 }
-
-export default Sidebar;
