@@ -1,25 +1,50 @@
-import "./App.css";
-import Home from "./page/home/Home";
-import Profile from "./page/profile/Profile";
-import Login from "./page/login/Login";
-import Register from "./page/register/Register";
-import { Routes, Route } from "react-router-dom";
-import { useContext } from 'react';
-import { AuthContext } from "./store/AuthContext";
-import Messenger from "./page/messenger/Messenger";
+import Home from './pages/home/Home';
+import Login from './pages/login/Login';
+import Profile from './pages/profile/Profile';
+import Register from './pages/register/Register';
+import * as _ from 'lodash';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import * as userSlice from './redux/slices/userSlice';
+import { useEffect } from 'react';
 function App() {
-  const [state, dispatch] = useContext(AuthContext);
-  const {user}=state
+  const dispatch = useDispatch();
+  // let user =null;
+  const user = useSelector(userSlice.userSelector);
+  const fetch = useSelector(userSlice.fetchSelector);
+  console.log('user', user);
+  // console.log('fetch', fetch);
+  // const user = {
+  //   id: 1,
+  //   profilePicture: 'assets/person/1.jpeg',
+  //   username: 'Safak Kocaoglu',
+  // };
+  useEffect(() => {
+    console.log(1);
+    console.log(_.get(user, 'username', null));
+    if (_.get(user, 'username', null) !== null)
+      dispatch(userSlice.getFriends(user.username));
+  }, [user]);
   return (
-    <div className="App">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/messenger" element={<Messenger />} />
-        <Route path="/profile/:username" element={<Profile />} />
-      </Routes>
-    </div>
+    <Router>
+      <Switch>
+        <Route exact path="/">
+          {user ? <Home /> : <Login />}
+        </Route>
+        <Route path="/login">{user ? <Redirect to="/" /> : <Login />}</Route>
+        <Route path="/register">
+          {user ? <Redirect to="/" /> : <Register />}
+        </Route>
+        <Route path="/profile/:username">
+          <Profile />
+        </Route>
+      </Switch>
+    </Router>
   );
 }
 

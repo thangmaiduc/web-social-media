@@ -1,11 +1,12 @@
-const api401Error = require("../utils/errors/api401Error");
-const api404Error = require("../utils/errors/api404Error");
-const api400Error = require("../utils/errors/api400Error");
-const User = require("../models/").User;
-const Post = require("../models/").Post;
-const LikePost = require("../models/").LikePost;
-const sequelize = require("../models/").sequelize;
-const { QueryTypes } = require("sequelize");
+const api401Error = require('../utils/errors/api401Error');
+const api404Error = require('../utils/errors/api404Error');
+const api400Error = require('../utils/errors/api400Error');
+const User = require('../models/').User;
+const Post = require('../models/').Post;
+const LikePost = require('../models/').LikePost;
+const sequelize = require('../models/').sequelize;
+const { QueryTypes } = require('sequelize');
+const _ = require('lodash');
 //create
 
 exports.create = async (req, res, next) => {
@@ -20,7 +21,7 @@ exports.create = async (req, res, next) => {
 //update
 exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
-  const allowsUpdate = ["description"];
+  const allowsUpdate = ['description'];
 
   const isValidUpdate = updates.every((update) =>
     allowsUpdate.includes(update)
@@ -35,9 +36,9 @@ exports.update = async (req, res, next) => {
     if (post.userId === req.user.id) {
       updates.forEach((update) => (post[update] = req.body[update]));
 
-      res.status(200).json("Sửa bài viết thành công");
+      res.status(200).json('Sửa bài viết thành công');
     } else {
-      res.status(403).json("Bạn không thể sửa bài viết này");
+      res.status(403).json('Bạn không thể sửa bài viết này');
     }
   } catch (error) {
     next(error);
@@ -53,7 +54,7 @@ exports.delete = async (req, res, next) => {
       await post.deleteOne();
       res.status(204).json();
     } else {
-      res.status(403).json("you can delete your post");
+      res.status(403).json('you can delete your post');
     }
   } catch (error) {
     next(error);
@@ -76,7 +77,7 @@ exports.like = async (req, res, next) => {
     const postId = req.params.id;
     let UserId = req.user.id;
     let post = await Post.findByPk(postId);
-    if (!post) throw new api404Error("Không thấy bài viết");
+    if (!post) throw new api404Error('Không thấy bài viết');
     let likedPost = await LikePost.findAll({
       where: {
         postId,
@@ -85,10 +86,10 @@ exports.like = async (req, res, next) => {
     });
     if (likedPost.length === 0) {
       await LikePost.create({ postId, UserId });
-      res.status(200).json({ message: "bạn đã thích thành công" });
+      res.status(200).json({ message: 'bạn đã thích thành công' });
     } else {
       await LikePost.destroy({ where: { postId, UserId } });
-      res.status(200).json({ message: "bạn đã bỏ thích thành công" });
+      res.status(200).json({ message: 'bạn đã bỏ thích thành công' });
     }
   } catch (error) {
     next(error);
@@ -101,19 +102,26 @@ exports.getTimeLine = async (req, res, next) => {
     const userPost = await Post.findAll({ where: { userId } });
     // console.log(userPost);
     const friends = await sequelize.query(
-      `select followedId from followers fw
-      join users  u on fw.followedId = u.id`,
+      `select followedId from Followers fw
+      join Users  u on fw.followedId = u.id WHERE fw.followingId = ${userId}`,
       {
         type: QueryTypes.SELECT,
       }
     );
+
     const friendPosts = await Promise.all(
       friends.map(async (friend) => {
         return Post.findAll({ where: { userId: friend.followedId } });
       })
     );
+    console.log(friendPosts);
+    data = userPost.concat(...friendPosts);
+    console.log(data.length);
+    data.sort((p1, p2) => {
+      return new Date(p2.createdAt) - new Date(p1.createdAt);
+    });
 
-    res.status(200).json({ data: userPost.concat(...friendPosts) });
+    res.status(200).json({ data });
   } catch (error) {
     next(error);
   }
@@ -130,25 +138,25 @@ exports.getProfilePost = async (req, res, next) => {
     next(error);
   }
 };
-exports.getProfilePost = async (req, res, next) => {
-  try {
-    const username = req.params.username;
-    const user = await User.findOne({ where: { username } });
-    const userPost = await Post.findAll({ where: { userId: user.id } });
+// exports.getProfilePost = async (req, res, next) => {
+//   try {
+//     const username = req.params.username;
+//     const user = await User.findOne({ where: { username } });
+//     const userPost = await Post.findAll({ where: { userId: user.id } });
 
-    res.status(200).json({ data: userPost });
-  } catch (error) {
-    next(error);
-  }
-};
-exports.getProfilePost = async (req, res, next) => {
-  try {
-    const username = req.params.username;
-    const user = await User.findOne({ where: { username } });
-    const userPost = await Post.findAll({ where: { userId: user.id } });
+//     res.status(200).json({ data: userPost });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+// exports.getProfilePost = async (req, res, next) => {
+//   try {
+//     const username = req.params.username;
+//     const user = await User.findOne({ where: { username } });
+//     const userPost = await Post.findAll({ where: { userId: user.id } });
 
-    res.status(200).json({ data: userPost });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json({ data: userPost });
+//   } catch (error) {
+//     next(error);
+//   }
+// };

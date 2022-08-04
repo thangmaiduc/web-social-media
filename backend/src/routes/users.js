@@ -11,7 +11,7 @@ router.delete("/:id", userController.delete);
 //get a user
 router.get("/",);
 //get all user's friends
-router.get("/friends/", userController.getFriends);
+router.get("/friends/:username", userController.getFriends);
 
 //follow a user
 router.put('/:id/follow',userController.follow)
