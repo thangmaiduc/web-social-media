@@ -18,6 +18,22 @@ exports.create = async (req, res, next) => {
     next(error);
   }
 };
+// router.post("/upload", upload.single("image"), async (req, res, next) => {
+//   try {
+   
+//     if (req.user.cloudinary_id) {
+//       await cloudinary.uploader.destroy(req.user.cloudinary_id);
+//     }
+//     const result = await cloudinary.uploader.upload(req.file.path);
+//     (req.user.avatar = result.secure_url),
+//       (req.user.cloudinary_id = result.public_id),
+
+//       await req.user.save();
+//     res.status(200).json(req.user);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 //update
 exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
@@ -99,7 +115,7 @@ exports.like = async (req, res, next) => {
 exports.getTimeLine = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const userPost = await Post.findAll({ where: { userId } });
+    const userPost = await Post.findAll({ where: { userId }, raw: true });
     // console.log(userPost);
     const friends = await sequelize.query(
       `select followedId, fullName, profilePicture from Followers fw
@@ -108,30 +124,31 @@ exports.getTimeLine = async (req, res, next) => {
         type: QueryTypes.SELECT,
       }
     );
-console.log(friends);
+    console.log(friends);
     const friendPosts = await Promise.all(
       friends.map(async (friend) => {
-        return Post.findAll({ where: { userId: friend.followedId } });
+        return Post.findAll({
+          where: { userId: friend.followedId },
+          raw: true,
+        });
       })
     );
-    
-    
+
     console.log(friendPosts);
     data = userPost.concat(...friendPosts);
-    _.forEach(data,(item)=>{
-      const friend = _.find(friends,{'followedId': item.userId})
-      if(friend){
-        _.set(item,'profilePicture', friend.profilePicture);
-        _.set(item,'fullName', friend.fullName);
+    _.forEach(data, (item) => {
+      const friend = _.find(friends, { followedId: item.userId });
+      if (friend) {
+        // _.set(item, 'profilePicture', friend.profilePicture);
+        // _.set(item, 'fullName', friend.fullName);
         item.profilePicture = _.get(friend, 'profilePicture', '');
-        item.fullName =_.get(friend, 'fullName', '');
-      }else{
+        item.fullName = _.get(friend, 'fullName', '');
+      } else {
         item.profilePicture = _.get(req.user, 'profilePicture', '');
-        item.fullName =_.get(req.user, 'fullName', '');
+        item.fullName = _.get(req.user, 'fullName', '');
       }
       console.log(item);
-    })
-    console.log(JSON.stringify(data));
+    });
     data.sort((p1, p2) => {
       return new Date(p2.createdAt) - new Date(p1.createdAt);
     });
@@ -146,7 +163,14 @@ exports.getProfilePost = async (req, res, next) => {
   try {
     const username = req.params.username;
     const user = await User.findOne({ where: { username } });
-    const userPost = await Post.findAll({ where: { userId: user.id } });
+    const userPost = await Post.findAll({
+      where: { userId: user.id },
+      raw: true,
+    });
+    _.forEach(userPost, (item) => {
+      item.profilePicture = user.profilePicture;
+      item.fullName = user.fullName;
+    });
 
     res.status(200).json({ data: userPost });
   } catch (error) {

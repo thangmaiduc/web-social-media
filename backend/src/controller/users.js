@@ -3,6 +3,7 @@ const Follower = require("../models/").Follower;
 const sequelize = require("../models/").sequelize;
 const { QueryTypes } = require("sequelize");
 const api400Error = require("../utils/errors/api400Error");
+const api404Error = require("../utils/errors/api404Error");
 
 //update
 
@@ -28,8 +29,21 @@ exports.get = async (req, res, next) => {
     let user = await User.findOne({
       where: { username },
     });
-    const {  profilePicture, coverPicture,  fullName} = user;
-    res.json({ data:  {  profilePicture, coverPicture,  fullName}  });
+    if(!user) throw new api404Error('Không thấy user');
+    const {  profilePicture, coverPicture,  fullName, city, country} = user;
+    res.json({ data:  {  profilePicture, coverPicture,  fullName, city, country}  });
+  } catch (error) {
+    next(error);
+  }
+};
+//get by id
+exports.getById = async (req, res, next) => {
+  try {
+    let id = req.params.id;
+    let user = await User.findByPk(id);
+    if(!user) throw new api404Error('Không thấy user');
+    const {  profilePicture, coverPicture,  fullName, city, country} = user;
+    res.json({ data:  {  profilePicture, coverPicture,  fullName, city, country}  });
   } catch (error) {
     next(error);
   }
