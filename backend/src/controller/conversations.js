@@ -1,24 +1,24 @@
-const User = require("../models/").User;
-const _ = require("lodash");
-const Participant = require("../models/").Participant;
-const Conversation = require("../models/").Conversation;
-const sequelize = require("../models/").sequelize;
-const { QueryTypes } = require("sequelize");
-const Api404Error = require("../utils/errors/api404Error");
-const api400Error = require("../utils/errors/api400Error");
+const User = require('../models/').User;
+const _ = require('lodash');
+const Participant = require('../models/').Participant;
+const Conversation = require('../models/').Conversation;
+const sequelize = require('../models/').sequelize;
+const { QueryTypes } = require('sequelize');
+const Api404Error = require('../utils/errors/api404Error');
+const api400Error = require('../utils/errors/api400Error');
 //add member
 exports.addParticipant = async (req, res, next) => {
   try {
     console.log(req.params, req.body);
     let conversationId = req.params.id;
     let users = req.body.users;
-    if (users.length == 0) res.status(400).json("failed");
+    if (users.length == 0) res.status(400).json('failed');
 
     const check = await Conversation.findOne({
       where: { id: conversationId },
     });
     if (!check) {
-      throw new Api404Error("Không tìm thấy nhóm");
+      throw new Api404Error('Không tìm thấy nhóm');
     }
     users.forEach(async (userId) => {
       let checkPar = await Participant.findOne({
@@ -27,9 +27,9 @@ exports.addParticipant = async (req, res, next) => {
       let check = await User.findOne({ where: { id: userId } });
       check &&
         !checkPar &&
-        (await Participant.create({ userId, conversationId, type: "public" }));
+        (await Participant.create({ userId, conversationId, type: 'public' }));
     });
-    res.status(200).json({ message: "thêm thành công" });
+    res.status(200).json({ message: 'thêm thành công' });
   } catch (error) {
     next(error);
   }
@@ -39,11 +39,11 @@ exports.addParticipant = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const username = req.query.username;
-    const title = req.body.title || "";
-    let userId = req.user.id;
+    const title = req.body.title || '';
+    const userId = req.user.id;
     if (username) {
-      const user = await User.findOne({ where: { username } });
-      const parnerId = user.id;
+      const parner = await User.findOne({ where: { username } });
+      const parnerId = parner.id;
       const participants = await Participant.findAll({
         where: { userId: parnerId },
       });
@@ -57,42 +57,42 @@ exports.create = async (req, res, next) => {
             where: {
               userId,
               conversationId: participant.conversationId,
-              type: "private",
+              type: 'private',
             },
           });
           if (check) return true;
 
           if (!check && i === participants.length - 1) {
             let conversation = await Conversation.create({
-              title: user.fullName,
+              // title: user.fullName,
               creatorId: userId,
             });
             await Participant.create({
               conversationId: conversation.id,
               userId,
-              type: "private",
+              type: 'private',
             });
             await Participant.create({
               conversationId: conversation.id,
-              userId: user.id,
-              type: "private",
+              userId: parnerId,
+              type: 'private',
             });
           }
         });
       } else {
         let conversation = await Conversation.create({
-          title: user.fullName,
+          // title: user.fullName,
           creatorId: userId,
         });
         await Participant.create({
           conversationId: conversation.id,
           userId,
-          type: "private",
+          type: 'private',
         });
         await Participant.create({
           conversationId: conversation.id,
-          userId: user.id,
-          type: "private",
+          userId: parnerId,
+          type: 'private',
         });
       }
     } else {
@@ -103,13 +103,13 @@ exports.create = async (req, res, next) => {
       await Participant.create({
         conversationId: conversation.id,
         userId,
-        type: "public",
+        type: 'public',
       });
     }
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
 
-    res.status(200).json({ message: "ok" });
+    res.status(200).json({ message: 'ok' });
   } catch (error) {
     next(error);
   }
@@ -167,11 +167,17 @@ exports.create = async (req, res, next) => {
 //get conv of a user
 exports.get = async (req, res, next) => {
   try {
-    const creatorId = req.user.id;
+    const userId = req.user.id;
 
-    const conversations = await Conversation.findAll({
-      where: { creatorId },
-    });
+    const conversations = await sequelize.query(
+      `SELECT p.conversationId  FROM Participants p
+      JOIN Conversations c on p.conversationId = c.id
+      WHERE p.userId = ${userId}
+      `,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
     console.log(conversations);
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
