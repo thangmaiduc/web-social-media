@@ -1,11 +1,11 @@
-const User = require("../models/").User;
-const Follower = require("../models/").Follower;
-const sequelize = require("../models/").sequelize;
-const { QueryTypes } = require("sequelize");
-const api400Error = require("../utils/errors/api400Error");
-const api404Error = require("../utils/errors/api404Error");
+const User = require('../models/').User;
+const Follower = require('../models/').Follower;
+const sequelize = require('../models/').sequelize;
+const { QueryTypes } = require('sequelize');
+const api400Error = require('../utils/errors/api400Error');
+const api404Error = require('../utils/errors/api404Error');
 
-//update
+// * update
 
 exports.update = async (req, res, next) => {
   try {
@@ -14,36 +14,40 @@ exports.update = async (req, res, next) => {
     next(error);
   }
 };
-//delete a user
+// * delete a user
 exports.delete = async (req, res, next) => {
   try {
-    res.json({data:req.user});
+    res.json({ data: req.user });
   } catch (error) {
     next(error);
   }
 };
-//get a user
+// * get a user
 exports.get = async (req, res, next) => {
   try {
     let username = req.params.username;
     let user = await User.findOne({
       where: { username },
     });
-    if(!user) throw new api404Error('Không thấy user');
-    const {  profilePicture, coverPicture,  fullName, city, country} = user;
-    res.json({ data:  {  profilePicture, coverPicture,  fullName, city, country}  });
+    if (!user) throw new api404Error('Không thấy user');
+    const { profilePicture, coverPicture, fullName, city, country } = user;
+    res.json({
+      data: { profilePicture, coverPicture, fullName, city, country },
+    });
   } catch (error) {
     next(error);
   }
 };
-//get by id
+// * get by id
 exports.getById = async (req, res, next) => {
   try {
     let id = req.params.id;
     let user = await User.findByPk(id);
-    if(!user) throw new api404Error('Không thấy user');
-    const {  profilePicture, coverPicture,  fullName, city, country} = user;
-    res.json({ data:  {  profilePicture, coverPicture,  fullName, city, country}  });
+    if (!user) throw new api404Error('Không thấy user');
+    const { profilePicture, coverPicture, fullName, city, country } = user;
+    res.json({
+      data: { profilePicture, coverPicture, fullName, city, country },
+    });
   } catch (error) {
     next(error);
   }
@@ -56,8 +60,17 @@ exports.getMe = async (req, res, next) => {
     next(error);
   }
 };
+// * get users
+exports.getAll = async (req, res, next) => {
+try {
+    let user = await User.findAll({ attributes: ['id', 'username', 'email'] });
+    res.json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+};
 
-//get all user's friends
+// * get all user's friends
 exports.getFriends = async (req, res, next) => {
   try {
     let username = req.params.username;
@@ -73,12 +86,12 @@ exports.getFriends = async (req, res, next) => {
       }
     );
 
-    res.json({ data:  users  });
+    res.json({ data: users });
   } catch (error) {
     next(error);
   }
 };
-//follow a user
+// * follow a user
 exports.follow = async (req, res, next) => {
   try {
     let followedId = req.params.id;
@@ -88,25 +101,25 @@ exports.follow = async (req, res, next) => {
     });
 
     if (!userCheck) {
-      throw new api400Error("Người này không tồn tại");
+      throw new api400Error('Người này không tồn tại');
     }
     if (followedId == followingId) {
-      throw new api400Error("Bạn không thể theo dõi chính mình");
+      throw new api400Error('Bạn không thể theo dõi chính mình');
     }
     let followerCheck = await Follower.findOne({
       where: { followedId, followingId },
     });
     if (followerCheck) {
-      throw new api400Error("Bạn đã theo dõi người này rồi");
+      throw new api400Error('Bạn đã theo dõi người này rồi');
     }
     follower = await Follower.create({ followedId, followingId });
 
-    res.json({ message: "Bạn đã theo dõi thành công" });
+    res.json({ message: 'Bạn đã theo dõi thành công' });
   } catch (error) {
     next(error);
   }
 };
-//unfollow a user
+// * unfollow a user
 exports.unfollow = async (req, res, next) => {
   try {
     let unfollowingId = req.params.id;
@@ -116,22 +129,22 @@ exports.unfollow = async (req, res, next) => {
     });
 
     if (!userCheck) {
-      throw new api400Error("Người này không tồn tại");
+      throw new api400Error('Người này không tồn tại');
     }
     if (unfollowingId == followingId) {
-      throw new api400Error("Bạn không thể bỏ theo dõi chính mình");
+      throw new api400Error('Bạn không thể bỏ theo dõi chính mình');
     }
     let followerCheck = await Follower.findOne({
       where: { followedId: unfollowingId, followingId },
     });
     if (!followerCheck) {
-      throw new api400Error("Bạn chưa theo dõi người này");
+      throw new api400Error('Bạn chưa theo dõi người này');
     }
     await Follower.destroy({
       where: { followedId: unfollowingId, followingId },
     });
 
-    res.json({ message: "Bạn đã bỏ theo dõi thành công" });
+    res.json({ message: 'Bạn đã bỏ theo dõi thành công' });
   } catch (error) {
     next(error);
   }

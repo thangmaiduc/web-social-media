@@ -168,9 +168,8 @@ exports.create = async (req, res, next) => {
 exports.get = async (req, res, next) => {
   try {
     const userId = req.user.id;
-
     const conversations = await sequelize.query(
-      `SELECT p.conversationId  FROM Participants p
+      `SELECT p.conversationId, p.type   FROM Participants p
       JOIN Conversations c on p.conversationId = c.id
       WHERE p.userId = ${userId}
       `,
@@ -178,11 +177,47 @@ exports.get = async (req, res, next) => {
         type: QueryTypes.SELECT,
       }
     );
-    console.log(conversations);
+    // conversations.length > 0 &&
+    //   _.forEach(conversations, async (item) => {
+    //     if (item.type === 'private') {
+    //       const users = await sequelize.query(
+    //         `SELECT * FROM Participants p
+    //        JOIN users u on p.userId = u.id
+    //        WHERE p.conversationId = ${item.conversationId} and p.userId <> ${userId}
+    //        `,
+    //         {
+    //           type: QueryTypes.SELECT,
+    //         }
+    //       );
+    //       item.title = users[0].fullName;
+    //       item.img = users[0].profilePicture;
+    //       console.log(item);
+    //     }
+    //   });
+
+    let conversations2 = await Promise.all(
+      conversations.map(async (item) => {
+        console.log(item);
+        if (item.type === 'private') {
+        const users = await sequelize.query(
+          `SELECT * FROM Participants p
+               JOIN Users u on p.userId = u.id
+               WHERE p.conversationId = ${item.conversationId} and p.userId <> ${userId}
+               `,
+          {
+            type: QueryTypes.SELECT,
+          }
+        );
+        item.title = users[0].fullName;
+        item.img = users[0].profilePicture;
+        return item
+        }
+      })
+    );
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
 
-    res.status(200).json({ data: conversations });
+    res.status(200).json({ data: conversations2 });
   } catch (error) {
     next(error);
   }

@@ -7,14 +7,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'posts',
       });
-      User.hasMany(models.Participant, {
-        foreignKey: 'userId',
-      });
       User.hasMany(models.Message, {
         foreignKey: 'senderId',
       });
-      User.hasMany(models.Conversation, {
-        foreignKey: 'creatorId',
+      User.belongsToMany(models.Conversation, {
+        foreignKey: 'userId',
+        through: models.Participant,
+        onDelete: 'CASCADE',
       });
       User.belongsToMany(models.User, {
         as: 'Following',

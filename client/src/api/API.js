@@ -11,5 +11,12 @@ const api = {
   UPLOAD: baseURL + '/cloudinary-upload',
 
   GET_CONVERSATIONS: baseURL + '/conversations/',
+  ADD_MEMBER: baseURL + '/conversations/members/',
+
+  GET_MESSAGES: baseURL + '/messages/',
+
+  CREATE_MESSAGE: baseURL + '/messages/',
+
+  
 };
 export default api;

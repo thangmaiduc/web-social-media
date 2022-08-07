@@ -21,7 +21,7 @@ router.put('/:id/follow',userController.follow)
 //unfollow a user
 
 router.put('/:id/unfollow',userController.unfollow)
-
+router.get("/",userController.getAll);
 
 
 module.exports = router;

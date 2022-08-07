@@ -1027,7 +1027,7 @@
     core-js-pure "^3.20.2"
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.1.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.13":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.13":
   version "7.18.9"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.18.9.tgz#b4fcfce55db3d2e5e080d2490f608a3b9f407f4a"
   integrity sha512-lkqXDcvlFT5rvEjiu6+QYO+1GXrEHRo2LOtS7E4GtX5ESIZOgepqsZBVIj6Pv+a6zqsya9VCgiK1KAK4BvJDAw==
@@ -1175,6 +1175,16 @@
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.0.2.tgz#1bfafe4b7ed0f3e4105837e056e0a89b108ebe36"
   integrity sha512-IkpVW/ehM1hWKln4fCA3NzJU8KwD+kIOvPZA4cqxoJHtE21CCzjyp+Kxbu0i5I4tBNOlXPL9mjwnWlL0VEG4Fg==
+
+"@emoji-mart/data@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@emoji-mart/data/-/data-1.0.3.tgz#a216a9a8cead038b756d2b882e1c9da0f7777e8a"
+  integrity sha512-SwxtfLOPiis9iXwWLjZHpUIUwYV/ghfBG6jpVP2HZgCt/dE8Q4r1RQg1Y5TyYBYKk8N5RKuLWJi1DNrEUIWj+A==
+
+"@emoji-mart/react@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@emoji-mart/react/-/react-1.0.0.tgz#485ffef5c34f0cde04ecb2820f150a483744346e"
+  integrity sha512-pRZ+e0uWJKVpUBcALevyjnp14HUFG/7p+XsUqNAkz322ruPzyDQ7/qUNONU0KGjQF71O4OIoFdvDPcxVpx1/xg==
 
 "@emotion/hash@^0.8.0":
   version "0.8.0"
@@ -3877,6 +3887,14 @@ emittery@^0.8.1:
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.8.1.tgz#bb23cc86d03b30aa75a7f734819dee2e1ba70860"
   integrity sha512-uDfvUjVrfGJJhymx/kz6prltenw1u7WrCg1oa94zYY8xxVpLLUu045LAT0dhDZdXG58/EpPL/5kA180fQ/qudg==
+
+emoji-mart@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/emoji-mart/-/emoji-mart-3.0.1.tgz#9ce86706e02aea0506345f98464814a662ca54c6"
+  integrity sha512-sxpmMKxqLvcscu6mFn9ITHeZNkGzIvD0BSNFE/LJESPbCA8s1jM6bCDPjWbV31xHq7JXaxgpHxLB54RCbBZSlg==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    prop-types "^15.6.0"
 
 emoji-regex@^8.0.0:
   version "8.0.0"
@@ -7402,7 +7420,7 @@ prompts@^2.0.1, prompts@^2.4.2:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
+prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==

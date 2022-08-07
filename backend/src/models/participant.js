@@ -3,12 +3,12 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Participant extends Model {
     static associate(models) {
-      Participant.belongsTo(models.Conversation, {
-        foreignKey: 'conversationId',
-      });
-      Participant.belongsTo(models.User, {
-        foreignKey: 'userId',
-      });
+      // Participant.belongsTo(models.Conversation, {
+      //   foreignKey: 'conversationId',
+      // });
+      // Participant.belongsTo(models.User, {
+      //   foreignKey: 'userId',
+      // });
     }
   }
   Participant.init(

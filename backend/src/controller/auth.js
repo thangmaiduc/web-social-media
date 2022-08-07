@@ -13,9 +13,9 @@ exports.login = async (req, res, next) => {
     if (!user) throw new api400Error("Email hoặc mật khẩu không chính xác");
 
     let isMatch = await bcrypt.compare(password, user.password);
-    console.log(isMatch);
+    // console.log(isMatch);
     if (!isMatch) throw new api400Error("Email hoặc mật khẩu không chính xác");
-    console.log(user);
+    // console.log(user);
     let token = await jwt.sign(
       { userId: user.id, isAdmin: user.isAdmin },
       process.env.JWT_KEY,
@@ -35,7 +35,7 @@ exports.register = async (req, res, next) => {
   try {
     let { email, password, username, fullName } = req.body;
     let userNameCheck = await User.findOne({ where: { username } });
-    console.log(userNameCheck);
+    // console.log(userNameCheck);
     if (userNameCheck) {
       throw new api400Error("Username đã được đăng kí");
     }

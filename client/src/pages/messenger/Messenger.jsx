@@ -8,7 +8,9 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { userSelector } from '../../redux/slices/userSlice';
+import useTyping from '../../hooks/useTyping';
 import conversationApi from '../../api/conversationApi';
+import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
 
 export default function Messenger() {
   const [conversations, setConversations] = useState([]);
@@ -17,54 +19,87 @@ export default function Messenger() {
   const [newMessage, setNewMessage] = useState('');
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const socket = useRef();
+  const [file, setFile] = useState();
+  const socketRef = useRef();
   const user = useSelector(userSelector);
   const scrollRef = useRef();
+  const { isTyping, startTyping, stopTyping, cancelTyping } = useTyping();
 
-  useEffect(() => {
-    socket.current = io('ws://localhost:8900');
-    socket.current.on('getMessage', (data) => {
-      setArrivalMessage({
-        sender: data.senderId,
-        text: data.text,
-        createdAt: Date.now(),
-      });
-    });
-  }, []);
+  const sendMessage = () => {
+    if (!socketRef.current) return;
+    if (file) {
+      const messageObject = {
+        senderId: socketRef.current.id,
+        type: 'file',
+        body: file,
+        mimeType: file.type,
+        fileName: file.name,
+        user: user,
+      };
+      setNewMessage('');
+      setFile();
+      socketRef.current.emit('send message', messageObject);
+    } else {
+      const messageObject = {
+        senderId: socketRef.current.id,
+        type: 'text',
+        body: newMessage,
+        user: user,
+      };
+      setNewMessage('');
+      socketRef.current.emit('send message', messageObject);
+    }
+  };
+  const handleSendMessage = (event) => {
+    event.preventDefault();
+    // cancelTyping();
+    sendMessage(newMessage);
+    setNewMessage('');
+  };
 
-  useEffect(() => {
-    arrivalMessage &&
-      currentChat?.members.includes(arrivalMessage.sender) &&
-      setMessages((prev) => [...prev, arrivalMessage]);
-  }, [arrivalMessage, currentChat]);
+  // useEffect(() => {
+  //   socket.current = io('ws://localhost:8900');
+  //   socket.current.on('getMessage', (data) => {
+  //     setArrivalMessage({
+  //       sender: data.senderId,
+  //       text: data.text,
+  //       createdAt: Date.now(),
+  //     });
+  //   });
+  // }, []);
 
-  useEffect(() => {
-    socket.current.emit('addUser', user._id);
-    socket.current.on('getUsers', (users) => {
-      setOnlineUsers(
-        user.followings.filter((f) => users.some((u) => u.userId === f))
-      );
-    });
-  }, [user]);
+  // useEffect(() => {
+  //   arrivalMessage &&
+  //     currentChat?.members.includes(arrivalMessage.sender) &&
+  //     setMessages((prev) => [...prev, arrivalMessage]);
+  // }, [arrivalMessage, currentChat]);
+
+  // useEffect(() => {
+  //   socket.current.emit('addUser', user._id);
+  //   socket.current.on('getUsers', (users) => {
+  //     setOnlineUsers(
+  //       user.followings.filter((f) => users.some((u) => u.userId === f))
+  //     );
+  //   });
+  // }, [user]);
 
   useEffect(() => {
     const getConversations = async () => {
       try {
-        const res = conversationApi.getOfUser;
-        console.log(res);
+        const res = await conversationApi.getOfUser();
+        // console.log('user', res);
         setConversations(res);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     };
     getConversations();
   }, [user.id]);
-
   useEffect(() => {
     const getMessages = async () => {
       try {
-        const res = await axios.get('/messages/' + currentChat?._id);
-        setMessages(res.data);
+        const res = await await conversationApi.getMessage(
+          currentChat.conversationId
+        );
+        setMessages(res);
       } catch (err) {
         console.log(err);
       }
@@ -72,37 +107,39 @@ export default function Messenger() {
     getMessages();
   }, [currentChat]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const message = {
-      sender: user._id,
-      text: newMessage,
-      conversationId: currentChat._id,
-    };
-
-    const receiverId = currentChat.members.find(
-      (member) => member !== user._id
-    );
-
-    socket.current.emit('sendMessage', {
-      senderId: user._id,
-      receiverId,
-      text: newMessage,
+  const startTypingMessage = () => {
+    if (!socketRef.current) return;
+    socketRef.current.emit('start typing message', {
+      senderId: socketRef.current.id,
+      user,
     });
+  };
 
-    try {
-      const res = await axios.post('/messages', message);
-      setMessages([...messages, res.data]);
-      setNewMessage('');
-    } catch (err) {
-      console.log(err);
-    }
+  const stopTypingMessage = () => {
+    if (!socketRef.current) return;
+    socketRef.current.emit('stop typing message', {
+      senderId: socketRef.current.id,
+      user,
+    });
   };
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
+  function selectFile(e) {
+    if (typeof e.target.files[0] !== 'undefined') {
+      setNewMessage(e.target.files[0].name);
+      setFile(e.target.files[0]);
+    } else {
+      return null;
+    }
+  }
+  useEffect(() => {
+    if (isTyping) startTypingMessage();
+    else {
+      stopTypingMessage();
+    }
+  }, [isTyping]);
   return (
     <>
       <Topbar />
@@ -112,7 +149,7 @@ export default function Messenger() {
             <input placeholder='Search for friends' className='chatMenuInput' />
             {conversations.length > 0 &&
               conversations.map((c) => (
-                <div onClick={() => setCurrentChat(c)}>
+                <div key={c.conversationId} onClick={() => setCurrentChat(c)}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}
@@ -124,22 +161,19 @@ export default function Messenger() {
               <>
                 <div className='chatBoxTop'>
                   {messages.map((m) => (
-                    <div ref={scrollRef}>
-                      <Message message={m} own={m.sender === user._id} />
+                    <div key={m.id} ref={scrollRef}>
+                      <Message message={m} own={m.senderId === user.id} />
                     </div>
                   ))}
                 </div>
-                <div className='chatBoxBottom'>
-                  <textarea
-                    className='chatMessageInput'
-                    placeholder='write something...'
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    value={newMessage}
-                  ></textarea>
-                  <button className='chatSubmitButton' onClick={handleSubmit}>
-                    Send
-                  </button>
-                </div>
+                <NewMessageForm
+                  selectFile={selectFile}
+                  newMessage={newMessage}
+                  setNewMessage={setNewMessage}
+                  handleStartTyping={startTyping}
+                  handleStopTyping={stopTyping}
+                  handleSubmit={handleSendMessage}
+                />
               </>
             ) : (
               <span className='noConversationText'>
