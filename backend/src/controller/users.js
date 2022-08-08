@@ -38,6 +38,7 @@ exports.get = async (req, res, next) => {
     next(error);
   }
 };
+
 // * get by id
 exports.getById = async (req, res, next) => {
   try {

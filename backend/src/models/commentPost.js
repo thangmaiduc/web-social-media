@@ -2,7 +2,16 @@
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class CommentPost extends Model {
-    static associate(models) {}
+    static associate(models) {
+      CommentPost.belongsTo(models.User, {
+        foreignKey: "userId",
+        as: "user",
+      });
+      CommentPost.belongsTo(models.Post, {
+        foreignKey: "postId",
+        as: "post",
+      });
+    }
   }
   CommentPost.init(
     {

@@ -4,8 +4,8 @@
   margin-top: 20px;
 }
 
-.messageTop{
-    display: flex;
+.messageTop {
+  display: flex;
 }
 
 .messageImg {
@@ -13,27 +13,35 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 10px;
+  margin: 0 10px;
 }
 
-.messageText{
-    padding: 10px;
-    border-radius: 20px;
-    background-color: #1877f2;
-    color: white;
-    max-width: 300px;
+.messageText {
+  padding: 10px;
+  border-radius: 20px;
+  background-color: #1877f2;
+  color: white;
+  max-width: 300px;
 }
 
-.messageBottom{
-    font-size: 12px;
-    margin-top: 10px;
+.messageBottom {
+  font-size: 12px;
+  margin-top: 10px;
 }
 
-.message.own{
-    align-items: flex-end;
+.message.own {
+  align-items: flex-end;
+}
+.message.own .messageTop {
+  flex-direction: row-reverse;
 }
 
-.message.own .messageText{
-    background-color: rgb(245, 241, 241);
-    color: black;
+.message.own .messageText {
+  background-color: rgb(245, 241, 241);
+  color: black;
+}
+
+.messageImage {
+  height: 150px;
+  object-fit: contain;
 }

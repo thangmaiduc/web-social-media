@@ -2,6 +2,7 @@ const User = require('../models/').User;
 const _ = require('lodash');
 const Participant = require('../models/').Participant;
 const Message = require('../models/').Message;
+const Attachment = require('../models/').Attachment;
 const Conversation = require('../models/').Conversation;
 const sequelize = require('../models/').sequelize;
 const { QueryTypes } = require('sequelize');
@@ -32,11 +33,29 @@ exports.getMessageOfConversation = async (req, res, next) => {
           attributes: [['profilePicture', 'img']],
         },
       ],
-      raw:true
+      raw: true,
     });
+    const attachments = await Promise.all(
+      messages.map((m) => {
+        return Attachment.findOne({
+          where: { messageId: m.id },
+        });
+      })
+    );
+    
+    // const attachments = await Attachment.findOne({
+    //   where: { messageId : messages.id  },
+    // })
+      
     _.forEach(messages, (item) => {
+      item.attachments = []
       item.img = item['User.img'];
       delete item['User.img'];
+      _.forEach(attachments, (attachment)=>{
+        if(attachment&&attachment.messageId === item.id){
+          item.attachments.push(attachment)
+        }
+      })
     });
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });

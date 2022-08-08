@@ -4,6 +4,7 @@ const api400Error = require('../utils/errors/api400Error');
 const User = require('../models/').User;
 const Post = require('../models/').Post;
 const LikePost = require('../models/').LikePost;
+const CommentPost = require('../models/').CommentPost;
 const sequelize = require('../models/').sequelize;
 const { QueryTypes } = require('sequelize');
 const _ = require('lodash');
@@ -20,7 +21,7 @@ exports.create = async (req, res, next) => {
 };
 // router.post("/upload", upload.single("image"), async (req, res, next) => {
 //   try {
-   
+
 //     if (req.user.cloudinary_id) {
 //       await cloudinary.uploader.destroy(req.user.cloudinary_id);
 //     }
@@ -111,6 +112,29 @@ exports.like = async (req, res, next) => {
     next(error);
   }
 };
+// ! đã có bên controller Comment comment a post
+// exports.createComment = async (req, res, next) => {
+//   try {
+//     const {postId, text} = req.body;
+//     let userId = req.user.id;
+//     let post = await Post.findByPk(postId);
+//     if (!post) throw new api404Error('Không thấy bài viết');
+//     await CommentPost.create({ postId, userId, text });
+//     res.status(204).json();
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// query post count report
+exports.countLike = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    let UserId = req.user.id;
+  } catch (error) {
+    next(error);
+  }
+};
 // get posts timeline
 exports.getTimeLine = async (req, res, next) => {
   try {
@@ -149,6 +173,21 @@ exports.getTimeLine = async (req, res, next) => {
       }
       console.log(item);
     });
+    data = await Promise.all(
+      data.map(async (p) => {
+        numLike = await LikePost.count({
+          where: {
+            postId: p.id,
+          },
+        });
+        numComment = await CommentPost.count({
+          where: {
+            postId: p.id,
+          },
+        });
+        return { ...p, numLike, numComment };
+      })
+    );
     data.sort((p1, p2) => {
       return new Date(p2.createdAt) - new Date(p1.createdAt);
     });
@@ -177,25 +216,19 @@ exports.getProfilePost = async (req, res, next) => {
     next(error);
   }
 };
-// exports.getProfilePost = async (req, res, next) => {
-//   try {
-//     const username = req.params.username;
-//     const user = await User.findOne({ where: { username } });
-//     const userPost = await Post.findAll({ where: { userId: user.id } });
-
-//     res.status(200).json({ data: userPost });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-// exports.getProfilePost = async (req, res, next) => {
-//   try {
-//     const username = req.params.username;
-//     const user = await User.findOne({ where: { username } });
-//     const userPost = await Post.findAll({ where: { userId: user.id } });
-
-//     res.status(200).json({ data: userPost });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+// * statisDashboard
+exports.count = async (req, res, next) => {
+  try {
+    let username = req.params.username;
+    let numUser = await User.count({});
+    let numPost = await Post.count({});
+    let numComment = await CommentPost.count({});
+    // TODO: thống kê số người dùng tạo hằng tháng
+    // TODO: thống kê số bài viết tạo hằng ngày
+    // TODO: thống kê lượt tương tác hằng ngày
+  } catch (error) {
+    next(error);
+  }
+};
+// TODO: query ra người dùng có nhiều hoạt động nhất
+// TODO: thống kê  bài viết có nhiều tương tác nhất(like or comment)

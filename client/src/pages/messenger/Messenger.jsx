@@ -26,29 +26,36 @@ export default function Messenger() {
   const { isTyping, startTyping, stopTyping, cancelTyping } = useTyping();
 
   const sendMessage = () => {
-    if (!socketRef.current) return;
-    if (file) {
-      const messageObject = {
-        senderId: socketRef.current.id,
-        type: 'file',
-        body: file,
-        mimeType: file.type,
-        fileName: file.name,
-        user: user,
-      };
-      setNewMessage('');
-      setFile();
-      socketRef.current.emit('send message', messageObject);
-    } else {
-      const messageObject = {
-        senderId: socketRef.current.id,
-        type: 'text',
-        body: newMessage,
-        user: user,
-      };
-      setNewMessage('');
-      socketRef.current.emit('send message', messageObject);
-    }
+    // if (!socketRef.current) return;
+    // if (file) {
+    //   const messageObject = {
+    //     senderId: user.id,
+    //     type: 'file',
+    //     body: file,
+    //     mimeType: file.type,
+    //     fileName: file.name,
+    //     user: user,
+    //   };
+    //   setNewMessage('');
+    //   setFile();
+    //   socketRef.current.emit('send message', messageObject);
+    // } else {
+    //   const messageObject = {
+    //     senderId: user.id,
+    //     type: 'text',
+    //     text: newMessage,
+    //   };
+    //   setNewMessage('');
+    //   // socketRef.current.emit('send message', messageObject);
+    //   conversationApi.newMessage(messageObject)
+    // }
+    const messageObject = {
+      // senderId: user.id,
+      conversationId : currentChat.conversationId,
+      // type: 'text',
+      text: newMessage,
+    };
+    conversationApi.newMessage(messageObject)
   };
   const handleSendMessage = (event) => {
     event.preventDefault();
