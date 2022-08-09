@@ -1,16 +1,39 @@
 import "./post.css";
 import { MoreVert } from "@material-ui/icons";
 import { Users } from "../../dummyData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Comment from '../comment/Comment'
+import postApi from '../../api/postApi';
 
 export default function Post({ post }) {
-  const [like,setLike] = useState(post.like)
-  const [isLiked,setIsLiked] = useState(false)
+  const [like, setLike] = useState(2)
+  const [comments, setComments] = useState([])
+  const [isComment, setIsComment] = useState(false)
+  const [isLiked, setIsLiked] = useState(false)
+  const [currentPost, setCurrentPost] = useState(null)
 
-  const likeHandler =()=>{
-    setLike(isLiked ? like-1 : like+1)
+  useEffect(() => {
+    const getComments = async () => {
+      try {
+        const res = await postApi.getComments({ postId: currentPost });
+        console.log('comments', res);
+        setComments(res);
+      } catch (err) { }
+    };
+    if(currentPost && isComment)
+      getComments();
+  }, [currentPost]);
+  const likeHandler = () => {
+    setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
   }
+
+  const handleComment = () => {
+    setIsComment(true)
+    setCurrentPost(post.id)
+    console.log(currentPost);
+  }
+
   return (
     <div className="post">
       <div className="postWrapper">
@@ -51,10 +74,16 @@ export default function Post({ post }) {
             <span className="postLikeCounter">{like} people like it</span>
           </div>
           <div className="postBottomRight">
-            <span className="postCommentText">{post.comment} comments</span>
+            <span onClick={handleComment} className="postCommentText">{post.comment} comments</span>
           </div>
         </div>
+
       </div>
+      {isComment &&
+        <Comment
+          comments = {comments}
+         />
+      }
     </div>
   );
 }

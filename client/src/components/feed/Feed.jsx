@@ -28,5 +28,6 @@ export default function Feed({ username }) {
         {data && data.map((p) => <Post key={p.id} post={p} />)}
       </div>
     </div>
+    
   );
 }

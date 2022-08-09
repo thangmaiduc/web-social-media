@@ -20,6 +20,26 @@ const postApi = {
     const response = await axiosClient.get(url, payload);
     return response.data;
   },
+
+  getComments: async (payload) => {
+    console.log(payload);
+    const url = api.GET_COMMENTS;
+    const response = await axiosClient.get(url, payload);
+    return response.data;
+  },
+  createComment: async (payload) => {
+    console.log(payload);
+    const url = api.CREATE_COMMENT;
+    const response = await axiosClient.post(url, payload);
+    return response.data;
+  },
+  editCommnet: async (commentId,payload) => {
+    console.log(payload);
+    const url = api.EDIT_COMMENT+commentId;
+    const response = await axiosClient.post(url, payload);
+    return response.data;
+  },
+  
 };
   
   export default postApi;
