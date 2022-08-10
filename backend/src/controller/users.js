@@ -30,9 +30,9 @@ exports.get = async (req, res, next) => {
       where: { username },
     });
     if (!user) throw new api404Error('Không thấy user');
-    const { profilePicture, coverPicture, fullName, city, country } = user;
+    const {id, profilePicture, coverPicture, fullName, city, country } = user;
     res.json({
-      data: { profilePicture, coverPicture, fullName, city, country },
+      data: {id, profilePicture, coverPicture, fullName, city, country },
     });
   } catch (error) {
     next(error);

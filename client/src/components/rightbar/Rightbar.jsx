@@ -1,11 +1,35 @@
 import './rightbar.css';
-import { Users } from '../../dummyData';
 import Online from '../online/Online';
-import { friendSelector } from '../../redux/slices/userSlice';
-import {useSelector} from 'react-redux'
+import { friendSelector, userSelector } from '../../redux/slices/userSlice';
+import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom';
+import { Add, Remove } from '@material-ui/icons';
+import { useEffect, useState } from 'react';
+import userApi from '../../api/userApi';
+
 export default function Rightbar({ user }) {
   let friends = useSelector(friendSelector);
+  let friendsId = friends.map(f => f.followedId)
+  let currentUser = useSelector(userSelector);
+  const [followed, setFollowed] = useState(false);
+  console.log('friendsId', friendsId);
+  console.log('friendsId.includes(user?.id)', friendsId.includes(user?.id));
+  console.log('user', user);
+  const handleClick = async () => {
+    try {
+      if (followed) {
+        await userApi.unfollow(user.id)
+      } else {
+        await userApi.follow(user.id)
+      }
+      setFollowed(!followed);
+    } catch (err) {
+    }
+  };
+  useEffect(() => {
+    let check = friendsId.includes(user?.id)
+    setFollowed(check)
+  }, [user])
   const HomeRightbar = () => {
     return (
       <>
@@ -29,12 +53,12 @@ export default function Rightbar({ user }) {
   const ProfileRightbar = () => {
     return (
       <>
-        {/* {user.username !== currentUser.username && (
+        {user.id !== currentUser.id && (
           <button className="rightbarFollowButton" onClick={handleClick}>
             {followed ? "Unfollow" : "Follow"}
             {followed ? <Remove /> : <Add />}
           </button>
-        )} */}
+        )}
         <h4 className="rightbarTitle">User information</h4>
         <div className="rightbarInfo">
           <div className="rightbarInfoItem">
@@ -45,7 +69,7 @@ export default function Rightbar({ user }) {
             <span className="rightbarInfoKey">From:</span>
             <span className="rightbarInfoValue">{user.from}</span>
           </div> */}
-         
+
         </div>
         <h4 className="rightbarTitle">User friends</h4>
         <div className="rightbarFollowings">

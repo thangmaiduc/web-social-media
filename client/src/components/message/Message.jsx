@@ -30,9 +30,9 @@ export default function Message({ message, own }) {
   return (
     <div className={own ? 'message own' : 'message'}>
       <div className='messageTop'>
-        <img className='messageImg' src={message.img} alt='' />
+        <img className='messageImg' src={message?.img} alt='' />
         <div className='messageTopBottom'>
-        {message.attachments[0] &&<img
+        {message?.attachments?.length>0&&message?.attachments[0] &&<img
             className='messageImage'
             src={
               message.attachments[0]?.fileUrl
@@ -41,10 +41,10 @@ export default function Message({ message, own }) {
             }
             alt=''
           />}
-          <p className='messageText'>{message.text}</p>
+          <p className='messageText'>{message?.text}</p>
         </div>
       </div>
-      <div className='messageBottom'>{format(message.createdAt)}</div>
+      <div className='messageBottom'>{format(message?.createdAt)}</div>
     </div>
   );
   // }

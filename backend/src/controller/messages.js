@@ -42,20 +42,20 @@ exports.getMessageOfConversation = async (req, res, next) => {
         });
       })
     );
-    
+
     // const attachments = await Attachment.findOne({
     //   where: { messageId : messages.id  },
     // })
-      
+
     _.forEach(messages, (item) => {
-      item.attachments = []
+      item.attachments = [];
       item.img = item['User.img'];
       delete item['User.img'];
-      _.forEach(attachments, (attachment)=>{
-        if(attachment&&attachment.messageId === item.id){
-          item.attachments.push(attachment)
+      _.forEach(attachments, (attachment) => {
+        if (attachment && attachment.messageId === item.id) {
+          item.attachments.push(attachment);
         }
-      })
+      });
     });
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
@@ -67,7 +67,7 @@ exports.getMessageOfConversation = async (req, res, next) => {
 };
 exports.create = async (req, res, next) => {
   try {
-    const { conversationId, text } = req.body;
+    const { conversationId, text, fileUrl } = req.body;
     let senderId = req.user.id;
     const conversation = await Conversation.findOne({
       where: { id: conversationId },
@@ -77,8 +77,34 @@ exports.create = async (req, res, next) => {
       where: { conversationId, userId: senderId },
     });
     if (!participant) throw new Api404Error('Không tìm thấy cuộc trò chuyện');
-    const messages = await Message.create({ senderId, text, conversationId });
-    res.status(201).json({ data: messages });
+    const messageCreated = await Message.create({ senderId, text, conversationId });
+    let message
+    if(_.get(messageCreated, 'id', null)!==null){
+      message = await Message.findOne({
+        where:{ id : messageCreated.id},
+        raw: true
+      })
+    }
+    message.attachment=[];
+    let attachment
+    if (!_.isNil(fileUrl)) {
+      attachment = await Attachment.create({ messageId: message.id, fileUrl });
+      message.attachment.push(attachment);
+    }
+    message.img = req.user.profilePicture;
+    
+    // _.forEach(messages, (item) => {
+    //   item.attachments = [];
+    //   item.img = item['User.img'];
+    //   delete item['User.img'];
+    //   _.forEach(attachments, (attachment) => {
+    //     if (attachment && attachment.messageId === item.id) {
+    //       item.attachments.push(attachment);
+    //     }
+    //   });
+    // });
+
+    res.status(201).json({ data: message });
   } catch (error) {
     next(error);
   }

@@ -33,11 +33,17 @@ const postApi = {
     const response = await axiosClient.post(url, payload);
     return response.data;
   },
-  editCommnet: async (commentId,payload) => {
+  editComment: async (commentId,payload) => {
     console.log(payload);
     const url = api.EDIT_COMMENT+commentId;
     const response = await axiosClient.post(url, payload);
     return response.data;
+  },
+  deletePost: async (payload) => {
+    console.log(payload);
+    const url = api.CREATE_POST+payload;
+    const response = await axiosClient.delete(url);
+    return response;
   },
   
 };

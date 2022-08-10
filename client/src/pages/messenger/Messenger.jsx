@@ -11,6 +11,7 @@ import { userSelector } from '../../redux/slices/userSlice';
 import useTyping from '../../hooks/useTyping';
 import conversationApi from '../../api/conversationApi';
 import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
+import commonApi from '../../api/commonApi';
 
 export default function Messenger() {
   const [conversations, setConversations] = useState([]);
@@ -20,42 +21,29 @@ export default function Messenger() {
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [file, setFile] = useState();
+  const [fileUrl, setFileUrl] = useState('');
   const socketRef = useRef();
   const user = useSelector(userSelector);
   const scrollRef = useRef();
   const { isTyping, startTyping, stopTyping, cancelTyping } = useTyping();
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     // if (!socketRef.current) return;
-    // if (file) {
-    //   const messageObject = {
-    //     senderId: user.id,
-    //     type: 'file',
-    //     body: file,
-    //     mimeType: file.type,
-    //     fileName: file.name,
-    //     user: user,
-    //   };
-    //   setNewMessage('');
-    //   setFile();
-    //   socketRef.current.emit('send message', messageObject);
-    // } else {
-    //   const messageObject = {
-    //     senderId: user.id,
-    //     type: 'text',
-    //     text: newMessage,
-    //   };
-    //   setNewMessage('');
-    //   // socketRef.current.emit('send message', messageObject);
-    //   conversationApi.newMessage(messageObject)
-    // }
-    const messageObject = {
-      // senderId: user.id,
-      conversationId : currentChat.conversationId,
-      // type: 'text',
+    let messageObject = {
+      conversationId: currentChat.conversationId,
       text: newMessage,
     };
-    conversationApi.newMessage(messageObject)
+    if (file) {
+      messageObject = {
+        ...messageObject,
+        fileUrl
+      };
+      setNewMessage('');
+      setFile();
+      // socketRef.current.emit('send message', messageObject);
+    }
+    const message = await conversationApi.newMessage(messageObject)
+    setMessages(m => [...m, message])
   };
   const handleSendMessage = (event) => {
     event.preventDefault();
@@ -96,7 +84,7 @@ export default function Messenger() {
         const res = await conversationApi.getOfUser();
         // console.log('user', res);
         setConversations(res);
-      } catch (err) {}
+      } catch (err) { }
     };
     getConversations();
   }, [user.id]);
@@ -133,10 +121,14 @@ export default function Messenger() {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  function selectFile(e) {
+  
+  async function selectFile(e) {
     if (typeof e.target.files[0] !== 'undefined') {
-      setNewMessage(e.target.files[0].name);
+      const uploadData = new FormData();
+      uploadData.append('file', e.target.files[0], 'file');
       setFile(e.target.files[0]);
+      const res = await commonApi.cloudinaryUpload(uploadData);
+      setFileUrl(res.secure_url);
     } else {
       return null;
     }

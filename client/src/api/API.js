@@ -3,6 +3,7 @@ const api = {
   GET_POST_TIMELINE: baseURL + '/posts/timeline/',
   GET_POST_PROFILE: baseURL + '/posts/profile/',
   CREATE_POST: baseURL + '/posts/',
+  
   CREATE_COMMENT: baseURL + '/comments/',
   DELETE_COMMENT: baseURL + '/comments/',
   EDIT_COMMENT: baseURL + '/comments/',

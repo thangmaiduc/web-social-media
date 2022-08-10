@@ -68,10 +68,10 @@ exports.delete = async (req, res, next) => {
     const post = await Post.findByPk(id);
 
     if (post.userId === req.user.id || req.user.isAdmin === true) {
-      await post.deleteOne();
+      await post.destroy();
       res.status(204).json();
     } else {
-      res.status(403).json('you can delete your post');
+      res.status(403).json('you just can delete your post');
     }
   } catch (error) {
     next(error);

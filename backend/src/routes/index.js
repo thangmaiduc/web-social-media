@@ -20,6 +20,7 @@ router.use(authUser);
 
 const postRouter = require('./posts');
 const commentRouter = require('./comments');
+const adminRouter = require('./admin');
 const conversationRouter = require('./conversations');
 const messageRouter = require('./messages');
 // var { authUser } = require("../middlewares/auth");
@@ -64,6 +65,15 @@ router.use(
 router.use(
   '/messages',
   messageRouter
+  // #swagger.tags = ['Messages']
+  // #swagger.description = 'Endpoint for messages.'
+  /* #swagger.security = [{
+        "Bearer": []
+    }] */
+);
+router.use(
+  '/admin',
+  adminRouter
   // #swagger.tags = ['Messages']
   // #swagger.description = 'Endpoint for messages.'
   /* #swagger.security = [{
