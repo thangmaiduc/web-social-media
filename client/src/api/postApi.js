@@ -24,7 +24,7 @@ const postApi = {
   getComments: async (payload) => {
     console.log(payload);
     const url = api.GET_COMMENTS;
-    const response = await axiosClient.get(url, payload);
+    const response = await axiosClient.post(url, payload);
     return response.data;
   },
   createComment: async (payload) => {

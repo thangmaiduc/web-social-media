@@ -1,8 +1,9 @@
 import "./post.css";
-import { MoreVert, PersonAddDisabled, Close, Remove, Add } from "@material-ui/icons";
+import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit } from "@material-ui/icons";
 import { Users } from "../../dummyData";
 import { useEffect, useState } from "react";
 import Comment from '../comment/Comment'
+import {PostModal} from './PostModal'
 import postApi from '../../api/postApi';
 import { friendSelector, userSelector } from '../../redux/slices/userSlice';
 import { useSelector } from 'react-redux';
@@ -16,8 +17,10 @@ export default function Post({ post }) {
   const [option, setOption] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [currentPost, setCurrentPost] = useState(null);
+  const [postObj, setPostObj] = useState(null);
   const [deleted, setDeleted] = useState(false)
   const [followed, setFollowed] = useState(false)
+  const [isShow, setIsShow] = useState(false);
 
   let friendsId = friends.map(f => f.followedId)
 
@@ -29,8 +32,7 @@ export default function Post({ post }) {
         setComments(res);
       } catch (err) { }
     };
-    if (currentPost && isComment)
-      getComments();
+    getComments();
   }, [currentPost]);
   const likeHandler = () => {
     setLike(isLiked ? like - 1 : like + 1)
@@ -40,7 +42,6 @@ export default function Post({ post }) {
   const handleComment = () => {
     setIsComment(true)
     setCurrentPost(post.id)
-    console.log(currentPost);
   }
   const handleDeletePost = async () => {
     try {
@@ -63,6 +64,16 @@ export default function Post({ post }) {
     } catch (err) {
     }
   }
+  const editPost = async (e) => {
+    e.preventDefault();
+    try {
+
+      setIsShow(false)
+    } catch (err) {
+    }
+
+  }
+
   useEffect(() => {
     let check = friendsId.includes(post?.userId)
     setFollowed(check)
@@ -93,9 +104,15 @@ export default function Post({ post }) {
                 {followed ? "Unfollow" : "Follow"}
                 {followed ? <Remove /> : <Add />}
               </button> :
-              <div className="removeButton" onClick={handleDeletePost}>
-                <Close />
+              <div>
+                <div className="removeButton" onClick={handleDeletePost}>
+                  <Close />
+                </div>
+                <div className="editButton" onClick={() => { setIsShow(true); setCurrentPost(post.id) }} >
+                  <Edit />
+                </div>
               </div>
+
           }
 
 
@@ -125,8 +142,16 @@ export default function Post({ post }) {
     {isComment &&
       <Comment
         comments={comments}
+        user={user}
+      // editComment={editComment}
       />
     }
+    {isShow && (<PostModal
+      postObj={postObj}
+      setPostObj={setPostObj}
+      editPost={editPost}
+      setIsShow={setIsShow}
+    />)}
   </div>
   return (deleted ? PostDeleted : Post)
 }

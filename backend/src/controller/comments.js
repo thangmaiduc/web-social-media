@@ -85,7 +85,7 @@ exports.getCommentsPost = async (req, res, next) => {
       ],
       
     });
-    res.status(200).json({ data: { commentsPost } });
+    res.status(200).json({ data:  commentsPost  });
   } catch (error) {
     next(error);
   }
