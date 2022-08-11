@@ -1,20 +1,20 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Otp extends Model {
+  class Token extends Model {
     static associate(models) {
-      //   Otp.belongsTo(models.Classroom, {
-      //     foreignKey: "classroom_id",
-      //     as: "classroom",
-      //   });
-      //   Otp.belongsToMany(models.Course, {
-      //     through: "OtpCourse",
+        // Token.belongsTo(models.User, {
+        //   foreignKey: "classroom_id",
+        //   as: "classroom",
+        // });
+      //   Token.belongsToMany(models.Course, {
+      //     through: "TokenCourse",
       //     as: "courses",
-      //     foreignKey: "Otp_id",
+      //     foreignKey: "Token_id",
       //   });
     }
   }
-  Otp.init(
+  Token.init(
     {
       userId: {
         type: DataTypes.INTEGER,
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      otp: {
+      token: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -35,9 +35,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Otp",
+      modelName: "Token",
       timestamps: true,
     }
   );
-  return Otp;
+  return Token;
 };

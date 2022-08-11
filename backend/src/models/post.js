@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "postId",
         onDelete: "CASCADE",
       });
+      Post.belongsToMany(models.User, {
+        through: models.ReportPost,
+        foreignKey: "postId",
+        onDelete: "CASCADE",
+      });
       Post.hasMany(models.CommentPost, {
         foreignKey: "postId",
         onDelete: "CASCADE",
@@ -39,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+      },
+      isBlock: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
     {

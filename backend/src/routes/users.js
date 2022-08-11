@@ -18,6 +18,7 @@ router.get("/friends/:username", userController.getFriends);
 router.get("/:username",userController.get);
 //follow a user
 router.put('/:id/follow',userController.follow)
+router.put('/:id/report',userController.report)
 //unfollow a user
 router.get("/:id",userController.getById);
 router.put('/:id/unfollow',userController.unfollow)

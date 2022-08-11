@@ -9,6 +9,8 @@ const adminController = require("../controller/admin");
 
 // edit a admin
 router.get("/dashboard/", adminController.statisDashboard);
+router.get("/users/", adminController.queryUser);
+router.get("/posts/", adminController.queryPost);
 // edit a admin
 // router.put("/:id", adminController.update);
 // // delete a admin

@@ -6,13 +6,13 @@ const Post = require('../models').Post;
 const User = require('../models/').User;
 const sequelize = require('../models').sequelize;
 const { QueryTypes } = require('sequelize');
-const _ = require('lodash')
+const _ = require('lodash');
 // * create
 exports.create = async (req, res, next) => {
   try {
     let { postId, text } = req.body;
     let checkPost = await Post.findByPk(postId);
-    if (!checkPost) throw new api404Error('Không thấy bài viết');
+    if (!checkPost || _.get(checkPost, 'isBlock', false)===true) throw new api404Error('Không thấy bài viết');
     let comment = await CommentPost.create({
       postId,
       text,
@@ -55,8 +55,13 @@ exports.delete = async (req, res, next) => {
   try {
     let id = req.params.id;
     const commentPost = await CommentPost.findByPk(id);
+    const post = await Post.findByPk(commentPost.postId);
 
-    if (commentPost.userId === req.user.id || req.user.isAdmin === true) {
+    if (
+      commentPost.userId === req.user.id ||
+      req.user.isAdmin === true ||
+      req.user.id === post.userId
+    ) {
       await commentPost.destroy();
       res.status(204).json();
     } else {
@@ -72,7 +77,7 @@ exports.getCommentsPost = async (req, res, next) => {
   try {
     let postId = req.body.postId;
     const post = await Post.findByPk(postId);
-    if (!post) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false)===true) throw new api404Error('Không thấy bài viết nào');
     const commentsPost = await CommentPost.findAll({
       where: { postId },
       include: [
@@ -80,12 +85,11 @@ exports.getCommentsPost = async (req, res, next) => {
           model: User,
           as: 'user',
           required: true,
-          attributes: ['profilePicture', 'fullName','username' ],
+          attributes: ['profilePicture', 'fullName', 'username'],
         },
       ],
-      
     });
-    res.status(200).json({ data:  commentsPost  });
+    res.status(200).json({ data: commentsPost });
   } catch (error) {
     next(error);
   }
@@ -93,11 +97,10 @@ exports.getCommentsPost = async (req, res, next) => {
 // *  query comment
 exports.queryComments = async (req, res, next) => {
   try {
-
     let postId = req.body.postId;
-    let {limit , page } = req.body
+    let { limit, page } = req.body;
     const post = await Post.findByPk(postId);
-    if (!post) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false)===true) throw new api404Error('Không thấy bài viết nào');
     const commentsPost = await CommentPost.findAll({
       where: { postId },
       include: [
@@ -105,12 +108,11 @@ exports.queryComments = async (req, res, next) => {
           model: User,
           as: 'user',
           required: true,
-          attributes: ['profilePicture', 'fullName','username' ],
+          attributes: ['profilePicture', 'fullName', 'username'],
         },
       ],
-      order:['createdAt'],
-      limit
-      
+      order: ['createdAt'],
+      limit,
     });
     res.status(200).json({ data: { commentsPost } });
   } catch (error) {

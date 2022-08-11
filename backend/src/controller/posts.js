@@ -4,6 +4,7 @@ const api400Error = require('../utils/errors/api400Error');
 const User = require('../models/').User;
 const Post = require('../models/').Post;
 const LikePost = require('../models/').LikePost;
+const ReportPost = require('../models/').ReportPost;
 const CommentPost = require('../models/').CommentPost;
 const sequelize = require('../models/').sequelize;
 const { QueryTypes } = require('sequelize');
@@ -49,7 +50,8 @@ exports.update = async (req, res, next) => {
     }
     let id = req.params.id;
     const post = await Post.findByPk(id);
-
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id) {
       updates.forEach((update) => (post[update] = req.body[update]));
 
@@ -66,7 +68,8 @@ exports.delete = async (req, res, next) => {
   try {
     let id = req.params.id;
     const post = await Post.findByPk(id);
-
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id || req.user.isAdmin === true) {
       await post.destroy();
       res.status(204).json();
@@ -82,7 +85,8 @@ exports.get = async (req, res, next) => {
   try {
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    // if (!post) throw new api404Error("Không thấy bài viết nào");
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     res.status(200).json({ data: { post } });
   } catch (error) {
     next(error);
@@ -94,7 +98,8 @@ exports.like = async (req, res, next) => {
     const postId = req.params.id;
     let UserId = req.user.id;
     let post = await Post.findByPk(postId);
-    if (!post) throw new api404Error('Không thấy bài viết');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     let likedPost = await LikePost.findAll({
       where: {
         postId,
@@ -107,6 +112,30 @@ exports.like = async (req, res, next) => {
     } else {
       await LikePost.destroy({ where: { postId, UserId } });
       res.status(200).json({ message: 'bạn đã bỏ thích thành công' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+exports.report = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    let userId = req.user.id;
+    let post = await Post.findByPk(postId);
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
+    let reportPost = await ReportPost.findAll({
+      where: {
+        postId,
+        userId,
+        
+      },
+    });
+    if (reportPost.length === 0) {
+      await ReportPost.create({ postId, userId });
+      res.status(200).json({ message: 'bạn đã báo cáo thành công' });
+    } else {
+      res.status(200).json({ message: 'bạn đã  báo cáo rồi' });
     }
   } catch (error) {
     next(error);
@@ -152,7 +181,7 @@ exports.getTimeLine = async (req, res, next) => {
     const friendPosts = await Promise.all(
       friends.map(async (friend) => {
         return Post.findAll({
-          where: { userId: friend.followedId },
+          where: { userId: friend.followedId, isBlock: false },
           raw: true,
         });
       })
@@ -203,7 +232,7 @@ exports.getProfilePost = async (req, res, next) => {
     const username = req.params.username;
     const user = await User.findOne({ where: { username } });
     const userPost = await Post.findAll({
-      where: { userId: user.id },
+      where: { userId: user.id, isBlock: false },
       raw: true,
     });
     _.forEach(userPost, (item) => {
@@ -216,19 +245,3 @@ exports.getProfilePost = async (req, res, next) => {
     next(error);
   }
 };
-// * statisDashboard
-exports.count = async (req, res, next) => {
-  try {
-    let username = req.params.username;
-    let numUser = await User.count({});
-    let numPost = await Post.count({});
-    let numComment = await CommentPost.count({});
-    // TODO: thống kê số người dùng tạo hằng tháng
-    // TODO: thống kê số bài viết tạo hằng ngày
-    // TODO: thống kê lượt tương tác hằng ngày
-  } catch (error) {
-    next(error);
-  }
-};
-// TODO: query ra người dùng có nhiều hoạt động nhất
-// TODO: thống kê  bài viết có nhiều tương tác nhất(like or comment)

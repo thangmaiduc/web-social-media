@@ -10,6 +10,9 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Message, {
         foreignKey: 'senderId',
       });
+      User.hasMany(models.Message, {
+        foreignKey: 'senderId',
+      });
       User.belongsToMany(models.Conversation, {
         foreignKey: 'userId',
         through: models.Participant,
@@ -27,6 +30,18 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'followedId',
         onDelete: 'CASCADE',
       });
+      User.belongsToMany(models.User, {
+        as: 'Reported',
+        through: models.ReportUser,
+        foreignKey: 'reportedId',
+        onDelete: 'CASCADE',
+      });
+      User.belongsToMany(models.User, {
+        as: 'Reporting',
+        through: models.ReportUser,
+        foreignKey: 'reportingId',
+        onDelete: 'CASCADE',
+      });
       User.hasMany(models.CommentPost, {
         foreignKey: 'userId',
         onDelete: 'CASCADE',
@@ -34,6 +49,11 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.Post, {
         through: models.LikePost,
         otherKey: 'postId',
+        onDelete: 'CASCADE',
+      });
+      User.belongsToMany(models.Post, {
+        through: models.ReportPost,
+        foreignKey: 'userId',
         onDelete: 'CASCADE',
       });
     }
@@ -72,6 +92,10 @@ module.exports = (sequelize, DataTypes) => {
       },
 
       isAdmin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isBlock: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
