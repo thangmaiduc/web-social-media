@@ -19,25 +19,25 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
       });
       User.belongsToMany(models.User, {
-        as: 'Following',
+        as: 'FollowingMM',
         through: models.Follower,
         foreignKey: 'followingId',
         onDelete: 'CASCADE',
       });
       User.belongsToMany(models.User, {
-        as: 'Followed',
+        as: 'FollowedMM',
         through: models.Follower,
         foreignKey: 'followedId',
         onDelete: 'CASCADE',
       });
       User.belongsToMany(models.User, {
-        as: 'Reported',
+        as: 'ReportedMM',
         through: models.ReportUser,
         foreignKey: 'reportedId',
         onDelete: 'CASCADE',
       });
       User.belongsToMany(models.User, {
-        as: 'Reporting',
+        as: 'ReportingMM',
         through: models.ReportUser,
         foreignKey: 'reportingId',
         onDelete: 'CASCADE',
@@ -56,6 +56,30 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         onDelete: 'CASCADE',
       });
+      // * super Many -Many
+      User.hasMany(models.LikePost, {
+        foreignKey: 'userId',
+      });
+      User.hasMany(models.Follower, {
+        as: 'Followed',
+        foreignKey: 'followedId',
+      });
+      User.hasMany(models.Follower, {
+        as: 'Following',
+        foreignKey: 'followingId',
+      });
+      User.hasMany(models.ReportUser, {
+        as: 'Reported',
+        foreignKey: 'reportedId',
+      });
+      User.hasMany(models.ReportUser, {
+        as: 'Reporting',
+        foreignKey: 'reportingId',
+      });
+      User.hasMany(models.ReportPost, {
+        foreignKey: 'userId',
+      });
+
     }
   }
   User.init(
