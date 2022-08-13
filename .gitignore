@@ -1,3 +1,7 @@
 node_modules
 # .env
 backend/demo.sql
+client-admin/.idea/client-admin.iml
+client-admin/.idea/modules.xml
+client-admin/.idea/vcs.xml
+client-admin/.idea/inspectionProfiles/Project_Default.xml
