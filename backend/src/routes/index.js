@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const userRouter = require('./users');
-const { authUser } = require('../middlewares/auth');
+const { authUser, authAdmin } = require('../middlewares/auth');
 const authRouter = require('../routes/auth');
 const fileUploader = require('../utils/cloudinary');
 router.use(
@@ -71,23 +71,28 @@ router.use(
         "Bearer": []
     }] */
 );
+
+router.post(
+  '/cloudinary-upload',
+  fileUploader.single('file'),
+  (req, res, next) => {
+    if (!req.file) {
+      next(new Error('No file uploaded!'));
+      return;
+    }
+
+    res.json({ secure_url: req.file.path });
+  }
+);
+
+router.use(authAdmin);
 router.use(
   '/admin',
   adminRouter
-  // #swagger.tags = ['Messages']
+  // #swagger.tags = ['Admin']
   // #swagger.description = 'Endpoint for messages.'
   /* #swagger.security = [{
         "Bearer": []
     }] */
 );
-
-router.post('/cloudinary-upload', fileUploader.single('file'), (req, res, next) => {
-  if (!req.file) {
-    next(new Error('No file uploaded!'));
-    return;
-  }
- 
-  res.json({ secure_url: req.file.path });
-});
-
 module.exports = router;
