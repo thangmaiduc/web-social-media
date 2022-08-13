@@ -29,9 +29,9 @@ const authUser = async (req, res, next) => {
     next(error);
   }
 };
-function authRole(role) {
+function authAdmin() {
   return (req, res, next) => {
-    if (req.user.role !== role) {
+    if (req.user.isAdmin !== true) {
       return res.status(401).send("not allowed");
     }
     next();
@@ -40,5 +40,5 @@ function authRole(role) {
 
 module.exports = {
   authUser,
-  authRole,
+  authAdmin,
 };

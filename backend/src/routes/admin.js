@@ -1,6 +1,6 @@
-const router = require("express").Router();
+const router = require('express').Router();
 
-const adminController = require("../controller/admin");
+const adminController = require('../controller/admin');
 
 // router.get("/", (req, res) => {
 //   res.json("hello world");
@@ -8,16 +8,16 @@ const adminController = require("../controller/admin");
 //create
 
 // edit a admin
-router.get("/dashboard/", adminController.statisDashboard);
-router.get("/users/", adminController.queryUser);
-router.get("/posts/", adminController.queryPost);
+router.get('/dashboard/', adminController.statisDashboard);
+router.get('/users/', adminController.queryUser);
+router.get('/posts/', adminController.queryPost);
+router.patch('/block-user/', adminController.blockUser);
+router.patch('/block-posts/', adminController.blockPost);
 // edit a admin
 // router.put("/:id", adminController.update);
 // // delete a admin
 // router.delete("/:id", adminController.delete);
 // 1 so cau lenh thong ke binh luan cho admin
 // router.get("/:userId", adminController.get);
-
-
 
 module.exports = router;
