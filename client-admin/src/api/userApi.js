@@ -19,9 +19,14 @@ const userApi = {
     const response = await  axiosClient.get(url);
     return response.data;
   },
-  getMe:  (payload) => {
-    const url = '/me';
-    const response =  axiosClient.get(url, payload);
+  getUserAdmin: async (payload) => {
+    const url =api.GET_USER_ADMIN;
+    const response =await axiosClient.get(url, {params:payload});
+    return response;
+  },
+  blockUser: async (payload) => {
+    const url =api.BLOCK_USER;
+    const response =  axiosClient.patch(url, payload);
     return response.data;
   },
 };

@@ -58,7 +58,6 @@ module.exports = (sequelize, DataTypes) => {
       });
       // * super Many -Many
       User.hasMany(models.LikePost, {
-        foreignKey: 'userId',
       });
       User.hasMany(models.Follower, {
         as: 'Followed',

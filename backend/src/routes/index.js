@@ -85,7 +85,7 @@ router.post(
   }
 );
 
-router.use(authAdmin);
+// router.use(authAdmin);
 router.use(
   '/admin',
   adminRouter

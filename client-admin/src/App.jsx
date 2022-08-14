@@ -12,6 +12,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import * as userSlice from './redux/slices/userSlice';
 import { useEffect } from 'react';
+import EnhancedTable from "./pages/table/Table";
 function App() {
   const dispatch = useDispatch();
   // let user =null;
@@ -42,6 +43,10 @@ function App() {
         <Route path="/admin/users">
           {/* {user ? <Redirect to="/" /> : <Register />} */}
           <User/>
+        </Route>
+        <Route path="/admin/table">
+          {/* {user ? <Redirect to="/" /> : <Register />} */}
+          <EnhancedTable/>
         </Route>
         <Route path="/admin/posts">
           {/* {!user ? <Redirect to="/" /> : <Messenger />} */}

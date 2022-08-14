@@ -1,9 +1,8 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Follower extends Model {
-    static associate(models) {
-    }
+    static associate(models) {}
   }
   Follower.init(
     {
@@ -12,10 +11,12 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
+      // id người đang theo dõi
       followingId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      // id người đang được theo dõi
       followedId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -23,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Follower",
+      modelName: 'Follower',
       timestamps: true,
     }
   );

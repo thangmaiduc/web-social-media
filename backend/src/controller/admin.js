@@ -17,31 +17,33 @@ const { SORT } = require('../GeneralConstants');
 exports.statisDashboard = async (req, res, next) => {
   try {
     const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
+    const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
+    const where = { createdAt: { [Op.between]: [startOfMonth, endOfMonth] } };
     let numUserMonth = await User.count({
-      where: { createdAt: { [Op.gte]: startOfMonth } },
+      where,
     });
     let numPostMonth = await Post.count({
-      where: { createdAt: { [Op.gte]: startOfMonth } },
+      where,
     });
     let numCommentMonth = await CommentPost.count({
-      where: { createdAt: { [Op.gte]: startOfMonth } },
+      where,
+    });
+    let numLikeMonth = await LikePost.count({
+      where,
     });
     let numUser = await User.count({});
     let numPost = await Post.count({});
     let numComment = await CommentPost.count({});
-    // let numPostMonth = await Post.count({});
-    // let numCommentMonth = await CommentPost.count({});
-    // TODO: thống kê số người dùng tạo hằng tháng
-    // TODO: thống kê số bài viết tạo hằng ngày
-    // TODO: thống kê lượt tương tác hằng ngày
+    let numLike = await LikePost.count({});
+    
     res.json({
       data: {
         numUser,
         numPost,
-        numComment,
+        numInteraction: numComment+numLike,
         numUserMonth,
         numPostMonth,
-        numCommentMonth,
+        numInteractionMonth: numCommentMonth+numLikeMonth,
       },
     });
   } catch (error) {
@@ -52,60 +54,122 @@ exports.queryUser = async (req, res, next) => {
   try {
     const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
-    const page = +req.params.page || 1;
-    let limit = 10;
-    let offset = 0 + (page - 1) * limit;
+    const page = parseInt(req.query.page, 0);
+    let limit = +req.query.limit || 10;
+    let textSearch = req.query.textSearch;
+    let offset = 0 + page * limit;
     const sort = req.query.sort || SORT.REPORT;
-    const direction = req.query.direction || 'DESC';
+    const direction = req.query.direction || 'desc';
 
     const order = [];
     const where = {};
     const orderDESC = [
       [sequelize.literal('COUNT(DISTINCT(Reported.id))'), 'DESC'],
-      [(sequelize.fn('COUNT', sequelize.col('posts.id')), 'DESC')],
+      [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'DESC'],
       ['id', 'DESC'],
       ['isBlock', 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(Followed.id))'), 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(Following.id))'), 'DESC'],
+      ['fullName', 'DESC'],
     ];
     const orderASC = [
       [sequelize.literal('COUNT(DISTINCT(Reported.id))'), 'ASC'],
-      [(sequelize.fn('COUNT', sequelize.col('posts.id')), 'ASC')],
+      [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'ASC'],
       ['id', 'ASC'],
       ['isBlock', 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(Followed.id))'), 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(Following.id))'), 'ASC'],
+      ['fullName', 'ASC'],
     ];
-    if (sort === SORT.REPORT && direction === 'DESC') {
+    if (sort === SORT.REPORT && _.upperCase(direction) === 'DESC') {
       order.push(orderDESC[0]);
       order.push(orderASC[2]);
-    } else if (sort === SORT.REPORT && direction === 'ASC') {
+    } else if (sort === SORT.REPORT && _.upperCase(direction) === 'ASC') {
       order.push(orderASC[0]);
       order.push(orderASC[2]);
     }
-    if (sort === SORT.USERID && direction === 'DESC') {
-      order.push(orderDESC[2]);
-    } else if (sort === SORT.USERID && direction === 'ASC') {
+    if (sort === SORT.POST && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[1]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.POST && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[1]);
       order.push(orderASC[2]);
     }
-    if (sort === SORT.STATUS && direction === 'DESC') {
+    if (sort === SORT.FOLLOWED && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[4]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.FOLLOWED && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[4]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[5]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[5]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.FULLNAME && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[6]);
+    } else if (sort === SORT.FULLNAME && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[6]);
+    }
+    if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[5]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[5]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.USERID && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[2]);
+    } else if (sort === SORT.USERID && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.STATUS && _.upperCase(direction) === 'DESC') {
       order.push(orderDESC[3]);
       order.push(orderASC[2]);
-    } else if (sort === SORT.STATUS && direction === 'ASC') {
+    } else if (sort === SORT.STATUS && _.upperCase(direction) === 'ASC') {
       order.push(orderASC[3]);
       order.push(orderASC[2]);
     }
     if (sort !== SORT.STATUS) where.isBlock = false;
+    if (!_.isEmpty(textSearch)) {
+      where[Op.or] = {
+        fullName: {
+          [Op.like]: `%${textSearch}%`,
+        },
+        id: {
+          [Op.like]: textSearch,
+        },
+        username: {
+          [Op.like]: `%${textSearch}%`,
+        },
+      };
+    }
     const result = await User.findAll({
       subQuery: false,
       where,
       attributes: {
         include: [
-          [sequelize.fn('COUNT', sequelize.col('posts.id')), 'numPost'],
-          // [sequelize.fn('COUNT', sequelize.col('Reported.id')), 'numReport'],
           [sequelize.literal('COUNT(DISTINCT(Reported.id))'), 'numReport'],
+          [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'numPost'],
+          [sequelize.literal('COUNT(DISTINCT(Followed.id))'), 'numFollowed'],
+          [sequelize.literal('COUNT(DISTINCT(Following.id))'), 'numFollowing'],
         ],
         exclude: ['password'],
       },
       include: [
         {
           association: 'Reported',
+          attributes: [],
+        },
+        {
+          association: 'Followed',
+          attributes: [],
+        },
+        {
+          association: 'Following',
           attributes: [],
         },
 
@@ -121,10 +185,13 @@ exports.queryUser = async (req, res, next) => {
       offset,
       limit,
     });
-    length = _.isArray(result) === true ? result.length : 0;
+    length = await User.count({
+      where,
+    });
 
     res.json({
       data: result,
+      length,
     });
   } catch (error) {
     next(error);
@@ -137,55 +204,65 @@ exports.queryPost = async (req, res, next) => {
   try {
     const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
-
-    const page = +req.params.page || 1;
-    let limit = 10;
-    let offset = 0 + (page - 1) * limit;
+    console.log('req.params', req.params);
+    console.log(req.query);
+    const page = parseInt(req.query.page, 0);
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
     const sort = req.query.sort || SORT.REPORT;
     const direction = req.query.direction || 'DESC';
 
     const order = [];
     const where = {};
     const orderDESC = [
-      [sequelize.fn('COUNT', sequelize.col('ReportPosts.id')), 'DESC'],
-      [sequelize.fn('COUNT', sequelize.col('LikePosts.id')), 'DESC'],
-      // [sequelize.fn('COUNT', sequelize.col('CommentPosts.id')), 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(ReportPosts.id))'), 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'DESC'],
       ['id', 'DESC'],
       ['isBlock', 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'DESC'],
     ];
     const orderASC = [
-      [sequelize.fn('COUNT', sequelize.col('ReportPosts.id')), 'ASC'],
-      [sequelize.fn('COUNT', sequelize.col('LikePosts.id')), 'ASC'],
-      // [sequelize.fn('COUNT', sequelize.col('CommentPosts.id')), 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(ReportPosts.id))'), 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'ASC'],
       ['id', 'ASC'],
       ['isBlock', 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'ASC'],
     ];
-    if (sort === SORT.REPORT && direction === 'DESC') {
+    if (sort === SORT.REPORT && _.upperCase(direction) === 'DESC') {
       order.push(orderDESC[0]);
       order.push(orderASC[1]);
       order.push(orderASC[2]);
-    } else if (sort === SORT.REPORT && direction === 'ASC') {
+    } else if (sort === SORT.REPORT && _.upperCase(direction) === 'ASC') {
       order.push(orderASC[0]);
       order.push(orderDESC[1]);
       order.push(orderDESC[2]);
     }
 
-    if (sort === SORT.LIKE && direction === 'DESC') {
+    if (sort === SORT.LIKE && _.upperCase(direction) === 'DESC') {
       order.push(orderDESC[1]);
       order.push(orderASC[2]);
-    } else if (sort === SORT.LIKE && direction === 'ASC') {
+    } else if (sort === SORT.LIKE && _.upperCase(direction) === 'ASC') {
       order.push(orderASC[1]);
       order.push(orderASC[2]);
     }
-    if (sort === SORT.POSTID && direction === 'DESC') {
+    if (sort === SORT.POSTID && _.upperCase(direction) === 'DESC') {
       order.push(orderDESC[2]);
-    } else if (sort === SORT.POSTID && direction === 'ASC') {
+    } else if (sort === SORT.POSTID && _.upperCase(direction) === 'ASC') {
       order.push(orderASC[2]);
     }
-    if (sort === SORT.STATUS && direction === 'DESC') {
+    if (sort === SORT.COMMENT && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[4]);
+    } else if (sort === SORT.COMMENT && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[4]);
+    }
+    if (sort === SORT.STATUS && _.upperCase(direction) === 'DESC') {
       order.push(orderDESC[3]);
-    } else if (sort === SORT.STATUS && direction === 'ASC') {
+      order.push(orderASC[2]);
+    } else if (sort === SORT.STATUS && _.upperCase(direction) === 'ASC') {
       order.push(orderASC[3]);
+      order.push(orderASC[2]);
     }
     if (sort !== SORT.STATUS) where.isBlock = false;
     const result = await Post.findAll({
@@ -193,12 +270,9 @@ exports.queryPost = async (req, res, next) => {
       where,
       attributes: {
         include: [
-          [sequelize.fn('COUNT', sequelize.col('ReportPosts.id')), 'numReport'],
-          [sequelize.fn('COUNT', sequelize.col('LikePosts.id')), 'numLike'],
-          [
-            sequelize.fn('COUNT', sequelize.col('CommentPosts.id')),
-            'numComment',
-          ],
+          [sequelize.literal('COUNT(DISTINCT(ReportPosts.id))'), 'numReport'],
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
         ],
       },
       include: [
@@ -226,7 +300,9 @@ exports.queryPost = async (req, res, next) => {
       offset,
       limit,
     });
-    length = _.isArray(result) === true ? result.length : 0;
+    length = await Post.count({
+      where,
+    });
     res.json({
       data: result,
       length,
@@ -243,8 +319,12 @@ exports.blockPost = async (req, res, next) => {
     let postId = req.body.postId;
     let post = await Post.findByPk(postId);
     if (!post) throw new api404Error('không tìm thấy bài viết');
-    if (post.isBlock === true) throw new api404Error('Bài viết đã bị chặn');
-    post.isBlock = true;
+    if (post.isBlock === true) {
+      post.isBlock = false;
+      // throw new api404Error('Bài viết đã bị chặn');
+    } else if (post.isBlock === false) {
+      post.isBlock = true;
+    }
     await post.save();
     res.status(200).json({ data: post });
   } catch (error) {
@@ -256,16 +336,21 @@ exports.blockUser = async (req, res, next) => {
     let userId = req.body.userId;
     let user = await User.findByPk(userId);
     if (!user) throw new api404Error('không tìm thấy người dùng');
-    if (user.isBlock === true) throw new api404Error('Người dùng đã bị chặn');
-    user.isBlock = true;
-    const posts = await Post.update(
-      {
-        isBlock: true,
-      },
-      {
-        userId,
-      }
-    );
+    if (user.isBlock === true) {
+      // throw new api404Error('Người dùng đã bị chặn');
+      user.isBlock = false;
+    } else if (user.isBlock === false) {
+      user.isBlock = true;
+      const posts = await Post.update(
+        {
+          isBlock: true,
+        },
+        {
+          where: { userId },
+        }
+      );
+    }
+
     await user.save();
     res.status(200).json({ data: user });
   } catch (error) {

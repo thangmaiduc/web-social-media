@@ -17,6 +17,14 @@ const api = {
 
   CREATE_MESSAGE: baseURL + '/messages/',
 
-  
+  GET_POST_ADMIN: baseURL + '/admin/posts/',
+  GET_DASHBOARD_ADMIN: baseURL + '/admin/dashboard/',
+
+  GET_USER_ADMIN: baseURL + '/admin/users/',
+
+  BLOCK_USER: baseURL + '/admin/block-user/',
+  BLOCK_POST: baseURL + '/admin/block-posts/'
+
+
 };
 export default api;

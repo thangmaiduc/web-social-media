@@ -20,6 +20,23 @@ const postApi = {
     const response = await axiosClient.get(url, payload);
     return response.data;
   },
+  getPostAdmin: async (payload) => {
+    console.log(payload);
+    const url = api.GET_POST_ADMIN;
+    const response = await axiosClient.get(url, {params:payload});
+    return response;
+  },
+  getDashboardAdmin: async (payload) => {
+    console.log(payload);
+    const url = api.GET_DASHBOARD_ADMIN;
+    const response = await axiosClient.get(url);
+    return response.data;
+  },
+  blockPost: async (payload) => {
+    const url = api.BLOCK_POST;
+    const response =  axiosClient.patch(url, payload);
+    return response.data;
+  },
 };
   
   export default postApi;
