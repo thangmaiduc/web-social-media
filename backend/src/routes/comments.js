@@ -10,7 +10,7 @@ const commentController = require("../controller/comments");
 // comment a post
 router.post("/", commentController.create);
 // edit a comment
-router.post("/posts/", commentController.getCommentsPost);
+router.get("/posts/:postId", commentController.getCommentsPost);
 // edit a comment
 router.put("/:id", commentController.update);
 // delete a comment

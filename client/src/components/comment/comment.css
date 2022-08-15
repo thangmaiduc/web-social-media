@@ -34,12 +34,14 @@
 .commentOwnerImg,.commentOption {
   cursor: pointer;
 }
+.showMoreBtn:hover,
 .commentOwnerImg:hover,
 .commentOwner:hover,
 .seeMoreComment:hover,
 .commentOption:hover {
   opacity: 0.7;
   text-decoration: underline;
+  cursor: pointer;
 }
 .commentHr {
   margin: 10px 0;
@@ -58,5 +60,6 @@
   display: flex;
   margin-left: 30px;
 }
+
 
 

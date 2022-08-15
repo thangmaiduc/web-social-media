@@ -1,18 +1,20 @@
 import { Modal } from '../modal/Modal'
-import React from 'react'
+import React, { useState } from 'react'
 import './commentModal.css';
 
 export const CommentModal = ({
   comment,
-  setComment,
   setIsShow,
   editComment
 }) => {
+  const [editText, setEditText] = useState(comment.text)
   return (
     <Modal>
       <form class="form">
-        <input placeholder="edit here..." type="text" className="editInput" value={comment.text || ''} onChange={(e) => setComment(c => { return { ...c, text: e.target.value } })} />
-        <button className="editModal" onClick={editComment}> Edit Comment
+        <input placeholder="edit here..." type="text" className="editInput"
+         value={editText} onChange={(e) =>setEditText(e.target.value)} />
+        
+        <button className="editModal" onClick={ (e) => { e.preventDefault();editComment(comment.id,editText )}}> Edit Comment
         </button>
         <span className="close" onClick={() => setIsShow(false)}>&times;</span>
       </form>

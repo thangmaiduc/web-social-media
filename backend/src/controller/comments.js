@@ -12,14 +12,26 @@ exports.create = async (req, res, next) => {
   try {
     let { postId, text } = req.body;
     let checkPost = await Post.findByPk(postId);
-    if (!checkPost || _.get(checkPost, 'isBlock', false)===true) throw new api404Error('Không thấy bài viết');
+    if (!checkPost || _.get(checkPost, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết');
     let comment = await CommentPost.create({
       postId,
       text,
       userId: req.user.id,
     });
     console.log(comment);
-    res.json({ message: 'thành công' });
+    const newComment = await CommentPost.findOne({
+      where: { id: comment.id },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          required: true,
+          attributes: ['profilePicture', 'fullName', 'username'],
+        },
+      ],
+    });
+    res.status(201).json({ data: newComment });
   } catch (error) {
     next(error);
   }
@@ -39,10 +51,21 @@ exports.update = async (req, res, next) => {
     let id = req.params.id;
     const comment = await CommentPost.findByPk(id);
 
-    if (comment.userId === req.user.id) {
+    if (comment.userId === req.user.id || true) {
       updates.forEach((update) => (comment[update] = req.body[update]));
       comment.save();
-      res.status(200).json({ message: 'Sửa bình luận thành công' });
+      const editComment = await CommentPost.findOne({
+        where: { id: comment.id },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            required: true,
+            attributes: ['profilePicture', 'fullName', 'username'],
+          },
+        ],
+      });
+      res.status(200).json({ data: editComment });
     } else {
       res.status(403).json({ message: 'Sửa bình luận thất bại' });
     }
@@ -75,9 +98,13 @@ exports.delete = async (req, res, next) => {
 // *   get a post'comments
 exports.getCommentsPost = async (req, res, next) => {
   try {
-    let postId = req.body.postId;
+    let postId = req.params.postId;
+    const page = _.get(req, 'query.page', 0);
+    let limit = +req.query.limit || 5;
+    let offset = 0 + page * limit;
     const post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false)===true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     const commentsPost = await CommentPost.findAll({
       where: { postId },
       include: [
@@ -88,8 +115,12 @@ exports.getCommentsPost = async (req, res, next) => {
           attributes: ['profilePicture', 'fullName', 'username'],
         },
       ],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    res.status(200).json({ data: commentsPost });
+    const length = await CommentPost.count({ where: { postId } });
+    res.status(200).json({ data: commentsPost, length });
   } catch (error) {
     next(error);
   }
@@ -100,7 +131,8 @@ exports.queryComments = async (req, res, next) => {
     let postId = req.body.postId;
     let { limit, page } = req.body;
     const post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false)===true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     const commentsPost = await CommentPost.findAll({
       where: { postId },
       include: [

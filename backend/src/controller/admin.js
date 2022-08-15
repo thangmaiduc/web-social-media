@@ -56,8 +56,8 @@ exports.queryUser = async (req, res, next) => {
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
     const page = parseInt(req.query.page, 0);
     let limit = +req.query.limit || 10;
-    let textSearch = req.query.textSearch;
     let offset = 0 + page * limit;
+    let textSearch = req.query.textSearch;
     const sort = req.query.sort || SORT.REPORT;
     const direction = req.query.direction || 'desc';
 

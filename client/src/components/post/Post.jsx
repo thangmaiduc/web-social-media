@@ -3,7 +3,7 @@ import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit } from "@material
 import { Users } from "../../dummyData";
 import { useEffect, useState } from "react";
 import Comment from '../comment/Comment'
-import {PostModal} from './PostModal'
+import { PostModal } from './PostModal'
 import postApi from '../../api/postApi';
 import { friendSelector, userSelector } from '../../redux/slices/userSlice';
 import { useSelector } from 'react-redux';
@@ -21,19 +21,29 @@ export default function Post({ post }) {
   const [deleted, setDeleted] = useState(false)
   const [followed, setFollowed] = useState(false)
   const [isShow, setIsShow] = useState(false);
+  const [page, setPage] = useState(0)
+  const [limit, setLimit] = useState(5)
+  const [length, setLength] = useState(0)
 
   let friendsId = friends.map(f => f.followedId)
 
   useEffect(() => {
     const getComments = async () => {
       try {
-        const res = await postApi.getComments({ postId: currentPost });
+        const res = await postApi.getComments({
+          postId: currentPost,
+          params: {
+            page, limit
+          }
+        });
         console.log('comments', res);
-        setComments(res);
+        setComments(res.data);
+        setLength(res.length);
       } catch (err) { }
     };
-    getComments();
-  }, [currentPost]);
+    if (isComment)
+      getComments();
+  }, [currentPost, page, limit]);
   const likeHandler = () => {
     setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
@@ -73,7 +83,30 @@ export default function Post({ post }) {
     }
 
   }
+  const handleSubmit = async (newComment) => {
+    try {
+      const newCommentObj = await postApi.createComment({
+        text: newComment,
+        postId: post.id
+      })
+      setComments(c => [newCommentObj, ...c])
+    } catch (error) {
 
+    }
+
+  }
+
+  const handleClickShowMore = () => {
+    if ((page + 1) * limit < length) {
+      setLimit(p => p + 5)
+    }
+    if ((page + 1) * limit === length) {
+      setLimit(length)
+    }
+    else {
+      return
+    }
+  }
   useEffect(() => {
     let check = friendsId.includes(post?.userId)
     setFollowed(check)
@@ -143,6 +176,12 @@ export default function Post({ post }) {
       <Comment
         comments={comments}
         user={user}
+        length={length}
+        setPage={setPage}
+        handleSubmit={handleSubmit}
+        handleClickShowMore={handleClickShowMore}
+        setComments={setComments}
+        setLength={setLength}
       // editComment={editComment}
       />
     }
@@ -151,6 +190,7 @@ export default function Post({ post }) {
       setPostObj={setPostObj}
       editPost={editPost}
       setIsShow={setIsShow}
+
     />)}
   </div>
   return (deleted ? PostDeleted : Post)
