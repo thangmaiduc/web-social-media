@@ -11,7 +11,7 @@ import userApi from '../../api/userApi';
 export default function Post({ post }) {
   const user = useSelector(userSelector)
   const friends = useSelector(friendSelector)
-  const [like, setLike] = useState(post.numLike)
+  const [like, setLike] = useState(post.numLike||0)
   const [comments, setComments] = useState([])
   const [isComment, setIsComment] = useState(false)
   const [option, setOption] = useState(false)
@@ -159,7 +159,7 @@ export default function Post({ post }) {
         <div className="postBottomLeft">
           <img
             className="likeIcon"
-            src="assets/like.png"
+            src="https://res.cloudinary.com/dzens2tsj/image/upload/v1660559011/like_jbx2ph.png"
             onClick={likeHandler}
             alt=""
           />
@@ -167,7 +167,7 @@ export default function Post({ post }) {
           <span className="postLikeCounter">{like} people like it</span>
         </div>
         <div className="postBottomRight">
-          <span onClick={handleComment} className="postCommentText">{post.numComment} comments</span>
+          <span onClick={handleComment} className="postCommentText">{post.numComment||0} comments</span>
         </div>
       </div>
 
