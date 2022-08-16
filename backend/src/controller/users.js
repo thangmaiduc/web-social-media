@@ -9,8 +9,17 @@ const api404Error = require('../utils/errors/api404Error');
 // * update
 
 exports.update = async (req, res, next) => {
+  const updates = Object.keys(req.body);
+  const allowsUpdate = ['fullName', 'profilePicture', 'coverPicture', 'description', 'city', 'country', ];
+
+  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
+
+  if (!isValidUpdate) throw new api400Error('Chỉnh sửa không hợp lệ');
+
   try {
-    res.json(req.user);
+    updates.forEach((update) => (req.user[update] = req.body[update]));
+    await req.user.save();
+    res.json({ data: req.user, message: 'Chỉnh sửa thành công' });
   } catch (error) {
     next(error);
   }

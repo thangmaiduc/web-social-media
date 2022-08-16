@@ -41,7 +41,7 @@ exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
   const allowsUpdate = ['description'];
 
-  const isValidUpdate = updates.every((update) =>
+const isValidUpdate = updates.every((update) =>
     allowsUpdate.includes(update)
   );
   try {
@@ -54,7 +54,7 @@ exports.update = async (req, res, next) => {
       throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id) {
       updates.forEach((update) => (post[update] = req.body[update]));
-
+      await post.save()
       res.status(200).json('Sửa bài viết thành công');
     } else {
       res.status(403).json('Bạn không thể sửa bài viết này');
@@ -168,11 +168,11 @@ exports.countLike = async (req, res, next) => {
 exports.getTimeLine = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const userPost = await Post.findAll({ where: { userId }, raw: true });
+    const userPost = await Post.findAll({ where: { userId, isBlock :false }, raw: true });
     // console.log(userPost);
     const friends = await sequelize.query(
       `select followedId, fullName, profilePicture from Followers fw
-      join Users  u on fw.followedId = u.id WHERE fw.followingId = ${userId}`,
+      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
       {
         type: QueryTypes.SELECT,
       }

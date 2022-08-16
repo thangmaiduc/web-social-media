@@ -10,7 +10,7 @@ export const CommentModal = ({
   const [editText, setEditText] = useState(comment.text)
   return (
     <Modal>
-      <form class="form">
+      <form className="form">
         <input placeholder="edit here..." type="text" className="editInput"
          value={editText} onChange={(e) =>setEditText(e.target.value)} />
         

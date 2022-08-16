@@ -29,6 +29,19 @@
     top: 150px;
     border: 3px solid white;
 }
+.editProfilePicture{
+    left: 150px;
+    right: 0;
+    margin: auto;
+    position: absolute;
+    width: 30px;
+    bottom: 30px;
+
+}
+.editProfilePicture:hover{
+    opacity: .7;
+    cursor: pointer;
+}
 
 .profileInfo{
     display: flex;

@@ -13,12 +13,25 @@ const postApi = {
     const response = await axiosClient.post(url, payload);
     return response.data;
   },
+  editPost: async (postId,payload) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    console.log(postId,payload);
+    const url = api.CREATE_POST+postId;
+    const response = await axiosClient.put(url, payload);
+    return response;
+  },
 
   getPostProfile: async (payload) => {
     console.log(payload);
     const url = '/posts/profile/' + payload;
     const response = await axiosClient.get(url, payload);
     return response.data;
+  },
+  reportPost: async (payload) => {
+    console.log(payload);
+    const url = `posts/${payload}/report` ;
+    const response = await axiosClient.put(url);
+    return response.message;
   },
 
   getComments: async (payload) => {

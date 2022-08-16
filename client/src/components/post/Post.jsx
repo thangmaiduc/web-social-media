@@ -1,5 +1,5 @@
 import "./post.css";
-import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit } from "@material-ui/icons";
+import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit, Report } from "@material-ui/icons";
 import { Users } from "../../dummyData";
 import { useEffect, useState } from "react";
 import Comment from '../comment/Comment'
@@ -8,10 +8,15 @@ import postApi from '../../api/postApi';
 import { friendSelector, userSelector } from '../../redux/slices/userSlice';
 import { useSelector } from 'react-redux';
 import userApi from '../../api/userApi';
+import Tooltip from '@mui/material/Tooltip';
+// import { ToastContainer, toast } from 'react-toastify';
+
+import  { ToastContainer,notify } from '../../utility/toast';
+
 export default function Post({ post }) {
   const user = useSelector(userSelector)
   const friends = useSelector(friendSelector)
-  const [like, setLike] = useState(post.numLike||0)
+  const [like, setLike] = useState(post.numLike || 0)
   const [comments, setComments] = useState([])
   const [isComment, setIsComment] = useState(false)
   const [option, setOption] = useState(false)
@@ -24,6 +29,8 @@ export default function Post({ post }) {
   const [page, setPage] = useState(0)
   const [limit, setLimit] = useState(5)
   const [length, setLength] = useState(0)
+  const [editText,setEditText] = useState(post?.description)
+ 
 
   let friendsId = friends.map(f => f.followedId)
 
@@ -63,21 +70,22 @@ export default function Post({ post }) {
 
     }
   }
+
   const handleUnfollow = async () => {
     try {
       if (followed) {
-        await userApi.unfollow(post.id)
+        await userApi.unfollow(post.userId)
       } else {
-        await userApi.follow(post.id)
+        await userApi.follow(post.userId)
       }
       setFollowed(!followed);
     } catch (err) {
     }
   }
-  const editPost = async (e) => {
-    e.preventDefault();
+  const editPost = async (postId, editText) => {
     try {
-
+      await postApi.editPost(postId, { description: editText });
+      
       setIsShow(false)
     } catch (err) {
     }
@@ -95,7 +103,14 @@ export default function Post({ post }) {
     }
 
   }
-
+  const handleReportPost =async () => {
+try {
+  const msg = await postApi.reportPost(post.id)
+  notify(msg)
+} catch (error) {
+  
+}
+  }
   const handleClickShowMore = () => {
     if ((page + 1) * limit < length) {
       setLimit(p => p + 5)
@@ -133,16 +148,29 @@ export default function Post({ post }) {
         <div className="postTopRight">
           {
             post?.userId !== user.id ?
-              <button className="rightbarFollowButton" onClick={handleUnfollow}>
-                {followed ? "Unfollow" : "Follow"}
-                {followed ? <Remove /> : <Add />}
-              </button> :
-              <div>
-                <div className="removeButton" onClick={handleDeletePost}>
-                  <Close />
+              <div className="optionButton">
+                <div className="reportButton" onClick={handleReportPost}>
+                  <Tooltip title="Báo cáo bài viết">
+                    <Report />
+                  </Tooltip>
                 </div>
-                <div className="editButton" onClick={() => { setIsShow(true); setCurrentPost(post.id) }} >
-                  <Edit />
+                <button className="rightbarFollowButton" onClick={handleUnfollow}>
+                  {followed ? "Unfollow" : "Follow"}
+                  {followed ? <Remove fontSize='small' /> : <Add fontSize='small' />}
+                </button>
+              </div> :
+              <div className="optionButton">
+                <div className="removeButton" onClick={handleDeletePost}>
+                  <Tooltip title="Xóa bài viết">
+
+                    <Close fontSize='small' />
+                  </Tooltip>
+                </div>
+                <div className="editButton" onClick={() => { setIsShow(true); setPostObj(post) }} >
+                  <Tooltip title="Sửa bài viết">
+
+                    <Edit fontSize='small' />
+                  </Tooltip>
                 </div>
               </div>
 
@@ -152,7 +180,7 @@ export default function Post({ post }) {
         </div>
       </div>
       <div className="postCenter">
-        <span className="postText">{post?.description}</span>
+        <span className="postText">{editText}</span>
         <img className="postImg" src={post.img} alt="" />
       </div>
       <div className="postBottom">
@@ -167,7 +195,7 @@ export default function Post({ post }) {
           <span className="postLikeCounter">{like} people like it</span>
         </div>
         <div className="postBottomRight">
-          <span onClick={handleComment} className="postCommentText">{post.numComment||0} comments</span>
+          <span onClick={handleComment} className="postCommentText">{post.numComment || 0} comments</span>
         </div>
       </div>
 
@@ -185,8 +213,11 @@ export default function Post({ post }) {
       // editComment={editComment}
       />
     }
+    <ToastContainer />
     {isShow && (<PostModal
       postObj={postObj}
+      editText={editText}
+      setEditText={setEditText}
       setPostObj={setPostObj}
       editPost={editPost}
       setIsShow={setIsShow}

@@ -19,6 +19,13 @@ const userApi = {
     const response =await  axiosClient.put(url);
     return response;
   },
+  updateUser: async (payload) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    console.log(payload);
+    const url =api.GET_USER;
+    const response =await  axiosClient.put(url, payload);
+    return response;
+  },
   unfollow: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url =`/users/${payload}/unfollow`;

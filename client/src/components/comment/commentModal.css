@@ -9,6 +9,7 @@
     background-color: transparent;
     color: #0d0c22;
     transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    width: 70%
    }
    
    .editInput:focus, .editInput:hover {
