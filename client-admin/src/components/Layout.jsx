@@ -18,8 +18,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import ImageIcon from '@mui/icons-material/Image';
 import MenuIcon from '@mui/icons-material/Menu';
+import  { ToastContainer } from '../utility/toast';
 const drawerWidth = 240;
-
 function ResponsiveDrawer(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -74,7 +74,7 @@ function ResponsiveDrawer(props) {
         </ListItem>
       </List>
       <Divider />
-      
+      <ToastContainer/>
     </div>
   );
 
@@ -102,7 +102,7 @@ function ResponsiveDrawer(props) {
             <MenuIcon />
           </IconButton>
           <Typography variant='h6' noWrap component='div'>
-            Responsive drawer
+            Quản Lí Social Media
           </Typography>
         </Toolbar>
       </AppBar>

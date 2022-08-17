@@ -11,7 +11,7 @@ export const signIn = createAsyncThunk(
   async (params, thunkAPI) => {
     console.log(params);
     const response = await userApi.signIn(params);
-
+    
     // Save access token to storage
     console.log(response);
     const { token} = response;
@@ -48,6 +48,7 @@ const userSlice = createSlice({
   initialState: {
     current: null,
     isFetching: false,
+    isError: false,
     friends:[]
   },
   reducers: {},
@@ -58,6 +59,7 @@ const userSlice = createSlice({
     [signIn.rejected]: (state, action) => {
       console.log({ action });
       state.isFetching = false;
+      state.isError = true;
     },
     [signIn.fulfilled]: (state, action) => {
       console.log({ action });
@@ -84,6 +86,7 @@ const userSlice = createSlice({
 export const userSelector = (state) => state.user.current;
 export const friendSelector = (state) => state.user.friends;
 export const fetchSelector = (state) => state.user.isFetching;
+export const errorSelector = (state) => state.user.isError;
 
 // const { reducer: userReducer } = userSlice;
 export default userSlice;

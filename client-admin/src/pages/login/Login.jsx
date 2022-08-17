@@ -6,14 +6,16 @@ import {
   userSelector,
   fetchSelector,
   signIn,
+  errorSelector,
 } from '../../redux/slices/userSlice';
-
+import  { notify, ToastContainer } from '../../utility/toast';
 export default function Login() {
   const email = useRef();
   const password = useRef();
   const dispatch = useDispatch();
 
   let isFetching = useSelector(fetchSelector);
+  let isError = useSelector(errorSelector);
   const handleClick = async (e) => {
     e.preventDefault();
     await dispatch(
@@ -23,15 +25,18 @@ export default function Login() {
       })
     );
   };
+  if(isError){
+    notify('Đăng nhập thất bại')
+  }
 
   return (
+
     <div className="login">
+    <ToastContainer />
       <div className="loginWrapper">
         <div className="loginLeft">
-          <h3 className="loginLogo">Social Media</h3>
-          <span className="loginDesc">
-            Connect with friends and the world around you on Social Media.
-          </span>
+          <h3 className="loginLogo">Admin Social Media</h3>
+          
         </div>
         <div className="loginRight">
           <form className="loginBox" onSubmit={handleClick}>
@@ -58,13 +63,7 @@ export default function Login() {
               )}
             </button>
             <span className="loginForgot">Forgot Password?</span>
-            <button className="loginRegisterButton">
-              {isFetching ? (
-                <CircularProgress color="secondary" size="20px" />
-              ) : (
-                'Create a New Account'
-              )}
-            </button>
+            
           </form>
         </div>
       </div>

@@ -35,7 +35,7 @@ const postApi = {
   blockPost: async (payload) => {
     const url = api.BLOCK_POST;
     const response =  axiosClient.patch(url, payload);
-    return response.data;
+    return response;
   },
 };
   

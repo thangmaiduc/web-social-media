@@ -25,9 +25,7 @@ exports.addParticipant = async (req, res, next) => {
         where: { userId, conversationId },
       });
       let check = await User.findOne({ where: { id: userId } });
-      check &&
-        !checkPar &&
-        (await Participant.create({ userId, conversationId, type: 'public' }));
+      check && !checkPar && (await Participant.create({ userId, conversationId, type: 'public' }));
     });
     res.status(200).json({ message: 'thêm thành công' });
   } catch (error) {
@@ -199,18 +197,18 @@ exports.get = async (req, res, next) => {
       conversations.map(async (item) => {
         console.log(item);
         if (item.type === 'private') {
-        const users = await sequelize.query(
-          `SELECT * FROM Participants p
+          const users = await sequelize.query(
+            `SELECT * FROM Participants p
                JOIN Users u on p.userId = u.id
                WHERE p.conversationId = ${item.conversationId} and p.userId <> ${userId}
                `,
-          {
-            type: QueryTypes.SELECT,
-          }
-        );
-        item.title = users[0].fullName;
-        item.img = users[0].profilePicture;
-        return item
+            {
+              type: QueryTypes.SELECT,
+            }
+          );
+          item.title = users[0]?.fullName|| "No Name";
+          item.img = users[0]?.profilePicture;
+          return item;
         }
       })
     );

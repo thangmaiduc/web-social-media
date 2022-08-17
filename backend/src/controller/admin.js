@@ -35,15 +35,15 @@ exports.statisDashboard = async (req, res, next) => {
     let numPost = await Post.count({});
     let numComment = await CommentPost.count({});
     let numLike = await LikePost.count({});
-    
+
     res.json({
       data: {
         numUser,
         numPost,
-        numInteraction: numComment+numLike,
+        numInteraction: numComment + numLike,
         numUserMonth,
         numPostMonth,
-        numInteractionMonth: numCommentMonth+numLikeMonth,
+        numInteractionMonth: numCommentMonth + numLikeMonth,
       },
     });
   } catch (error) {
@@ -319,14 +319,17 @@ exports.blockPost = async (req, res, next) => {
     let postId = req.body.postId;
     let post = await Post.findByPk(postId);
     if (!post) throw new api404Error('không tìm thấy bài viết');
+    let message = '';
     if (post.isBlock === true) {
       post.isBlock = false;
+      message = 'Bỏ chặn thành công';
       // throw new api404Error('Bài viết đã bị chặn');
     } else if (post.isBlock === false) {
       post.isBlock = true;
+      message = 'Chặn thành công';
     }
     await post.save();
-    res.status(200).json({ data: post });
+    res.status(200).json({ data: post, message });
   } catch (error) {
     next(error);
   }
@@ -336,11 +339,14 @@ exports.blockUser = async (req, res, next) => {
     let userId = req.body.userId;
     let user = await User.findByPk(userId);
     if (!user) throw new api404Error('không tìm thấy người dùng');
+    let message = '';
     if (user.isBlock === true) {
       // throw new api404Error('Người dùng đã bị chặn');
+      message = 'Bỏ chặn thành công';
       user.isBlock = false;
     } else if (user.isBlock === false) {
       user.isBlock = true;
+      message = ' Chặn thành công';
       const posts = await Post.update(
         {
           isBlock: true,
@@ -352,7 +358,7 @@ exports.blockUser = async (req, res, next) => {
     }
 
     await user.save();
-    res.status(200).json({ data: user });
+    res.status(200).json({ data: user , message});
   } catch (error) {
     next(error);
   }

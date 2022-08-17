@@ -3,7 +3,7 @@ import api from '../api/API'
 const userApi = {
   signIn: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    const url = '/auth/login';
+    const url = '/auth/admin/login';
     const response =  axiosClient.post(url, payload);
     return response;
   },
@@ -27,7 +27,7 @@ const userApi = {
   blockUser: async (payload) => {
     const url =api.BLOCK_USER;
     const response =  axiosClient.patch(url, payload);
-    return response.data;
+    return response;
   },
 };
   

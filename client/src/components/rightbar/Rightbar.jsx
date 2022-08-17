@@ -8,13 +8,14 @@ import { useEffect, useState } from 'react';
 import userApi from '../../api/userApi';
 
 export default function Rightbar({ user }) {
-  let friends = useSelector(friendSelector);
-  let friendsId = friends.map(f => f.followedId)
+  let friendsCur = useSelector(friendSelector);
+  let friendsId = friendsCur.map(f => f.followedId)
   let currentUser = useSelector(userSelector);
   const [followed, setFollowed] = useState(false);
-  console.log('friendsId', friendsId);
-  console.log('friendsId.includes(user?.id)', friendsId.includes(user?.id));
-  console.log('user', user);
+  const [friends, setFriends] = useState(false);
+  // console.log('friendsId', friendsId);
+  // console.log('friendsId.includes(user?.id)', friendsId.includes(user?.id));
+  // console.log('user', user);
   const handleClick = async () => {
     try {
       if (followed) {
@@ -30,20 +31,32 @@ export default function Rightbar({ user }) {
     let check = friendsId.includes(user?.id)
     setFollowed(check)
   }, [user])
+  useEffect(() => {
+    const getFriends = async () => {
+      try{
+    
+        const res = await userApi.getFriends(user.username);
+        setFriends(res.data);
+       }
+       catch (err) {
+       }
+    }
+    getFriends()
+  }, [user])
   const HomeRightbar = () => {
     return (
       <>
         <div className="birthdayContainer">
           <img className="birthdayImg" src="assets/gift.png" alt="" />
           <span className="birthdayText">
-            <b>Pola Foster</b> and <b>3 other friends</b> have a birhday today.
+          <b>Pola Foster</b> and <b>3 other friends</b> have a birhday today.
           </span>
         </div>
         <img className="rightbarAd" src="assets/ad.png" alt="" />
         
         <h4 className="rightbarTitle">Online Friends</h4>
         <ul className="rightbarFriendList">
-          {friends.map((u) => (
+          {friendsCur.map((u) => (
             <Online key={u.followerId} user={u} />
           ))}
         </ul>
@@ -74,7 +87,7 @@ export default function Rightbar({ user }) {
         </div>
         <h4 className="rightbarTitle">User friends</h4>
         <div className="rightbarFollowings">
-          {friends.map((friend) => (
+          {friends&&friends.map((friend) => (
             <Link
               to={"/profile/" + friend.username}
               style={{ textDecoration: "none" }}

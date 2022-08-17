@@ -29,4 +29,8 @@
   
   .rightbarUsername{
       font-weight: 500;
+      color: #000;
+  }
+  a{
+    text-decoration: none;
   }

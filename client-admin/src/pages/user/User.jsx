@@ -29,6 +29,7 @@ import Dialog from "@mui/material/Dialog";
 import userApi from "../../api/userApi";
 import generalConstants from "../../GeneralConstants";
 import SearchIcon from '@mui/icons-material/Search';
+import  { notify } from '../../utility/toast';
 
 export default function User() {
 
@@ -75,10 +76,10 @@ export default function User() {
         setPage(newPage);
 
     };
-    const handleBlock = async (postId) => {
+    const handleBlock = async (userId) => {
         try {
-            await postApi.blockPost({postId});
-            window.location.reload();
+            let res= await userApi.blockUser({userId});
+            notify(res.message);
         } catch (error) {
             console.log(error)
         }

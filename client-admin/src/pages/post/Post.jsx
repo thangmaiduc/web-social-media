@@ -26,7 +26,7 @@ import Typography from "@mui/material/Typography";
 import DialogActions from "@mui/material/DialogActions";
 import {styled} from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
-
+import  { notify } from '../../utility/toast';
 export default function Post() {
 
     const [order, setOrder] = useState('desc');
@@ -70,8 +70,8 @@ export default function Post() {
     };
     const handleBlock = async (postId) => {
         try {
-            await postApi.blockPost({postId});
-            window.location.reload();
+           let res = await postApi.blockPost({postId});
+            notify(res.message);
         } catch (error) {
             console.log(error)
         }
@@ -313,13 +313,13 @@ export default function Post() {
                         <Box
                             component="img"
                             sx={{
-                                height: 300,
+                                // height: 300,
                                 width: 430,
-                                maxHeight: {xs: 233, md: 167},
-                                maxWidth: {xs: 350, md: 250},
+                                // maxHeight: {xs: 233, md: 167},
+                                // maxWidth: {xs: 350, md: 250},
                             }}
                             alt="The house from the offer."
-                            src={"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=350&dpr=2"|| post.img}
+                            src={ post?.img}
                         />
 
                     </DialogContent>

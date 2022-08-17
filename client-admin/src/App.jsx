@@ -35,22 +35,22 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/admin/dashboard">
-          {/* {user=true ? <Home /> : <Login />} */}
-          { <Dashboard />}
+          {user ? <Dashboard />: <Login />}
+        </Route>
+        <Route exact path="/">
+          {user ? <Dashboard />: <Login />}
         </Route>
         <Route path="/login">{user ? <Redirect to="/" /> : <Login />}</Route>
 
         <Route path="/admin/users">
-          {/* {user ? <Redirect to="/" /> : <Register />} */}
-          <User/>
+          {user ? <User/> : <Login />}
+          
         </Route>
-        <Route path="/admin/table">
-          {/* {user ? <Redirect to="/" /> : <Register />} */}
+        {/* <Route path="/admin/table">
           <EnhancedTable/>
-        </Route>
+        </Route> */}
         <Route path="/admin/posts">
-          {/* {!user ? <Redirect to="/" /> : <Messenger />} */}
-          <Post/>
+        {user ? <Post/> : <Login />}
         </Route>
         
       </Switch>

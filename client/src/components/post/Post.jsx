@@ -12,6 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 // import { ToastContainer, toast } from 'react-toastify';
 
 import  { ToastContainer,notify } from '../../utility/toast';
+import { Link } from 'react-router-dom';
 
 export default function Post({ post }) {
   const user = useSelector(userSelector)
@@ -135,6 +136,9 @@ try {
     <div className="postWrapper">
       <div className="postTop">
         <div className="postTopLeft">
+        <Link to={`/profile/${post.username}`}>
+
+        </Link>
           <img
             className="postProfileImg"
             src={post.profilePicture}

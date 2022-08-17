@@ -31,6 +31,34 @@ exports.login = async (req, res, next) => {
     next(error);
   }
 };
+//login admin
+exports.loginAdmin = async (req, res, next) => {
+  try {
+    let { email, password } = req.body;
+    let user = await User.findOne({ where: { email } });
+    if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
+
+    let isMatch = await bcrypt.compare(password, user.password);
+   
+    // console.log(isMatch);
+    // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    // console.log(user);
+    if(!user.isAdmin){
+      throw new api400Error('Bạn không có quyền đăng nhập trang này');
+    }
+    let token = await jwt.sign(
+      { userId: user.id, isAdmin: user.isAdmin },
+      process.env.JWT_KEY,
+      {
+        expiresIn: '3 days',
+      }
+    );
+    res.setHeader('authToken', token);
+    res.status(200).json({ user, token });
+  } catch (error) {
+    next(error);
+  }
+};
 //register
 
 exports.register = async (req, res, next) => {

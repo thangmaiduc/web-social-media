@@ -17,7 +17,7 @@ import {
 } from '../../redux/slices/userSlice';
 
 export default function Sidebar() {
-  let friends = useSelector(friendSelector);
+  const friends = useSelector(friendSelector);
 
   return (
     <div className="sidebar">

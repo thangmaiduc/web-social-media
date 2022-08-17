@@ -34,12 +34,18 @@
 .chatOnline {
   flex: 3;
 }
-
+.chatMenuWrapper{
+  height: calc(100vh - 50px);
+  overflow-y: scroll;
+  position: sticky;
+  top: 50px;
+}
 .chatMenuWrapper,
 .chatBoxWrapper,
 .chatOnlineWrapper {
   padding: 10px;
   height: 100%;
+ 
 }
 
 .noConversationText {
