@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Comment from '../comment/Comment'
 import { PostModal } from './PostModal'
 import postApi from '../../api/postApi';
-import { friendSelector, userSelector } from '../../redux/slices/userSlice';
+import userSlice,{ friendSelector, userSelector } from '../../redux/slices/userSlice';
 import { useSelector } from 'react-redux';
 import userApi from '../../api/userApi';
 import Tooltip from '@mui/material/Tooltip';
@@ -57,7 +57,7 @@ export default function Post({ post }) {
   }
 
   const handleComment = () => {
-    setIsComment(true)
+    setIsComment(b=>!b)
     setCurrentPost(post.id)
   }
   const handleDeletePost = async () => {

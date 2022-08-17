@@ -91,8 +91,8 @@ export default function Messenger() {
   useEffect(() => {
     const getMessages = async () => {
       try {
-        const res = await await conversationApi.getMessage(
-          currentChat.conversationId
+        const res = await  conversationApi.getMessage(
+          currentChat?.conversationId
         );
         setMessages(res);
       } catch (err) {
@@ -148,7 +148,7 @@ export default function Messenger() {
             <input placeholder='Search for friends' className='chatMenuInput' />
             {conversations.length > 0 &&
               conversations.map((c) => (
-                <div key={c.conversationId} onClick={() => setCurrentChat(c)}>
+                <div key={c?.conversationId} onClick={() => setCurrentChat(c)}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}

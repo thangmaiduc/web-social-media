@@ -10,18 +10,25 @@ import { Edit, EditOutlined, PhotoCamera } from '@material-ui/icons';
 import { Tooltip } from '@material-ui/core';
 import commonApi from '../../api/commonApi';
 import { ToastContainer, notify } from '../../utility/toast';
-import { useSelector } from 'react-redux';
-import { userSelector } from '../../redux/slices/userSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Button, Stack } from '@mui/material';
+import { ProfileModal } from './ProfileModal';
 // import FlipCameraIosIcon from '@mui/icons-material/FlipCameraIos';
 
 export default function Profile() {
+  const dispatch = useDispatch();
+  const [isShow, setIsShow] = useState(false);
   const curUser = useSelector(userSelector);
   const { username } = useParams();
   const [user, setUser] = useState({});
   const [file, setFile] = useState(null);
   const [urlFile, setUrlFile] = useState('');
   const [isCover, setIsCover] = useState(false);
+  const [page, setPage] = useState(0)
+  const [limit, setLimit] = useState(5)
+  const [length, setLength] = useState(0)
+  const [editText, setEditText] = useState()
   useEffect(() => {
     const fetchUser = async () => {
       const res = await userApi.getUser(username);
@@ -34,18 +41,19 @@ export default function Profile() {
   const handleUploadProfilePicture = async () => {
     try {
       console.log('urlFile', urlFile);
-      let obj ={};
-      if(isCover) obj.coverPicture = urlFile;
-      else obj.profilePicture= urlFile
+      let obj = {};
+      if (isCover && urlFile !== '') obj.coverPicture = urlFile;
+      else if (urlFile !== '') obj.profilePicture = urlFile
       const res = await userApi.updateUser(obj)
       console.log('res.data', res.data);
+      dispatch(userSlice.actions.updateUser(obj))
       setUser(res.data);
-      
-      
+
+
       notify(res.message);
     } catch (error) {
 
-    }finally{
+    } finally {
       setFile('');
       setIsCover(false);
     }
@@ -64,6 +72,21 @@ export default function Profile() {
 
     } catch (error) {
       console.log(error);
+    }
+  }
+  const handleClick = () => {
+    setIsShow(true)
+  }
+  const editUser =async (fullName, newPass, oldPass, description, city, country) => {
+    try {
+      let obj = { fullName,  description, city, country };
+      const res = await userApi.updateUser(obj)
+      console.log('res.data', res.data);
+      dispatch(userSlice.actions.updateUser(res.data))
+      setUser(res.data);
+      notify(res.message);
+    } catch (error) {
+
     }
   }
 
@@ -107,22 +130,22 @@ export default function Profile() {
                       </Tooltip>
                     </label>
                     <Stack direction="row" spacing={2}>
-                        < Button size='small' variant="contained"
-                          startIcon={<Edit />} onClick={() =>
-                            {/* handleBlock(post.id) */}
-                          }>
-                          Sửa thông tin 
-                        </Button> 
-                        
-                        < Button size='small' color='success' variant="contained"
-                          startIcon={<PhotoCamera />} onClick={() =>{setIsCover(true)}} >
-                          <label htmlFor='file'  >
+                      < Button size='small' variant="contained"
+                        startIcon={<Edit />} onClick={
+                          handleClick
+                        }>
+                        Sửa thông tin
+                      </Button>
+
+                      < Button size='small' color='success' variant="contained"
+                        startIcon={<PhotoCamera />} onClick={() => { setIsCover(true) }} >
+                        <label htmlFor='file'  >
 
                           Sửa ảnh bìa
-                          </label>
-                        </Button>
-                      
-                      
+                        </label>
+                      </Button>
+
+
                     </Stack>
                   </div>
                 }
@@ -139,7 +162,15 @@ export default function Profile() {
             </div>
           </div>
         )}
-    </div>
+      </div>
+      {isShow &&
+        <ProfileModal
+          setIsShow={setIsShow}
+          user={user}
+          editUser={editUser}
+        />
+
+      }
     </>
   );
 }

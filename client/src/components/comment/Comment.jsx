@@ -4,8 +4,11 @@ import "./comment.css";
 import postApi from '../../api/postApi';
 import { CommentModal } from './CommentModal';
 import { Tooltip } from '@material-ui/core';
+import { useSelector } from 'react-redux';
+import { userSelector } from '../../redux/slices/userSlice';
 
 export default function Comment({ comments, setComments, handleSubmit, user, handleClickShowMore, length, setLength, }) {
+  // const user = useSelector(userSelector);
   const [isShow, setIsShow] = useState(false);
   const [comment, setComment] = useState({})
   const [newComment, setNewComment] = useState('')
@@ -80,7 +83,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
   return (
     <div className="commentWrapper">
       <div className="commentTop">
-        <img className='commentImg' src="https://image-us.24h.com.vn/upload/1-2022/images/2022-03-16/baukrysie_275278910_3174792849424333_1380029197326773703_n-1647427653-670-width1440height1800.jpg" alt="" />
+        <img className='commentImg' src={user?.profilePicture} alt="" />
         <input className='commentInput' type="text" placeholder='Viết bình luận ở đây' value={newComment} onChange={(e) => setNewComment(e.target.value)} />
         <button className="editModal" onClick={() => { handleSubmit(newComment); setNewComment('') }}> Gửi
         </button>

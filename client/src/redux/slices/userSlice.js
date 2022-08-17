@@ -50,7 +50,14 @@ const userSlice = createSlice({
     isFetching: false,
     friends:[]
   },
-  reducers: {},
+  reducers: {
+    updateUser: (state, action) => {
+      state.current={
+        ...state.current,
+        ...action.payload
+      }
+    },
+  },
   extraReducers: {
     [signIn.pending]: (state, action) => {
       state.isFetching = true;
