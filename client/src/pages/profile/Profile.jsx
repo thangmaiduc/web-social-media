@@ -95,7 +95,7 @@ export default function Profile() {
       <Topbar />
       <div className='profile'>
         <Sidebar />
-        <ToastContainer />
+        {/* <ToastContainer /> */}
         {user && (
           <div className='profileRight'>
             <div className='profileRightTop'>

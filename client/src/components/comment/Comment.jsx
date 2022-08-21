@@ -6,6 +6,7 @@ import { CommentModal } from './CommentModal';
 import { Tooltip } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import { userSelector } from '../../redux/slices/userSlice';
+import { format } from 'timeago.js';
 
 export default function Comment({ comments, setComments, handleSubmit, user, handleClickShowMore, length, setLength, }) {
   // const user = useSelector(userSelector);
@@ -50,6 +51,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
           <h4 className='commentOwner'>{c?.user?.fullName}</h4>
           <div className="commentCenterBottomRight">
             <p>{comment.id !== c.id ? c?.text : comment.text}</p>
+           
             {user?.id === c?.userId &&
               <div className="commentOption">
 
@@ -71,6 +73,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
 
             }
           </div>
+          <div className='messageBottom'>{format(c?.createdAt)}</div>
         </div>
 
 

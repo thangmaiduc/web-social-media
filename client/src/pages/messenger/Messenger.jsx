@@ -167,6 +167,8 @@ export default function Messenger() {
                 </div>
                 <NewMessageForm
                   selectFile={selectFile}
+                  file={file}
+                  setFile={setFile}
                   newMessage={newMessage}
                   setNewMessage={setNewMessage}
                   handleStartTyping={startTyping}

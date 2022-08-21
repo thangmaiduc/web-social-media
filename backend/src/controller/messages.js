@@ -11,6 +11,10 @@ const api400Error = require('../utils/errors/api400Error');
 const { first } = require('lodash');
 exports.getMessageOfConversation = async (req, res, next) => {
   try {
+    const page = parseInt(_.get(req, 'query.page', 0))
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
     const conversationId = req.params.conversationId;
     let userId = req.user.id;
     const conversation = await Conversation.findOne({
@@ -20,7 +24,7 @@ exports.getMessageOfConversation = async (req, res, next) => {
     const participant = await Participant.findOne({
       where: { conversationId, userId },
     });
-    if (!participant) throw new Api404Error('Không tìm thấy cuộc trò chuyện');
+    // if (!participant) throw new Api404Error('Không tìm thấy cuộc trò chuyện');
     // const messages = await Message.findAll({
     //   where: { conversationId },
     // });
@@ -32,35 +36,43 @@ exports.getMessageOfConversation = async (req, res, next) => {
           required: true,
           attributes: [['profilePicture', 'img']],
         },
+        {
+          model: Attachment,
+        },
       ],
-      raw: true,
+      order:[
+        ['createdAt', 'DESC'],
+      ],
+      limit,
+      offset,
+      // raw: true,
     });
-    const attachments = await Promise.all(
-      messages.map((m) => {
-        return Attachment.findOne({
-          where: { messageId: m.id },
-        });
-      })
-    );
+    // const attachments = await Promise.all(
+    //   messages.map((m) => {
+    //     return Attachment.findOne({
+    //       where: { messageId: m.id },
+    //     });
+    //   })
+    // );
 
-    // const attachments = await Attachment.findOne({
-    //   where: { messageId : messages.id  },
-    // })
+    // // const attachments = await Attachment.findOne({
+    // //   where: { messageId : messages.id  },
+    // // })
 
-    _.forEach(messages, (item) => {
-      item.attachments = [];
-      item.img = item['User.img'];
-      delete item['User.img'];
-      _.forEach(attachments, (attachment) => {
-        if (attachment && attachment.messageId === item.id) {
-          item.attachments.push(attachment);
-        }
-      });
-    });
+    // _.forEach(messages, (item) => {
+    //   item.attachments = [];
+    //   item.img = item['User.img'];
+    //   delete item['User.img'];
+    //   _.forEach(attachments, (attachment) => {
+    //     if (attachment && attachment.messageId === item.id) {
+    //       item.attachments.push(attachment);
+    //     }
+    //   });
+    // });
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
 
-    res.status(200).json({ data: messages });
+    res.status(200).json({ data: messages.reverse() });
   } catch (error) {
     next(error);
   }
@@ -78,20 +90,26 @@ exports.create = async (req, res, next) => {
     });
     if (!participant) throw new Api404Error('Không tìm thấy cuộc trò chuyện');
     const messageCreated = await Message.create({ senderId, text, conversationId });
+    if (!_.isNil(fileUrl)) {
+      await Attachment.create({ messageId: messageCreated.id, fileUrl });
+    }
     let message
     if(_.get(messageCreated, 'id', null)!==null){
       message = await Message.findOne({
         where:{ id : messageCreated.id},
-        raw: true
+        include: [
+          {
+            model: User,
+            required: true,
+            attributes: [['profilePicture', 'img']],
+          },
+          {
+            model: Attachment,
+          },
+        ],
       })
     }
-    message.attachment=[];
-    let attachment
-    if (!_.isNil(fileUrl)) {
-      attachment = await Attachment.create({ messageId: message.id, fileUrl });
-      message.attachment.push(attachment);
-    }
-    message.img = req.user.profilePicture;
+   
     
     // _.forEach(messages, (item) => {
     //   item.attachments = [];

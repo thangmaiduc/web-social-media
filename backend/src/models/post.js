@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
       Post.belongsToMany(models.User, {
+      
         through: models.ReportPost,
         foreignKey: "postId",
         onDelete: "CASCADE",

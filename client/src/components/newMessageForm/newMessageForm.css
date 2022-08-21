@@ -58,3 +58,7 @@ input:focus, textarea:focus, select:focus {
 .uploadImage {
   width: 40px;
 }
+.shareImgMessage{
+  height: 10vh;
+  object-fit: cover;
+}

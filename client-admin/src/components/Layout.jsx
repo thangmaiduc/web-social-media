@@ -19,11 +19,19 @@ import PersonIcon from '@mui/icons-material/Person';
 import ImageIcon from '@mui/icons-material/Image';
 import MenuIcon from '@mui/icons-material/Menu';
 import  { ToastContainer } from '../utility/toast';
+import { ExitToApp } from '@material-ui/icons';
+import { useDispatch } from 'react-redux';
+import userSlice from '../redux/slices/userSlice';
 const drawerWidth = 240;
 function ResponsiveDrawer(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [logout2, setLogout] = React.useState(false);
+  const dispatch = useDispatch()
+  const logout = () => {
+   dispatch(userSlice.actions.logout());
 
+  };
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -72,9 +80,22 @@ function ResponsiveDrawer(props) {
             </ListItemButton>
           </Link>
         </ListItem>
+        <ListItem disablePadding onClick={logout}>
+          <Link
+            to={`/`}
+            style={{ textDecoration: 'none', color: 'black' }}
+          >
+            <ListItemButton>
+              <ListItemIcon  >
+                <ExitToApp />
+              </ListItemIcon>
+              <ListItemText primary={'Đăng xuất'} />
+            </ListItemButton>
+          </Link>
+        </ListItem>
       </List>
       <Divider />
-      <ToastContainer/>
+     
     </div>
   );
 
@@ -155,6 +176,7 @@ function ResponsiveDrawer(props) {
         <Toolbar />
         {props.children}
       </Box>
+      <ToastContainer/>
     </Box>
   );
 }

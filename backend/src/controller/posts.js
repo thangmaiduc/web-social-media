@@ -7,7 +7,7 @@ const LikePost = require('../models/').LikePost;
 const ReportPost = require('../models/').ReportPost;
 const CommentPost = require('../models/').CommentPost;
 const sequelize = require('../models/').sequelize;
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const _ = require('lodash');
 //create
 
@@ -41,20 +41,17 @@ exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
   const allowsUpdate = ['description'];
 
-const isValidUpdate = updates.every((update) =>
-    allowsUpdate.includes(update)
-  );
+  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
   try {
     if (!isValidUpdate) {
       throw new api400Error('Thay đổi không hợp lệ"');
     }
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    if (!post || _.get(post, 'isBlock', false) === true)
-      throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id) {
       updates.forEach((update) => (post[update] = req.body[update]));
-      await post.save()
+      await post.save();
       res.status(200).json('Sửa bài viết thành công');
     } else {
       res.status(403).json('Bạn không thể sửa bài viết này');
@@ -68,8 +65,7 @@ exports.delete = async (req, res, next) => {
   try {
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    if (!post || _.get(post, 'isBlock', false) === true)
-      throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id || req.user.isAdmin === true) {
       await post.destroy();
       res.status(204).json();
@@ -85,8 +81,7 @@ exports.get = async (req, res, next) => {
   try {
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    if (!post || _.get(post, 'isBlock', false) === true)
-      throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     res.status(200).json({ data: { post } });
   } catch (error) {
     next(error);
@@ -98,8 +93,7 @@ exports.like = async (req, res, next) => {
     const postId = req.params.id;
     let UserId = req.user.id;
     let post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false) === true)
-      throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     let likedPost = await LikePost.findAll({
       where: {
         postId,
@@ -122,13 +116,11 @@ exports.report = async (req, res, next) => {
     const postId = req.params.id;
     let userId = req.user.id;
     let post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false) === true)
-      throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     let reportPost = await ReportPost.findAll({
       where: {
         postId,
         userId,
-        
       },
     });
     if (reportPost.length === 0) {
@@ -168,7 +160,7 @@ exports.countLike = async (req, res, next) => {
 exports.getTimeLine = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const userPost = await Post.findAll({ where: { userId, isBlock :false }, raw: true });
+    const userPost = await Post.findAll({ where: { userId, isBlock: false }, raw: true });
     // console.log(userPost);
     const friends = await sequelize.query(
       `select followedId, fullName, profilePicture from Followers fw
@@ -226,19 +218,113 @@ exports.getTimeLine = async (req, res, next) => {
     next(error);
   }
 };
+exports.queryTimeLine = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    console.log(req.query);
+    const page = parseInt(_.get(req, 'query.page', 0))
+    
+    console.log(page);
+    let limit = +req.query.limit || 2;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+    // const sort = req.query.sort || SORT.REPORT;
+    const friends = await sequelize.query(
+      `select followedId, fullName, profilePicture from Followers fw
+      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+    
+    const friendIds = friends.map((friend) => friend.followedId);
+    friendIds.push(userId);
+    
+    const posts = await Post.findAll({
+      subQuery: false,
+      where: {
+        userId: {
+          [Op.in]: friendIds,
+        },
+        isBlock: false,
+      },
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      include:[
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+        association: 'user',
+        attributes: ['fullName', 'id', 'username', 'profilePicture'],
+      }],
+      order:[
+        ['createdAt','DESC']
+      ],
+      group: 'id',
+      limit,
+      offset,
+    });
+
+
+    res.status(200).json({ data : posts});
+  } catch (error) {
+    next(error);
+  }
+};
 //get posts on profile
 exports.getProfilePost = async (req, res, next) => {
   try {
     const username = req.params.username;
+    const page = parseInt(_.get(req, 'query.page', 0))
+    
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
     const user = await User.findOne({ where: { username } });
     const userPost = await Post.findAll({
+      subQuery: false,
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
       where: { userId: user.id, isBlock: false },
-      raw: true,
+      limit,
+      offset,
+      include:[
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+        association: 'user',
+        attributes: ['fullName', 'id', 'username', 'profilePicture'],
+      }],
+      order:[
+        ['createdAt','DESC']
+      ],
+      group: 'id',
+      // raw: true,
     });
-    _.forEach(userPost, (item) => {
-      item.profilePicture = user.profilePicture;
-      item.fullName = user.fullName;
-    });
+    // _.forEach(userPost, (item) => {
+    //   item.profilePicture = user.profilePicture;
+    //   item.fullName = user.fullName;
+    // });
 
     res.status(200).json({ data: userPost });
   } catch (error) {

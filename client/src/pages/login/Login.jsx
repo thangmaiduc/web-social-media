@@ -6,7 +6,9 @@ import {
   userSelector,
   fetchSelector,
   signIn,
+  
 } from '../../redux/slices/userSlice';
+import { useEffect } from 'react';
 
 export default function Login() {
   const email = useRef();
@@ -22,6 +24,10 @@ export default function Login() {
         password: password.current.value,
       })
     );
+  };
+
+  const google = () => {
+    window.open("http://localhost:8080/api/auth/google", "_self");
   };
 
   return (
@@ -58,14 +64,22 @@ export default function Login() {
               )}
             </button>
             <span className="loginForgot">Forgot Password?</span>
-            <button className="loginRegisterButton">
-              {isFetching ? (
-                <CircularProgress color="secondary" size="20px" />
-              ) : (
-                'Create a New Account'
-              )}
-            </button>
+
           </form>
+          <button className="loginButtonGoogle" onClick={google} disabled={isFetching}>
+            {isFetching ? (
+              <CircularProgress color="secondary" size="20px" />
+            ) : (
+              'Log In By Google'
+            )}
+          </button>
+          <button className="loginRegisterButton">
+            {isFetching ? (
+              <CircularProgress color="secondary" size="20px" />
+            ) : (
+              'Create a New Account'
+            )}
+          </button>
         </div>
       </div>
     </div>

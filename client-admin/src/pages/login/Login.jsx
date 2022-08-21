@@ -32,7 +32,7 @@ export default function Login() {
   return (
 
     <div className="login">
-    <ToastContainer />
+    {/* <ToastContainer /> */}
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Admin Social Media</h3>

@@ -1,30 +1,54 @@
 import { useState, useEffect, useCallback } from 'react';
 import axiosClient from '../api/axiosClient';
 
-export default function useQuery(url) {
-  const [data, setData] = useState();
+export default function useQuery(url, page, query) {
+  const [data, setData] = useState([]);
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-
+  const [hasMore, setHasMore] = useState(false);
   const handleError = (error) => {
     setError(error.response?.data.err);
     setLoading(false);
   };
-
-  // this function is calling useCallback to stop an infinite loop since it is in the dependency array of useEffect
-  const runQuery = useCallback(() => {
-    const handleSuccess = (res) => {
-      setData(res.data);
+  const handleSuccess = (res) => {
+      const newData = [...data, ...res.data]
+      setData(newData);
+      setHasMore(res.data.length > 0);
       setLoading(false);
     };
-
+  // this function is calling useCallback to stop an infinite loop since it is in the dependency array of useEffect
+  const runQuery = useCallback(() => {
     setLoading(true);
-    axiosClient.get(url).then(handleSuccess).catch(handleError);
-  }, [url]);
+    axiosClient
+      .get(url, {
+        params: {
+          page,
+          query,
+        },
+      })
+      .then(handleSuccess)
+      .catch(handleError);
+  }, [url, page, query]);
+
+  // useEffect(() => {
+  //   const getPosts = async () => {
+  //     try {
+  //       setLoading(true);
+  //       setError(false);
+  //       let res = await postApi.getTimeLine({page});
+  //       setPosts(res.data)
+  //       setHasMore(res.data.length > 0);
+  //       setLoading(false);
+  //     } catch (e) {
+  //       setError(true);
+  //     }
+  //   };
+  //   getPosts();
+  // }, [query, page]);
 
   useEffect(() => {
     runQuery();
   }, [runQuery]);
 
-  return { data, loading, error, refetch: runQuery };
+  return { data, loading, error, hasMore, refetch: runQuery };
 }

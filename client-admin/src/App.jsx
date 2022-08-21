@@ -40,7 +40,7 @@ function App() {
         <Route exact path="/">
           {user ? <Dashboard />: <Login />}
         </Route>
-        <Route path="/login">{user ? <Redirect to="/" /> : <Login />}</Route>
+        <Route path="/login">{user ? <Redirect to="/admin/dashboard" /> : <Login />}</Route>
 
         <Route path="/admin/users">
           {user ? <User/> : <Login />}

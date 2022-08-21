@@ -1,14 +1,22 @@
 import './topbar.css';
-import { Search, Person, Chat, Notifications } from '@material-ui/icons';
+import { Search, Person, Chat, Notifications, ExitToApp } from '@material-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { userSelector } from '../../redux/slices/userSlice';
+import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link } from 'react-router-dom';
-
+import { ToastContainer } from '../../utility/toast';
+import { Button } from '@material-ui/core';
 export default function Topbar() {
   const user = useSelector(userSelector);
+  const dispatch = useDispatch()
+  const logout = () => {
+    // localStorage.clear();
+    dispatch(userSlice.actions.logout())
+   
+  }
   const PF = process.env.REACT_APP_PUBLIC_FOLDER;
   return (
     <div className='topbarContainer'>
+      <ToastContainer />
       <div className='topbarLeft'>
         <Link to='/' style={{ textDecoration: 'none' }}>
           <span className='logo'>Social Media</span>
@@ -26,22 +34,21 @@ export default function Topbar() {
       <div className='topbarRight'>
         <div className='topbarLinks'>
           <span className='topbarLink'>Homepage</span>
-          <span className='topbarLink'>Timeline</span>
         </div>
         <div className='topbarIcons'>
           <div className='topbarIconItem'>
-            <Person className='logoIcon'/>
+            <Person className='logoIcon' />
             <span className='topbarIconBadge'>1</span>
           </div>
           <div className='topbarIconItem'>
-          <Link to='/messenger' style={{ textDecoration: 'none' }}>
+            <Link to='/messenger' style={{ textDecoration: 'none' }}>
 
-            <Chat className='logoIcon'/>
-          </Link>
+              <Chat className='logoIcon' />
+            </Link>
             <span className='topbarIconBadge'>2</span>
           </div>
           <div className='topbarIconItem'>
-            <Notifications className='logoIcon'/>
+            <Notifications className='logoIcon' />
             <span className='topbarIconBadge'>1</span>
           </div>
         </div>
@@ -56,7 +63,15 @@ export default function Topbar() {
             className='topbarImg'
           />
         </Link>
+        <Link to={`login`}>
+          < Button size='small' variant="contained"
+            startIcon={<ExitToApp />} onClick={
+              logout
+            }>
+            Đăng xuất
+          </Button>
+        </Link>
       </div>
-    </div>
+    </div >
   );
 }

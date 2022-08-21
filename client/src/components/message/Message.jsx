@@ -30,12 +30,12 @@ export default function Message({ message, own }) {
   return (
     <div className={own ? 'message own' : 'message'}>
       <div className='messageTop'>
-        <img className='messageImg' src={message?.img} alt='' />
+        <img className='messageImg' src={message?.User?.img} alt='' />
         <div className='messageTopBottom'>
-        {message?.attachments?.length>0&&message?.attachments[0] &&<img
+        {message?.Attachments?.length>0&&message?.Attachments[0] &&<img
             className='messageImage'
             src={
-              message.attachments[0]?.fileUrl
+              message.Attachments[0]?.fileUrl
               // ? PF + user.profilePicture
               // : PF + "person/noAvatar.png"
             }

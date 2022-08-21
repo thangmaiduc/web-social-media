@@ -17,7 +17,7 @@ export default function Rightbar({ user }) {
   // console.log('friendsId.includes(user?.id)', friendsId.includes(user?.id));
   // console.log('user', user);
   const handleClick = async () => {
-    try {
+  try {
       if (followed) {
         await userApi.unfollow(user.id)
       } else {
@@ -57,7 +57,7 @@ export default function Rightbar({ user }) {
         <h4 className="rightbarTitle">Online Friends</h4>
         <ul className="rightbarFriendList">
           {friendsCur.map((u) => (
-            <Online key={u.followerId} user={u} />
+            <Online key={u.followedId} user={u} />
           ))}
         </ul>
       </>

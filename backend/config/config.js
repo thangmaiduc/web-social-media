@@ -14,7 +14,7 @@ module.exports = {
     database: "test",
     host: "localhost",
     dialect: "mysql",
-    logging: false,
+    logging: true,
   },
   test: {
     username: process.env.CI_DB_USERNAME,

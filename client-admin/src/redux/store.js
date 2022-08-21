@@ -17,13 +17,21 @@ const reducers = combineReducers({
   user: userSlice.reducer,
   post: postSlice.reducer,
 });
+const rootReducer = (state, action) => {
+  if (action.type === 'user/logout') {
+    state = undefined;
+    localStorage.clear();
+
+  }
+  return reducers(state, action);
+};
 
 const persistConfig = {
   key: 'root',
   storage,
   whitelist: ['user'],
 };
-const persistedReducer = persistReducer(persistConfig, reducers);
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>

@@ -51,7 +51,11 @@ const userSlice = createSlice({
     isError: false,
     friends:[]
   },
-  reducers: {},
+  reducers: {
+    logout: state => {
+     
+    }
+  },
   extraReducers: {
     [signIn.pending]: (state, action) => {
       state.isFetching = true;

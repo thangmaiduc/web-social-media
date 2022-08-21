@@ -13,12 +13,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import * as userSlice from './redux/slices/userSlice';
 import { useEffect } from 'react';
+import { useState } from 'react';
 function App() {
   const dispatch = useDispatch();
   // let user =null;
   const user = useSelector(userSlice.userSelector);
   const fetch = useSelector(userSlice.fetchSelector);
- 
+
   // console.log('fetch', fetch);
   // const user = {
   //   id: 1,
@@ -31,6 +32,19 @@ function App() {
     if (_.get(user, 'username', null) !== null)
       dispatch(userSlice.getFriends(user.username));
   }, [user]);
+  useEffect(() => {
+    const getUser =async () => {
+
+      try {
+        await dispatch(userSlice.signInGoogle());
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    console.log('login google');
+    getUser();
+  }, []); 
+
   return (
     <Router>
       <Switch>
@@ -45,7 +59,8 @@ function App() {
           {!user ? <Redirect to="/" /> : <Messenger />}
         </Route>
         <Route path="/profile/:username">
-          <Profile />
+         
+          {!user ? <Redirect to="/" /> : <Profile />}
         </Route>
       </Switch>
     </Router>

@@ -134,6 +134,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         max: 50,
       },
+      // provider: {
+      //   type: DataTypes.STRING,
+      //   max: 50,
+      // },
+      // subId: {
+      //   type: DataTypes.STRING,
+      //   max: 50,
+      // },
     },
     {
       sequelize,

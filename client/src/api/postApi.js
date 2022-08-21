@@ -1,10 +1,10 @@
 import axiosClient from './axiosClient';
 import api from './API';
 const postApi = {
-  getTimeLine: async (payload) => {
+  getTimeLine: async (params) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = '/posts/timeline/';
-    const response = axiosClient.get(url, payload);
+    const response = axiosClient.get(url, {params});
     return response;
   },
   createPost: async (payload) => {

@@ -23,6 +23,22 @@ export const signIn = createAsyncThunk(
     return response.user
   }
 );
+export const signInGoogle = createAsyncThunk(
+  'user/signInGoogle',
+  async (params, thunkAPI) => {
+    const response = await userApi.signInGoogle();
+
+    // Save access token to storage
+    console.log('response', response);
+    const { token} = response;
+    // const accessToken = `${token_type} ${access_token}`;
+    localStorage.setItem('token', token);
+    const expiredAt = moment().add(3,'days');
+    console.log(expiredAt.toISOString());
+    localStorage.setItem('expired_at', expiredAt); // expired_at is a timestamp
+    return response.user
+  }
+);
 export const getFriends = createAsyncThunk(
   'user/getFriends',
   async (params, thunkAPI) => {
@@ -57,6 +73,9 @@ const userSlice = createSlice({
         ...action.payload
       }
     },
+    logout: state => {
+     
+    }
   },
   extraReducers: {
     [signIn.pending]: (state, action) => {
@@ -67,6 +86,18 @@ const userSlice = createSlice({
       state.isFetching = false;
     },
     [signIn.fulfilled]: (state, action) => {
+      console.log({ action });
+      state.current = action.payload;
+      state.isFetching = false;
+    },
+    // [signInGoogle.pending]: (state, action) => {
+    //   state.isFetching = true;
+    // },
+    // [signInGoogle.rejected]: (state, action) => {
+    //   console.log({ action });
+    //   state.isFetching = false;
+    // },
+    [signInGoogle.fulfilled]: (state, action) => {
       console.log({ action });
       state.current = action.payload;
       state.isFetching = false;

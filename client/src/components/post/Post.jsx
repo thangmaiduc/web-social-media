@@ -5,16 +5,17 @@ import { useEffect, useState } from "react";
 import Comment from '../comment/Comment'
 import { PostModal } from './PostModal'
 import postApi from '../../api/postApi';
-import userSlice,{ friendSelector, userSelector } from '../../redux/slices/userSlice';
+import userSlice, { friendSelector, userSelector } from '../../redux/slices/userSlice';
 import { useSelector } from 'react-redux';
 import userApi from '../../api/userApi';
 import Tooltip from '@mui/material/Tooltip';
 // import { ToastContainer, toast } from 'react-toastify';
-
-import  { ToastContainer,notify } from '../../utility/toast';
+import { format } from 'timeago.js';
+import { ToastContainer, notify } from '../../utility/toast';
 import { Link } from 'react-router-dom';
+import { forwardRef } from 'react';
 
-export default function Post({ post }) {
+const Post = forwardRef(({ post }, ref) => {
   const user = useSelector(userSelector)
   const friends = useSelector(friendSelector)
   const [like, setLike] = useState(post.numLike || 0)
@@ -30,9 +31,9 @@ export default function Post({ post }) {
   const [page, setPage] = useState(0)
   const [limit, setLimit] = useState(5)
   const [length, setLength] = useState(0)
-  const [editText,setEditText] = useState(post?.description)
- 
+  const [editText, setEditText] = useState(post?.description)
 
+  console.log(1);
   let friendsId = friends.map(f => f.followedId)
 
   useEffect(() => {
@@ -45,20 +46,20 @@ export default function Post({ post }) {
           }
         });
         console.log('comments', res);
-        setComments(res.data);
+        setComments([...comments,...res.data]);
         setLength(res.length);
       } catch (err) { }
     };
     if (isComment)
       getComments();
-  }, [currentPost, page, limit]);
+  }, [currentPost, page,]);
   const likeHandler = () => {
     setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
   }
 
   const handleComment = () => {
-    setIsComment(b=>!b)
+    setIsComment(b => !b)
     setCurrentPost(post.id)
   }
   const handleDeletePost = async () => {
@@ -86,7 +87,7 @@ export default function Post({ post }) {
   const editPost = async (postId, editText) => {
     try {
       await postApi.editPost(postId, { description: editText });
-      
+
       setIsShow(false)
     } catch (err) {
     }
@@ -104,23 +105,27 @@ export default function Post({ post }) {
     }
 
   }
-  const handleReportPost =async () => {
-try {
-  const msg = await postApi.reportPost(post.id)
-  notify(msg)
-} catch (error) {
-  
-}
+  const handleReportPost = async () => {
+    try {
+      const msg = await postApi.reportPost(post.id)
+      notify(msg)
+    } catch (error) {
+
+    }
   }
   const handleClickShowMore = () => {
-    if ((page + 1) * limit < length) {
-      setLimit(p => p + 5)
-    }
-    if ((page + 1) * limit === length) {
-      setLimit(length)
-    }
-    else {
-      return
+    // if ((page + 1) * limit < length) {
+    //   setLimit(p => p + 5)
+    // }
+    // if ((page + 1) * limit === length) {
+    //   setLimit(length)
+    // }
+    // else {
+    //   return
+    // }
+    if((page + 1) * limit > length) return
+    if((page + 1) * limit < length){
+      setPage(p => p + 1)
     }
   }
   useEffect(() => {
@@ -132,101 +137,104 @@ try {
       Bài viết đã xoá
     </div>
 
-  const Post = <div className="post">
-    <div className="postWrapper">
-      <div className="postTop">
-        <div className="postTopLeft">
-        <Link to={`/profile/${post.username}`}>
+  if (deleted) return <PostDeleted />
+  return (
+    <div className="post" ref={ref}>
+      <div className="postWrapper">
+        <div className="postTop">
+          <div className="postTopLeft">
+            <Link to={`/profile/${post.user.username}`}>
 
-        </Link>
-          <img
-            className="postProfileImg"
-            src={post.profilePicture}
-            alt=""
-          />
-          <span className="postUsername">
-            {post.fullName}
-          </span>
-          <span className="postDate">{post.date}</span>
-        </div>
-        <div className="postTopRight">
-          {
-            post?.userId !== user.id ?
-              <div className="optionButton">
-                <div className="reportButton" onClick={handleReportPost}>
-                  <Tooltip title="Báo cáo bài viết">
-                    <Report />
-                  </Tooltip>
+            </Link>
+            <img
+              className="postProfileImg"
+              src={post.user.profilePicture}
+              alt=""
+            />
+            <span className="postUsername">
+              {post.user.fullName}
+            </span>
+            <span className="postDate">{format(post.createdAt)}</span>
+          </div>
+          <div className="postTopRight">
+            {
+              post?.userId !== user.id ?
+                <div className="optionButton">
+                  <div className="reportButton" onClick={handleReportPost}>
+                    <Tooltip title="Báo cáo bài viết">
+                      <Report />
+                    </Tooltip>
+                  </div>
+                  <button className="rightbarFollowButton" onClick={handleUnfollow}>
+                    {followed ? "Unfollow" : "Follow"}
+                    {followed ? <Remove fontSize='small' /> : <Add fontSize='small' />}
+                  </button>
+                </div> :
+                <div className="optionButton">
+                  <div className="removeButton" onClick={handleDeletePost}>
+                    <Tooltip title="Xóa bài viết">
+
+                      <Close fontSize='small' />
+                    </Tooltip>
+                  </div>
+                  <div className="editButton" onClick={() => { setIsShow(true); setPostObj(post) }} >
+                    <Tooltip title="Sửa bài viết">
+
+                      <Edit fontSize='small' />
+                    </Tooltip>
+                  </div>
                 </div>
-                <button className="rightbarFollowButton" onClick={handleUnfollow}>
-                  {followed ? "Unfollow" : "Follow"}
-                  {followed ? <Remove fontSize='small' /> : <Add fontSize='small' />}
-                </button>
-              </div> :
-              <div className="optionButton">
-                <div className="removeButton" onClick={handleDeletePost}>
-                  <Tooltip title="Xóa bài viết">
 
-                    <Close fontSize='small' />
-                  </Tooltip>
-                </div>
-                <div className="editButton" onClick={() => { setIsShow(true); setPostObj(post) }} >
-                  <Tooltip title="Sửa bài viết">
-
-                    <Edit fontSize='small' />
-                  </Tooltip>
-                </div>
-              </div>
-
-          }
+            }
 
 
+          </div>
         </div>
-      </div>
-      <div className="postCenter">
-        <span className="postText">{editText}</span>
-        <img className="postImg" src={post.img} alt="" />
-      </div>
-      <div className="postBottom">
-        <div className="postBottomLeft">
-          <img
-            className="likeIcon"
-            src="https://res.cloudinary.com/dzens2tsj/image/upload/v1660559011/like_jbx2ph.png"
-            onClick={likeHandler}
-            alt=""
-          />
-
-          <span className="postLikeCounter">{like} people like it</span>
+        <div className="postCenter">
+          <span className="postText">{editText}</span>
+          <img className="postImg" src={post.img} alt="" />
         </div>
-        <div className="postBottomRight">
-          <span onClick={handleComment} className="postCommentText">{post.numComment || 0} comments</span>
-        </div>
-      </div>
+        <div className="postBottom">
+          <div className="postBottomLeft">
+            <img
+              className="likeIcon"
+              src="https://res.cloudinary.com/dzens2tsj/image/upload/v1660559011/like_jbx2ph.png"
+              onClick={likeHandler}
+              alt=""
+            />
 
+            <span className="postLikeCounter">{like} people like it</span>
+          </div>
+          <div className="postBottomRight">
+            <span onClick={handleComment} className="postCommentText">{post.numComment || 0} comments</span>
+          </div>
+        </div>
+
+      </div>
+      {isComment &&
+        <Comment
+          comments={comments}
+          user={user}
+          length={length}
+          setPage={setPage}
+          handleSubmit={handleSubmit}
+          handleClickShowMore={handleClickShowMore}
+          setComments={setComments}
+          setLength={setLength}
+        // editComment={editComment}
+        />
+      }
+      <ToastContainer />
+      {isShow && (<PostModal
+        postObj={postObj}
+        editText={editText}
+        setEditText={setEditText}
+        setPostObj={setPostObj}
+        editPost={editPost}
+        setIsShow={setIsShow}
+
+      />)}
     </div>
-    {isComment &&
-      <Comment
-        comments={comments}
-        user={user}
-        length={length}
-        setPage={setPage}
-        handleSubmit={handleSubmit}
-        handleClickShowMore={handleClickShowMore}
-        setComments={setComments}
-        setLength={setLength}
-      // editComment={editComment}
-      />
-    }
-    <ToastContainer />
-    {isShow && (<PostModal
-      postObj={postObj}
-      editText={editText}
-      setEditText={setEditText}
-      setPostObj={setPostObj}
-      editPost={editPost}
-      setIsShow={setIsShow}
-
-    />)}
-  </div>
-  return (deleted ? PostDeleted : Post)
-}
+  )
+})
+export default Post

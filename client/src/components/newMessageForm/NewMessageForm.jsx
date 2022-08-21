@@ -8,14 +8,17 @@ import attachIcon from '../../icons/attachIcon.png';
 import emojiIcon from '../../icons/emojiIcon.png';
 import useOutsideClick from '../../hooks/useOutsideClick';
 import './newMessageForm.css';
+import { Cancel } from '@material-ui/icons';
 
 function NewMessageForm({
   newMessage,
   setNewMessage,
   handleStartTyping,
   selectFile,
+  setFile,
   handleStopTyping,
   handleSubmit,
+  file
 }) {
   const { showEmoji, setShowEmoji, ref } = useOutsideClick(false);
   const handleEmojiShow = () => {
@@ -60,6 +63,12 @@ function NewMessageForm({
         </button>
       </form>
       <div>
+      {file && (
+          <div className='shareImgContainer'>
+            <img className='shareImgMessage' src={URL.createObjectURL(file)} alt='' />
+            <Cancel className='shareCancelImg' onClick={() => setFile(null)} />
+          </div>
+        )}
         {showEmoji && (
           <div ref={ref}>
             <Picker onSelect={handleEmojiSelect} emojiSize={20} />

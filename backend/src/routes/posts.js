@@ -12,7 +12,7 @@ router.put("/:id", postController.update);
 //delete a post
 router.delete("/:id", postController.delete);
 // get posts timeline
-router.get("/timeline/", postController.getTimeLine);
+router.get("/timeline/", postController.queryTimeLine);
 //get posts on profile
 router.get("/profile/:username", postController.getProfilePost);
 // get a post

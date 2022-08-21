@@ -23,7 +23,7 @@ const commentRouter = require('./comments');
 const adminRouter = require('./admin');
 const conversationRouter = require('./conversations');
 const messageRouter = require('./messages');
-// var { authUser } = require("../middlewares/auth");
+
 
 router.use(
   '/users',
