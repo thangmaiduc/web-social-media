@@ -12,6 +12,8 @@ import useTyping from '../../hooks/useTyping';
 import conversationApi from '../../api/conversationApi';
 import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
 import commonApi from '../../api/commonApi';
+import { Button } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 
 export default function Messenger() {
   const [conversations, setConversations] = useState([]);
@@ -91,7 +93,7 @@ export default function Messenger() {
   useEffect(() => {
     const getMessages = async () => {
       try {
-        const res = await  conversationApi.getMessage(
+        const res = await conversationApi.getMessage(
           currentChat?.conversationId
         );
         setMessages(res);
@@ -121,7 +123,7 @@ export default function Messenger() {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
+
   async function selectFile(e) {
     if (typeof e.target.files[0] !== 'undefined') {
       const uploadData = new FormData();
@@ -145,7 +147,17 @@ export default function Messenger() {
       <div className='messenger'>
         <div className='chatMenu'>
           <div className='chatMenuWrapper'>
-            <input placeholder='Search for friends' className='chatMenuInput' />
+            <div className="topChatMenu">
+
+              <input placeholder='Search for friends' className='chatMenuInput' />
+              < Button size='small' variant="contained"
+                color='primary'
+                startIcon={<Add />} onClick={
+                  {/* handleClick */ }
+                }>
+                Thêm cuộc trò chuyện
+              </Button>
+            </div>
             {conversations.length > 0 &&
               conversations.map((c) => (
                 <div key={c?.conversationId} onClick={() => setCurrentChat(c)}>

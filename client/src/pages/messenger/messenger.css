@@ -8,7 +8,7 @@
 }
 
 .chatMenuInput {
-  width: 90%;
+  width: 60%;
   padding: 10px 0;
   border: none;
   border-bottom: 1px solid gray;
@@ -72,4 +72,8 @@
   .chatOnline{
     flex: 1px;
   }
+}
+.topChatMenu{
+  display: flex;
+  
 }
