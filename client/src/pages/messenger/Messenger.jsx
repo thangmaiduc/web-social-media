@@ -7,13 +7,14 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
-import { userSelector } from '../../redux/slices/userSlice';
+import { userSelector, friendSelector } from '../../redux/slices/userSlice';
 import useTyping from '../../hooks/useTyping';
 import conversationApi from '../../api/conversationApi';
 import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
 import commonApi from '../../api/commonApi';
-import { Button } from '@material-ui/core';
+import { Button, TextField } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
+import { Autocomplete } from '@mui/material';
 
 export default function Messenger() {
   const [conversations, setConversations] = useState([]);
@@ -26,9 +27,12 @@ export default function Messenger() {
   const [fileUrl, setFileUrl] = useState('');
   const socketRef = useRef();
   const user = useSelector(userSelector);
+  const friends = useSelector(friendSelector);
   const scrollRef = useRef();
   const { isTyping, startTyping, stopTyping, cancelTyping } = useTyping();
-
+  const [isAdd, setIsAdd] = useState(false)
+  const [value, setValue] = useState([]);
+  const fixedOptions = []
   const sendMessage = async () => {
     // if (!socketRef.current) return;
     let messageObject = {
@@ -141,6 +145,17 @@ export default function Messenger() {
       stopTypingMessage();
     }
   }, [isTyping]);
+  const handleAdd = () => {
+    setIsAdd(true);
+    setCurrentChat(false)
+  }
+  const handleSubmit = () => {
+    setIsAdd(false);
+    // setCurrentChat(false)
+  }
+  useEffect(() => {
+    console.log(value);
+  }, [value,])
   return (
     <>
       <Topbar />
@@ -153,23 +168,60 @@ export default function Messenger() {
               < Button size='small' variant="contained"
                 color='primary'
                 startIcon={<Add />} onClick={
-                  {/* handleClick */ }
+                  handleAdd
                 }>
                 Thêm cuộc trò chuyện
               </Button>
             </div>
             {conversations.length > 0 &&
               conversations.map((c) => (
-                <div key={c?.conversationId} onClick={() => setCurrentChat(c)}>
+                <div key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) }}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}
           </div>
         </div>
         <div className='chatBox'>
+          <div className="chatTitle">
+            {isAdd && <> <Autocomplete
+              multiple
+              fullWidth={true}
+              id="tags-standard"
+              options={friends}
+              getOptionLabel={(option) => option.fullName}
+              value={value}
+              onChange={(event, newValue) => {
+                setValue([
+                  ...fixedOptions,
+                  ...newValue.filter((option) => fixedOptions.indexOf(option) === -1),
+                ]);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  label="Multiple values"
+                  placeholder="Favorites"
+                />
+              )}
+            />
+              < Button size='small' variant="contained"
+                color='primary'
+                startIcon={<Add />} onClick={
+                  handleSubmit
+                }>
+                Tạo
+              </Button>
+            </>
+            }
+          </div>
           <div className='chatBoxWrapper'>
             {currentChat ? (
               <>
+                <div className="chatTitle">
+                  <img className="sidebarFriendImg" src={user.profilePicture} alt="" />
+                  <span className="sidebarFriendName">{user.fullName}</span>
+                </div>
                 <div className='chatBoxTop'>
                   {messages.map((m) => (
                     <div key={m.id} ref={scrollRef}>

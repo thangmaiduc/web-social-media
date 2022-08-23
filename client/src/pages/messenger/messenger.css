@@ -35,10 +35,10 @@
   flex: 3;
 }
 .chatMenuWrapper{
-  height: calc(100vh - 50px);
+  height: calc(100vh - 70px);
   overflow-y: scroll;
   position: sticky;
-  top: 50px;
+  top: 70px;
 }
 .chatMenuWrapper,
 .chatBoxWrapper,
@@ -74,6 +74,10 @@
   }
 }
 .topChatMenu{
+  display: flex;
+  
+}
+.chatTitle{
   display: flex;
   
 }
