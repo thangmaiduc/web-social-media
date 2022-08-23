@@ -10,7 +10,7 @@ const userApi = {
   signInGoogle: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = '/auth/login/success';
-    const response = axiosClient.get(url);
+    const response = axiosClient.get(url,{withCredentials: true});
     return response;
   },
   getFriends: async (payload) => {
