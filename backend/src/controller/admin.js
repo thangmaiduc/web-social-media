@@ -54,7 +54,7 @@ exports.queryUser = async (req, res, next) => {
   try {
     const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
-    const page = parseInt(req.query.page, 0);
+    const page = parseInt(_.get(req, 'query.page', 0))
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
     let textSearch = req.query.textSearch;
@@ -206,7 +206,7 @@ exports.queryPost = async (req, res, next) => {
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
     console.log('req.params', req.params);
     console.log(req.query);
-    const page = parseInt(req.query.page, 0);
+    const page = parseInt(_.get(req, 'query.page', 0))
     console.log(page);
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;

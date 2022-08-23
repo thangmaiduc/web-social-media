@@ -3,9 +3,11 @@ const _ = require('lodash');
 const Participant = require('../models/').Participant;
 const Conversation = require('../models/').Conversation;
 const sequelize = require('../models/').sequelize;
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const Api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
+const noAvatar =
+  'https://res.cloudinary.com/dzens2tsj/image/upload/v1661242291/chat-icon-people-group-260nw-437341633_vlkiwo.webp';
 //add member
 exports.addParticipant = async (req, res, next) => {
   try {
@@ -36,63 +38,62 @@ exports.addParticipant = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const username = req.query.username;
+    const username = _.get(req, 'query.username', '');
+    console.log(username);
     const title = req.body.title || '';
     const userId = req.user.id;
-    if (username) {
+    if (!_.isEmpty(username)) {
       const parner = await User.findOne({ where: { username } });
+      if (!parner) {
+        throw new Api404Error('Không tìm thấy người dùng muốn thêm');
+      }
       const parnerId = parner.id;
-      const participants = await Participant.findAll({
+      const participantsUser = await Participant.findAll({
+        where: { userId: userId },
+      });
+      const participantsPartner = await Participant.findAll({
         where: { userId: parnerId },
       });
-      let res = {};
-      if (participants.length > 0) {
-        let check;
-
-        participants.forEach(async (participant, i) => {
-          // console.log(participant);
-          check = await Participant.findOne({
-            where: {
-              userId,
-              conversationId: participant.conversationId,
-              type: 'private',
+      let present = _.intersectionBy(participantsUser, participantsPartner, 'conversationId');
+      console.log('present:>>>>>>>>', JSON.stringify(present));
+      isCreated = !present.every((p) => p.type === 'public');
+      ConversationIds = present.map((p) => p.conversationId);
+      let participant = null;
+      if (isCreated) {
+        participant = await Participant.findOne({
+          where: {
+            userId: parnerId,
+            conversationId: {
+              [Op.in]: ConversationIds,
             },
-          });
-          if (check) return true;
+            type: 'private',
+          },
+          raw: true,
+        });
+        participant.img = parner.profilePicture;
+        participant.title = parner.fullName;
 
-          if (!check && i === participants.length - 1) {
-            let conversation = await Conversation.create({
-              // title: user.fullName,
-              creatorId: userId,
-            });
-            await Participant.create({
-              conversationId: conversation.id,
-              userId,
-              type: 'private',
-            });
-            await Participant.create({
-              conversationId: conversation.id,
-              userId: parnerId,
-              type: 'private',
-            });
-          }
-        });
-      } else {
-        let conversation = await Conversation.create({
-          // title: user.fullName,
-          creatorId: userId,
-        });
-        await Participant.create({
-          conversationId: conversation.id,
-          userId,
-          type: 'private',
-        });
-        await Participant.create({
-          conversationId: conversation.id,
-          userId: parnerId,
-          type: 'private',
-        });
+        return res.status(200).json({ data: participant });
       }
+
+      let conversation = await Conversation.create({
+        creatorId: userId,
+      });
+      await Participant.create({
+        conversationId: conversation.id,
+        userId,
+        type: 'private',
+      });
+      participant = await Participant.create({
+        conversationId: conversation.id,
+        userId: parnerId,
+        type: 'private',
+      });
+      participant = participant.toJSON();
+      participant.img = parner.profilePicture;
+      participant.title = parner.fullName;
+
+      return res.status(200).json({ data: participant });
     } else {
       let conversation = await Conversation.create({
         title,
@@ -103,11 +104,12 @@ exports.create = async (req, res, next) => {
         userId,
         type: 'public',
       });
+
     }
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
 
-    res.status(200).json({ message: 'ok' });
+    //  return res.status(200).json({ data: participant });
   } catch (error) {
     next(error);
   }
@@ -163,6 +165,81 @@ exports.create = async (req, res, next) => {
 // };
 
 //get conv of a user
+exports.query = async (req, res, next) => {
+  try {
+    const page = parseInt(_.get(req, 'query.page', 0));
+    let limit = +req.query.limit || 15;
+    let offset = 0 + page * limit;
+    let textSearch = req.query.textSearch;
+    console.log('page', page);
+    console.log('limit', limit);
+    console.log('offset', offset);
+    const userId = req.user.id;
+    let where = {};
+    if (!_.isEmpty(textSearch)) {
+      where[Op.or] = {
+        fullName: {
+          [Op.like]: `%${textSearch}%`,
+        },
+        username: {
+          [Op.like]: `%${textSearch}%`,
+        },
+      };
+    }
+    const conversations = await sequelize.query(
+      `SELECT p.conversationId, p.type   FROM Participants p
+      JOIN Conversations c on p.conversationId = c.id
+      WHERE p.userId = ${userId}
+      `,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const conversationIds = conversations.map((c) => c.conversationId);
+    let participants = await Participant.findAll({
+      include: [
+        { model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'], where },
+        { model: Conversation },
+      ],
+
+      where: {
+        conversationId: { [Op.in]: conversationIds },
+        userId: { [Op.ne]: userId },
+      },
+      limit,
+      offset,
+      // raw: true
+      // group: 'conversationId'
+    });
+    _.forEach(participants, (i) => {
+      console.log(i.toJSON());
+    });
+    participants = participants.map((item) => {
+      item = item.toJSON();
+      let title;
+      if (item.type === 'private') {
+        title = item.User.fullName;
+        img = item.User.profilePicture;
+      }
+      if (item.type === 'public') {
+        title = item.Conversation.title || 'Nhóm không có tên';
+        img = noAvatar;
+      }
+      return {
+        ...item,
+        img,
+        title,
+      };
+    });
+
+    // * group by xong, ta tiếp tục thêm vào set của js để bỏ trùng conversation, lại check nếu trùng conversation thì add vào mảng  participants
+
+    res.status(200).json({ data: participants });
+  } catch (error) {
+    next(error);
+  }
+};
 exports.get = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -206,7 +283,7 @@ exports.get = async (req, res, next) => {
               type: QueryTypes.SELECT,
             }
           );
-          item.title = users[0]?.fullName|| "No Name";
+          item.title = users[0]?.fullName || 'No Name';
           item.img = users[0]?.profilePicture;
           return item;
         }

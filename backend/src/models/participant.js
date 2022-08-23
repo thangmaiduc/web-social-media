@@ -9,6 +9,12 @@ module.exports = (sequelize, DataTypes) => {
       // Participant.belongsTo(models.User, {
       //   foreignKey: 'userId',
       // });
+      Participant.belongsTo(models.Conversation, {
+        foreignKey: "conversationId",
+      });
+      Participant.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
     }
   }
   Participant.init(

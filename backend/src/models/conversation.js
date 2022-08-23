@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'creatorId',
       });
       Conversation.belongsToMany(models.User, {
+        as:'participants',
         foreignKey: 'conversationId',
         through: models.Participant,
         onDelete: 'CASCADE',

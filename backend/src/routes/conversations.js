@@ -13,7 +13,7 @@ router.post("/", conversationController.create);
 
 //get conv of a user
 
-router.get("/", conversationController.get);
+router.get("/", conversationController.query);
 
 // get conv includes two userId
 
