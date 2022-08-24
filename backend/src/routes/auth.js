@@ -12,6 +12,7 @@ router.get("/logout", (req, res) => {
   });
 router.get('/login/success', (req, res) => {
   if (req.user) {
+    console.log(req.user);
     let token = jwt.sign({ userId: req.user.id, isAdmin: req.user.isAdmin }, process.env.JWT_KEY, {
       expiresIn: '3 days',
     });

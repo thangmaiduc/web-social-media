@@ -45,6 +45,7 @@ passport.use(
           specialChars: false,
         });
         if (checkUser) {
+          console.log('checkUser:=========>',checkUser);
           return done(null, checkUser);
         }
         username = data.email.split('@')[0];
@@ -55,6 +56,7 @@ passport.use(
           profilePicture: data.picture,
           password: OTP,
         });
+        console.log('newUser:=========>',newUser);
         return done(null, newUser);
       } catch (error) {
         return done(error);
