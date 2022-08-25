@@ -13,23 +13,61 @@ exports.addParticipant = async (req, res, next) => {
   try {
     console.log(req.params, req.body);
     let conversationId = req.params.id;
-    let users = req.body.users;
-    if (users.length == 0) res.status(400).json('failed');
+    let userId = req.user.id;
+    let users = _.get(req, 'body.users', []);
+    if (users.length == 0) throw new api400Error('Không có người dùng nào');
 
     const check = await Conversation.findOne({
       where: { id: conversationId },
     });
     if (!check) {
-      throw new Api404Error('Không tìm thấy nhóm');
+      throw new Api404Error('Không tìm thấy nhóm chat');
+    }
+    const isMember = await Participant.findOne({ where: { userId, conversationId } });
+    if (!isMember) {
+      throw new Api404Error('Không tìm thấy nhóm này');
     }
     users.forEach(async (userId) => {
       let checkPar = await Participant.findOne({
         where: { userId, conversationId },
       });
       let check = await User.findOne({ where: { id: userId } });
-      check && !checkPar && (await Participant.create({ userId, conversationId, type: 'public' }));
+      try {
+        check && !checkPar && (await Participant.create({ userId, conversationId, type: 'public' }));
+      } catch (error) {
+        console.log(error);
+      }
     });
-    res.status(200).json({ message: 'thêm thành công' });
+    res.status(204).json();
+  } catch (error) {
+    next(error);
+  }
+};
+//get member of Conversation
+exports.getMemberOfGroup = async (req, res, next) => {
+  try {
+    console.log(req.params, req.body);
+    let conversationId = req.params.id;
+    let userId = req.user.id;
+
+    let users = req.body.users;
+    if (users.length == 0) throw new api400Error('Không có người dùng nào');
+
+    const check = await Conversation.findOne({
+      where: { id: conversationId },
+    });
+    if (!check) {
+      throw new Api404Error('Không tìm thấy nhóm chat');
+    }
+    const isMember = await Participant.findOne({ where: { userId, conversationId } });
+    if (!isMember) {
+      throw new Api404Error('Không tìm thấy nhóm này');
+    }
+    let participants = await Participant.findAll({
+      where: { conversationId },
+      include: [{ model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'] }],
+    });
+    res.status(200).json({data: participants});
   } catch (error) {
     next(error);
   }
@@ -104,7 +142,6 @@ exports.create = async (req, res, next) => {
         userId,
         type: 'public',
       });
-
     }
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });

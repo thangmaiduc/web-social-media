@@ -222,8 +222,8 @@ exports.queryTimeLine = async (req, res, next) => {
   try {
     const userId = req.user.id;
     console.log(req.query);
-    const page = parseInt(_.get(req, 'query.page', 0))
-    
+    const page = parseInt(_.get(req, 'query.page', 0));
+
     console.log(page);
     let limit = +req.query.limit || 2;
     let offset = 0 + page * limit;
@@ -236,10 +236,10 @@ exports.queryTimeLine = async (req, res, next) => {
         type: QueryTypes.SELECT,
       }
     );
-    
+
     const friendIds = friends.map((friend) => friend.followedId);
     friendIds.push(userId);
-    
+
     const posts = await Post.findAll({
       subQuery: false,
       where: {
@@ -254,7 +254,7 @@ exports.queryTimeLine = async (req, res, next) => {
           [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
         ],
       },
-      include:[
+      include: [
         {
           model: LikePost,
           attributes: [],
@@ -264,19 +264,108 @@ exports.queryTimeLine = async (req, res, next) => {
           attributes: [],
         },
         {
-        association: 'user',
-        attributes: ['fullName', 'id', 'username', 'profilePicture'],
-      }],
-      order:[
-        ['createdAt','DESC']
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
       ],
+      order: [['createdAt', 'DESC']],
       group: 'id',
       limit,
       offset,
     });
 
+    res.status(200).json({ data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
 
-    res.status(200).json({ data : posts});
+// * query cho search gồm có tìm bạn bè, bài viết
+exports.query = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    console.log(req.query);
+    const page = parseInt(_.get(req, 'query.page', 0));
+
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+    let textSearch = req.query.textSearch;
+    // const sort = req.query.sort || SORT.REPORT;
+    const friends = await sequelize.query(
+      `select followedId, fullName, profilePicture from Followers fw
+      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+    let wherePost = {};
+    wherePost = {
+      description: {
+        [Op.like]: `%${textSearch}%`,
+      },
+    };
+    let whereUser = {};
+    whereUser[Op.or] = {
+      fullName: {
+        [Op.like]: `%${textSearch}%`,
+      },
+      username: {
+        [Op.like]: `%${textSearch}%`,
+      },
+      email: {
+        [Op.like]: `%${textSearch}%`,
+      },
+    };
+
+    const friendIds = friends.map((friend) => friend.followedId);
+
+    const users = await User.findAll({
+      subQuery: false,
+      where: {
+        ...whereUser,
+        isBlock: false,
+      },
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      raw: true
+    });
+  
+    const posts = await Post.findAll({
+      subQuery: false,
+      where: {
+        ...wherePost,
+        isBlock: false,
+      },
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      include: [
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      group: 'id',
+      limit,
+      offset,
+    });
+
+    res.status(200).json({ data: posts });
   } catch (error) {
     next(error);
   }
@@ -285,8 +374,8 @@ exports.queryTimeLine = async (req, res, next) => {
 exports.getProfilePost = async (req, res, next) => {
   try {
     const username = req.params.username;
-    const page = parseInt(_.get(req, 'query.page', 0))
-    
+    const page = parseInt(_.get(req, 'query.page', 0));
+
     console.log(page);
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
@@ -302,7 +391,7 @@ exports.getProfilePost = async (req, res, next) => {
       where: { userId: user.id, isBlock: false },
       limit,
       offset,
-      include:[
+      include: [
         {
           model: LikePost,
           attributes: [],
@@ -312,12 +401,11 @@ exports.getProfilePost = async (req, res, next) => {
           attributes: [],
         },
         {
-        association: 'user',
-        attributes: ['fullName', 'id', 'username', 'profilePicture'],
-      }],
-      order:[
-        ['createdAt','DESC']
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
       ],
+      order: [['createdAt', 'DESC']],
       group: 'id',
       // raw: true,
     });
