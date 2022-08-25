@@ -4,6 +4,8 @@ const conversationController = require("../controller/conversations");
 
 //add member
 router.post("/members/:id", conversationController.addParticipant);
+//get member
+router.get("/members/:id", conversationController.getMemberOfGroup);
 //new private chat
 // router.post("/", conversationController.createPrivate);
 
