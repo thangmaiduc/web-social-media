@@ -2,10 +2,11 @@ const User = require('../models/').User;
 const Follower = require('../models/').Follower;
 const ReportUser = require('../models/').ReportUser;
 const sequelize = require('../models/').sequelize;
-const { QueryTypes } = require('sequelize');
+const { result } = require('lodash');
+const { QueryTypes,Op } = require('sequelize');
 const api400Error = require('../utils/errors/api400Error');
 const api404Error = require('../utils/errors/api404Error');
-
+const _ = require('lodash');
 // * update
 
 exports.update = async (req, res, next) => {
@@ -185,6 +186,58 @@ exports.unfollow = async (req, res, next) => {
     });
 
     res.json({ message: 'Bạn đã bỏ báo cáo thành công' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// * query users
+exports.query = async (req, res, next) => {
+  try {
+    console.log(req.query);
+    const page = parseInt(_.get(req, 'query.page', 0));
+    const userId = req.user.id;
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+    let textSearch = req.query.textSearch;
+    const friends = await sequelize.query(
+      `select followedId, fullName, profilePicture from Followers fw
+      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+   
+    let whereUser = {};
+    whereUser[Op.or] = {
+      fullName: {
+        [Op.like]: `%${textSearch}%`,
+      },
+      username: {
+        [Op.like]: `%${textSearch}%`,
+      },
+      email: {
+        [Op.like]: `%${textSearch}%`,
+      },
+    };
+
+    const friendIds = friends.map((friend) => friend.followedId);
+
+    const users = await User.findAll({
+      subQuery: false,
+      where: {
+        ...whereUser,
+        isBlock: false,
+      },
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+      raw: true
+    });
+
+    res.status(200).json({ data: users });
   } catch (error) {
     next(error);
   }

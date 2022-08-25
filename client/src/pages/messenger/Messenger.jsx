@@ -3,7 +3,7 @@ import Topbar from '../../components/topbar/Topbar';
 import Conversation from '../../components/conversations/Conversation';
 import Message from '../../components/message/Message';
 import ChatOnline from '../../components/chatOnline/ChatOnline';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
@@ -15,7 +15,10 @@ import commonApi from '../../api/commonApi';
 import { Button, TextField } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
 import { Autocomplete } from '@mui/material';
-
+import { notify } from '../../utility/toast';
+import useQuery from '../../hooks/useQuery';
+import useQuerySearch from '../../hooks/useQuerySearch';
+import api from '../../api/API';
 export default function Messenger() {
   const [conversations, setConversations] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
@@ -33,6 +36,8 @@ export default function Messenger() {
   const [isAdd, setIsAdd] = useState(false)
   const [value, setValue] = useState([]);
   const fixedOptions = []
+  const [textSearch, setTextSearch] = useState('')
+  const [page, setPage] = useState(0)
   const sendMessage = async () => {
     // if (!socketRef.current) return;
     let messageObject = {
@@ -139,6 +144,7 @@ export default function Messenger() {
       return null;
     }
   }
+ 
   useEffect(() => {
     if (isTyping) startTypingMessage();
     else {
@@ -149,13 +155,34 @@ export default function Messenger() {
     setIsAdd(true);
     setCurrentChat(false)
   }
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsAdd(false);
-    // setCurrentChat(false)
+    try {
+      let memberIds = value.map(member => member.followedId)
+      let res = await conversationApi.newConversation({ users: memberIds });
+      notify(res.message);
+      setConversations()
+    } catch (error) {
+
+    }
   }
+  
+  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, page, textSearch);
   useEffect(() => {
-    console.log(value);
-  }, [value,])
+    console.log('data',data);
+   }, [data]);
+  const observer = useRef()
+
+  const lastBookElementRef = useCallback(node => {
+    if (loading) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPageNumber => prevPageNumber + 1)
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [loading, hasMore])
   return (
     <>
       <Topbar />
@@ -164,7 +191,7 @@ export default function Messenger() {
           <div className='chatMenuWrapper'>
             <div className="topChatMenu">
 
-              <input placeholder='Search for friends' className='chatMenuInput' />
+              <input placeholder='Search for friends' className='chatMenuInput' value={textSearch} onChange={(e)=>setTextSearch(e.target.value)}/>
               < Button size='small' variant="contained"
                 color='primary'
                 startIcon={<Add />} onClick={
@@ -173,9 +200,9 @@ export default function Messenger() {
                 Thêm cuộc trò chuyện
               </Button>
             </div>
-            {conversations.length > 0 &&
-              conversations.map((c) => (
-                <div key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) }}>
+            {data.length > 0 &&
+              data.map((c) => (
+                <div ref={lastBookElementRef} key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) }}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}
@@ -251,7 +278,7 @@ export default function Messenger() {
           <div className='chatOnlineWrapper'>
             <ChatOnline
               onlineUsers={onlineUsers}
-              currentId={user._id}
+              currentId={user.id}
               setCurrentChat={setCurrentChat}
             />
           </div>

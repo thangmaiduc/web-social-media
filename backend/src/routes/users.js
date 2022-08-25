@@ -8,7 +8,8 @@ const userController = require('../controller/users');
 router.put('/', userController.update);
 //delete a user
 router.delete('/:id', userController.delete);
-
+//query
+router.get("/query", userController.query);
 //getme
 router.get('/me', userController.getMe);
 //get all user's friends

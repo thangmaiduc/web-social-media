@@ -7,6 +7,8 @@ router.get("/", (req, res) => {
 });
 //create
 router.post("/", postController.create);
+//query
+router.get("/query", postController.query);
 //update
 router.put("/:id", postController.update);
 //delete a post

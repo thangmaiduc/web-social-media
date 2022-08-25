@@ -5,7 +5,6 @@ import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link } from 'react-router-dom';
 import { ToastContainer } from '../../utility/toast';
 import { Button } from '@material-ui/core';
-import { withCookies, Cookies } from 'react-cookie';
 export default function Topbar() {
   const user = useSelector(userSelector);
   const dispatch = useDispatch()

@@ -293,46 +293,13 @@ exports.query = async (req, res, next) => {
     console.log('offset', offset);
     let textSearch = req.query.textSearch;
     // const sort = req.query.sort || SORT.REPORT;
-    const friends = await sequelize.query(
-      `select followedId, fullName, profilePicture from Followers fw
-      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
+    
     let wherePost = {};
     wherePost = {
       description: {
         [Op.like]: `%${textSearch}%`,
       },
     };
-    let whereUser = {};
-    whereUser[Op.or] = {
-      fullName: {
-        [Op.like]: `%${textSearch}%`,
-      },
-      username: {
-        [Op.like]: `%${textSearch}%`,
-      },
-      email: {
-        [Op.like]: `%${textSearch}%`,
-      },
-    };
-
-    const friendIds = friends.map((friend) => friend.followedId);
-
-    const users = await User.findAll({
-      subQuery: false,
-      where: {
-        ...whereUser,
-        isBlock: false,
-      },
-      order: [['createdAt', 'DESC']],
-      limit,
-      offset,
-      raw: true
-    });
-  
     const posts = await Post.findAll({
       subQuery: false,
       where: {
@@ -364,7 +331,7 @@ exports.query = async (req, res, next) => {
       limit,
       offset,
     });
-
+    
     res.status(200).json({ data: posts });
   } catch (error) {
     next(error);

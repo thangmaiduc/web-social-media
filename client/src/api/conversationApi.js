@@ -8,6 +8,20 @@ const conversationApi = {
     console.log('response', response);
     return response.data;
   },
+  newConversation: async (payload) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    const url = api.GET_CONVERSATIONS;
+    const response = await axiosClient.post(url,payload);
+    console.log('response', response);
+    return response;
+  },
+  addMember: async (conversationId, payload) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    const url = api.ADD_MEMBER+conversationId;
+    const response = await axiosClient.post(url,payload);
+    console.log('response', response);
+    return response.data;
+  },
   getMessage: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = api.GET_MESSAGES+payload;

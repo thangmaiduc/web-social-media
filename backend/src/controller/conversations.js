@@ -1,4 +1,5 @@
 const User = require('../models/').User;
+const Message = require('../models/').Message;
 const _ = require('lodash');
 const Participant = require('../models/').Participant;
 const Conversation = require('../models/').Conversation;
@@ -38,7 +39,7 @@ exports.addParticipant = async (req, res, next) => {
         console.log(error);
       }
     });
-    res.status(204).json();
+    res.status(200).json({ message: 'Thêm thành viên thành công' });
   } catch (error) {
     next(error);
   }
@@ -67,7 +68,7 @@ exports.getMemberOfGroup = async (req, res, next) => {
       where: { conversationId },
       include: [{ model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'] }],
     });
-    res.status(200).json({data: participants});
+    res.status(200).json({ data: participants });
   } catch (error) {
     next(error);
   }
@@ -142,6 +143,34 @@ exports.create = async (req, res, next) => {
         userId,
         type: 'public',
       });
+      let users = _.get(req, 'body.users', []);
+      if (users.length == 0) throw new api400Error('Không có người dùng nào');
+
+      const check = await Conversation.findOne({
+        where: { id: conversation.id },
+      });
+      if (!check) {
+        throw new Api404Error('Không tìm thấy nhóm chat');
+      }
+      users.forEach(async (userId) => {
+        let checkPar = await Participant.findOne({
+          where: { userId, conversationId: conversation.id },
+        });
+        let check = await User.findOne({ where: { id: userId } });
+        try {
+          check && !checkPar && (await Participant.create({ userId, conversationId: conversation.id, type: 'public' }));
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      let dataResponse = {
+        conversationId: conversation.id,
+        type: 'public',
+        title: conversation.title || 'Không có tên nhóm',
+        img: noAvatar,
+      };
+
+      res.status(200).json({ message: 'Tạo nhóm thành công', data: dataResponse });
     }
 
     // const userPost = await Post.findAll({ where: { userId: user.id } });
@@ -151,57 +180,6 @@ exports.create = async (req, res, next) => {
     next(error);
   }
 };
-// exports.create = async (req, res, next) => {
-//   try {
-//     const username = req.query.username;
-//     let userId = req.user.id;
-//     if (username) {
-//       const user = await User.findOne({ where: { username } });
-//       const parnerId = user.id;
-//       const participants = await Participant.findAll({
-//         where: { userId: parnerId },
-//       });
-//       let res = {};
-
-//       check = participants.find(async (participant) => {
-//         let check = await Participant.findOne({
-//           where: { userId, conversationId: participant.conversationId },
-//         });
-//         if (check) return check;
-//       });
-//       console.log(check);
-//       if (!check) {
-//         conversation = await Conversation.create({
-//           tittle: user.fullName,
-//           creatorId: userId,
-//         });
-//         await Participant.create({ conversationId: conversation.id, userId });
-//         await Participant.create({
-//           conversationId: conversation.id,
-//           userId: user.id,
-//         });
-//       }
-//     } else {
-//     }
-
-//     // const userPost = await Post.findAll({ where: { userId: user.id } });
-
-//     res.status(200).json({ message: "ok" });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
-// exports.createPrivate = async (req, res, next) => {
-//   try {
-
-//     res.status(200).json({ message: userPost });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
-//get conv of a user
 exports.query = async (req, res, next) => {
   try {
     const page = parseInt(_.get(req, 'query.page', 0));
@@ -238,6 +216,7 @@ exports.query = async (req, res, next) => {
       include: [
         { model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'], where },
         { model: Conversation },
+        // { model: Message, attributes: ['createdAt'] },
       ],
 
       where: {
@@ -246,8 +225,9 @@ exports.query = async (req, res, next) => {
       },
       limit,
       offset,
+      order:[['conversationId', 'DESC']],
       // raw: true
-      // group: 'conversationId'
+      group: 'conversationId',
     });
     _.forEach(participants, (i) => {
       console.log(i.toJSON());

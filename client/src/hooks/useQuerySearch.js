@@ -11,11 +11,11 @@ export default function useQuery(url, page, textSearch) {
     setLoading(false);
   };
   const handleSuccess = (res) => {
-      const newData = [...data, ...res.data]
-      setData(newData);
-      setHasMore(res.data.length > 0);
-      setLoading(false);
-    };
+    const newData = [...res.data];
+    setData(newData);
+    setHasMore(res.data.length > 0);
+    setLoading(false);
+  };
   // this function is calling useCallback to stop an infinite loop since it is in the dependency array of useEffect
   const runQuery = useCallback(() => {
     setLoading(true);
