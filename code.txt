@@ -1,0 +1,1044 @@
+
+//====================middleware xac thực
+const jwt = require('jsonwebtoken');
+const User = require('../models').User;
+const api401Error = require('../utils/errors/api401Error');
+
+const authUser = async (req, res, next) => {
+  try {
+    const token =
+      req.header('Authorization') &&
+      req.header('Authorization').replace('Bearer ', '');
+    if (!token) {
+      const error = new Error('Bạn chưa đăng nhập, vui lòng đăng nhập');
+      error.statusCode = 417;
+    }
+    const decode = jwt.verify(token, process.env.JWT_KEY);
+    const user = await User.findOne({ where: { id: decode.userId } });
+    if (!user) {
+      const error = new Error('Tài khoản không tồn tài');
+      error.statusCode = 401;
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 417;
+      error.message = 'Hết phiên đăng nhập, vui lòng đăng nhập lại';
+    }
+    next(error);
+  }
+};
+function authAdmin(req, res, next) {
+  console.log(req.user);
+    if (req.user.isAdmin !== true) {
+      console.log('you are not admin', req.user);
+      throw new api401Error('Not allowed');
+    }
+    next();
+}
+
+module.exports = {
+  authUser,
+  authAdmin,
+};
+
+
+
+
+// >>>>>>>>>>>code route auth
+
+const router = require('express').Router();
+const authController = require('../controller/auth');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+
+const CLIENT_URL = 'http://localhost:3000/';
+const ADMIN_URL = 'http://localhost:3005/';
+
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect(CLIENT_URL);
+});
+router.get('/login/success', (req, res) => {
+  if (req.user) {
+    console.log(req.user);
+    let token = jwt.sign({ userId: req.user.id, isAdmin: req.user.isAdmin }, process.env.JWT_KEY, {
+      expiresIn: '3 days',
+    });
+    console.log(token);
+    res.setHeader('authToken', token);
+    res.status(200).json({
+      success: true,
+      message: 'successfull',
+      user: req.user,
+      token,
+      //   cookies: req.cookies
+    });
+  } else {
+    res.status(401).send('authorizationError');
+  }
+});
+
+router.get('/login/failed', (req, res) => {
+  res.status(401).json({
+    success: false,
+    message: 'failure',
+  });
+});
+
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect(CLIENT_URL);
+});
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    successRedirect: CLIENT_URL,
+    failureRedirect: 'api/auth/login/failed',
+  })
+);
+
+router.post('/login', authController.login);
+router.post('/admin/login', authController.loginAdmin);
+router.post('/register', authController.register);
+router.put('/forgot-password', authController.forgotPassword);
+
+module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+// route admin 
+const router = require('express').Router();
+
+const adminController = require('../controller/admin');
+router.get('/dashboard/', adminController.statisDashboard);
+router.get('/users/', adminController.queryUser);
+router.get('/posts/', adminController.queryPost);
+router.patch('/block-user/', adminController.blockUser);
+router.patch('/block-posts/', adminController.blockPost);
+
+module.exports = router;
+
+
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>route user
+
+
+const router = require('express').Router();
+const userController = require('../controller/users');
+
+//update
+router.put('/', userController.update);
+//delete a user
+router.delete('/:id', userController.delete);
+//query
+router.get("/query", userController.query);
+//getme
+router.get('/me', userController.getMe);
+//get all user's friends
+router.get('/friends/:username', userController.getFriends);
+//get a user
+router.get('/:username', userController.get);
+//follow a user
+router.put('/:id/follow', userController.follow);
+router.put('/:id/report', userController.report);
+//unfollow a user
+router.get('/:id', userController.getById);
+router.put('/:id/unfollow', userController.unfollow);
+router.get('/', userController.getAll);
+
+module.exports = router;
+
+
+
+
+
+
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>route post
+const router = require("express").Router();
+
+const postController = require("../controller/posts");
+
+//create
+router.post("/", postController.create);
+//query
+router.get("/query", postController.query);
+//update
+router.put("/:id", postController.update);
+//delete a post
+router.delete("/:id", postController.delete);
+// get posts timeline
+router.get("/timeline/", postController.queryTimeLine);
+//get posts on profile
+router.get("/profile/:username", postController.getProfilePost);
+// get a post
+
+router.get("/:id", postController.get);
+// like a post
+router.put("/:id/like", postController.like);
+// report a post
+router.put("/:id/report", postController.report);
+
+module.exports = router;
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>controller admin
+//========================= query user
+exports.queryUser = async (req, res, next) => {
+  try {
+    const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
+    const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
+    const page = parseInt(_.get(req, 'query.page', 0))
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    let textSearch = req.query.textSearch;
+    const sort = req.query.sort || SORT.REPORT;
+    const direction = req.query.direction || 'desc';
+
+    const order = [];
+    const where = {};
+    const orderDESC = [
+      [sequelize.literal('COUNT(DISTINCT(Reported.id))'), 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'DESC'],
+      ['id', 'DESC'],
+      ['isBlock', 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(Followed.id))'), 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(Following.id))'), 'DESC'],
+      ['fullName', 'DESC'],
+    ];
+    const orderASC = [
+      [sequelize.literal('COUNT(DISTINCT(Reported.id))'), 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'ASC'],
+      ['id', 'ASC'],
+      ['isBlock', 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(Followed.id))'), 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(Following.id))'), 'ASC'],
+      ['fullName', 'ASC'],
+    ];
+    if (sort === SORT.REPORT && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[0]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.REPORT && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[0]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.POST && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[1]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.POST && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[1]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.FOLLOWED && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[4]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.FOLLOWED && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[4]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[5]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[5]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.FULLNAME && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[6]);
+    } else if (sort === SORT.FULLNAME && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[6]);
+    }
+    if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[5]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.FOLLOWING && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[5]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.USERID && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[2]);
+    } else if (sort === SORT.USERID && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.STATUS && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[3]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.STATUS && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[3]);
+      order.push(orderASC[2]);
+    }
+    if (sort !== SORT.STATUS) where.isBlock = false;
+    if (!_.isEmpty(textSearch)) {
+      where[Op.or] = {
+        fullName: {
+          [Op.like]: `%${textSearch}%`,
+        },
+        id: {
+          [Op.like]: textSearch,
+        },
+        username: {
+          [Op.like]: `%${textSearch}%`,
+        },
+      };
+    }
+    const result = await User.findAll({
+      subQuery: false,
+      where,
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(Reported.id))'), 'numReport'],
+          [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'numPost'],
+          [sequelize.literal('COUNT(DISTINCT(Followed.id))'), 'numFollowed'],
+          [sequelize.literal('COUNT(DISTINCT(Following.id))'), 'numFollowing'],
+        ],
+        exclude: ['password'],
+      },
+      include: [
+        {
+          association: 'Reported',
+          attributes: [],
+        },
+        {
+          association: 'Followed',
+          attributes: [],
+        },
+        {
+          association: 'Following',
+          attributes: [],
+        },
+
+        // * chọn liên kết nào, với 'as'
+        {
+          association: 'posts',
+          attributes: [],
+        },
+      ],
+
+      group: 'id',
+      order,
+      offset,
+      limit,
+    });
+    length = await User.count({
+      where,
+    });
+
+    res.json({
+      data: result,
+      length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+//=================================query post
+exports.queryPost = async (req, res, next) => {
+  try {
+  
+    const page = parseInt(_.get(req, 'query.page', 0))
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+    const sort = req.query.sort || SORT.REPORT;
+    const direction = req.query.direction || 'DESC';
+
+    const order = [];
+    const where = {};
+    const orderDESC = [
+      [sequelize.literal('COUNT(DISTINCT(ReportPosts.id))'), 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'DESC'],
+      ['id', 'DESC'],
+      ['isBlock', 'DESC'],
+      [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'DESC'],
+    ];
+    const orderASC = [
+      [sequelize.literal('COUNT(DISTINCT(ReportPosts.id))'), 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'ASC'],
+      ['id', 'ASC'],
+      ['isBlock', 'ASC'],
+      [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'ASC'],
+    ];
+    if (sort === SORT.REPORT && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[0]);
+      order.push(orderASC[1]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.REPORT && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[0]);
+      order.push(orderDESC[1]);
+      order.push(orderDESC[2]);
+    }
+
+    if (sort === SORT.LIKE && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[1]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.LIKE && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[1]);
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.POSTID && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[2]);
+    } else if (sort === SORT.POSTID && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[2]);
+    }
+    if (sort === SORT.COMMENT && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[4]);
+    } else if (sort === SORT.COMMENT && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[4]);
+    }
+    if (sort === SORT.STATUS && _.upperCase(direction) === 'DESC') {
+      order.push(orderDESC[3]);
+      order.push(orderASC[2]);
+    } else if (sort === SORT.STATUS && _.upperCase(direction) === 'ASC') {
+      order.push(orderASC[3]);
+      order.push(orderASC[2]);
+    }
+    if (sort !== SORT.STATUS) where.isBlock = false;
+    const result = await Post.findAll({
+      subQuery: false,
+      where,
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(ReportPosts.id))'), 'numReport'],
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      include: [
+        {
+          model: ReportPost,
+          attributes: [],
+        },
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        // * chọn liên kết nào, với 'as'
+        {
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
+      ],
+
+      group: 'id',
+      order,
+      offset,
+      limit,
+    });
+    length = await Post.count({
+      where,
+    });
+    res.json({
+      data: result,
+      length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//=========================> block post
+exports.blockPost = async (req, res, next) => {
+  try {
+    let postId = req.body.postId;
+    let post = await Post.findByPk(postId);
+    if (!post) throw new api404Error('không tìm thấy bài viết');
+    let message = '';
+    if (post.isBlock === true) {
+      post.isBlock = false;
+      message = 'Bỏ chặn thành công';
+    } else if (post.isBlock === false) {
+      post.isBlock = true;
+      message = 'Chặn thành công';
+    }
+    await post.save();
+    res.status(200).json({ data: post, message });
+  } catch (error) {
+    next(error);
+  }
+};
+//=========================> block user
+exports.blockUser = async (req, res, next) => {
+  try {
+    let userId = req.body.userId;
+    let user = await User.findByPk(userId);
+    if (!user) throw new api404Error('không tìm thấy người dùng');
+    let message = '';
+    if (user.isBlock === true) {
+      // throw new api404Error('Người dùng đã bị chặn');
+      message = 'Bỏ chặn thành công';
+      user.isBlock = false;
+    } else if (user.isBlock === false) {
+      user.isBlock = true;
+      message = ' Chặn thành công';
+      const posts = await Post.update(
+        {
+          isBlock: true,
+        },
+        {
+          where: { userId },
+        }
+      );
+    }
+
+    await user.save();
+    res.status(200).json({ data: user, message });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>> controller auth
+//======================login
+exports.login = async (req, res, next) => {
+  try {
+    let { email, password } = req.body;
+    let user = await User.findOne({ where: { email } });
+    if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
+
+    let isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    let token = await jwt.sign(
+      { userId: user.id, isAdmin: user.isAdmin },
+      process.env.JWT_KEY,
+      {
+        expiresIn: '3 days',
+      }
+    );
+    res.setHeader('authToken', token);
+    res.status(200).json({ user, token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//======================login admin
+exports.loginAdmin = async (req, res, next) => {
+  try {
+    let { email, password } = req.body;
+    let user = await User.findOne({ where: { email } });
+    if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
+
+    let isMatch = await bcrypt.compare(password, user.password);
+   
+    // console.log(isMatch);
+    if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    // console.log(user);
+    if(!user.isAdmin){
+      throw new api400Error('Bạn không có quyền đăng nhập trang này');
+    }
+    let token = await jwt.sign(
+      { userId: user.id, isAdmin: user.isAdmin },
+      process.env.JWT_KEY,
+      {
+        expiresIn: '3 days',
+      }
+    );
+    res.setHeader('authToken', token);
+    res.status(200).json({ user, token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+//======================register
+
+
+exports.register = async (req, res, next) => {
+  try {
+    let { email, password, username, fullName } = req.body;
+    let userNameCheck = await User.findOne({ where: { username } });
+    if (userNameCheck) {
+      throw new api400Error('Username đã được đăng kí');
+    }
+    let emailCheck = await User.findOne({ where: { email } });
+    if (emailCheck) {
+      throw new api400Error('Email đã được đăng kí');
+    }
+    const salt = await bcrypt.genSalt(10);
+    let hasedPassword = await bcrypt.hash(password, salt);
+    let newUser = {
+      username,
+      fullName,
+      email,
+      password: hasedPassword,
+    };
+    let user = await User.create(newUser);
+    await user.save();
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+//=================forgot-password
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    console.log(email, req.body);
+    const user = await User.findOne({ where: { email } });
+    let arr = [];
+    if (!user) {
+      const err = new Error('Dữ liệu nhập vào không hợp lệ');
+      let param = {
+        msg: 'Email không hợp lệ, vui lòng nhập lại',
+        param: 'email',
+      };
+      err.data = [...arr, param];
+      err.statusCode = 422;
+      throw err;
+    }
+    const OTP = otpGenerator.generate(6, {
+      digits: true,
+
+      specialChars: false,
+    });
+    // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    //   expiresIn: "20m",
+    // });
+    const data = {
+      from: 'thang00lata@gmail.com',
+      to: req.body.email,
+      subject: 'Đổi mật khẩu!!',
+      html: `<h2>Mật khẩu mới của bạn là: ${OTP}</h2>`,
+      // html: `<h2>Vui lòng click link ở dưới để đổi mật khẩu!</h2>
+      // <p><a href=''>${process.env.CLIENT_URL}/reset-password/${token}</a></p>`,
+    };
+    sgMail
+      .send(data)
+      .then(() => {
+        console.log('Email sent');
+      })
+      .catch((error) => {
+        try {
+          console.log(error);
+          const err = new Error(error.message);
+          err.statusCode = 400;
+          throw err;
+        } catch (error) {
+          next(error);
+        }
+      });
+    hashPass = await bcrypt.hash(OTP, 8);
+    await User.update({ password: hashPass }, { id: user.id });
+
+    res.json({ message: 'Mật khẩu mới đã gửi tới email của bạn' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+//>>>>>>>>>>>>>>>>>>>post
+//===========create post
+exports.create = async (req, res, next) => {
+  try {
+    const post = await Post.create({ ...req.body, userId: req.user.id });
+    //     await post.save();
+    res.status(201).json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
+//===================update post
+exports.update = async (req, res, next) => {
+  const updates = Object.keys(req.body);
+  const allowsUpdate = ['description'];
+
+  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
+  try {
+    if (!isValidUpdate) {
+      throw new api400Error('Thay đổi không hợp lệ"');
+    }
+    let id = req.params.id;
+    const post = await Post.findByPk(id);
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (post.userId === req.user.id) {
+      updates.forEach((update) => (post[update] = req.body[update]));
+      await post.save();
+      res.status(200).json('Sửa bài viết thành công');
+    } else {
+      res.status(403).json('Bạn không thể sửa bài viết này');
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+//===================delete a post
+exports.delete = async (req, res, next) => {
+  try {
+    let id = req.params.id;
+    const post = await Post.findByPk(id);
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (post.userId === req.user.id || req.user.isAdmin === true) {
+      await post.destroy();
+      res.status(204).json();
+    } else {
+      res.status(403).json('you just can delete your post');
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+//=================== like a post
+exports.like = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    let UserId = req.user.id;
+    let post = await Post.findByPk(postId);
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    let likedPost = await LikePost.findAll({
+      where: {
+        postId,
+        UserId,
+      },
+    });
+    if (likedPost.length === 0) {
+      await LikePost.create({ postId, UserId });
+      res.status(200).json({ message: 'bạn đã thích thành công' });
+    } else {
+      await LikePost.destroy({ where: { postId, UserId } });
+      res.status(200).json({ message: 'bạn đã bỏ thích thành công' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+//===================report a post
+exports.report = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    let userId = req.user.id;
+    let post = await Post.findByPk(postId);
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    let reportPost = await ReportPost.findAll({
+      where: {
+        postId,
+        userId,
+      },
+    });
+    if (reportPost.length === 0) {
+      await ReportPost.create({ postId, userId });
+      res.status(200).json({ message: 'bạn đã báo cáo thành công' });
+    } else {
+      res.status(200).json({ message: 'bạn đã  báo cáo rồi' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+//===================== query post timeline
+exports.queryTimeLine = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    console.log(req.query);
+    const page = parseInt(_.get(req, 'query.page', 0));
+
+    console.log(page);
+    let limit = +req.query.limit || 2;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+    const friends = await sequelize.query(
+      `select followedId, fullName, profilePicture from Followers fw
+      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const friendIds = friends.map((friend) => friend.followedId);
+    friendIds.push(userId);
+
+    const posts = await Post.findAll({
+      subQuery: false,
+      where: {
+        userId: {
+          [Op.in]: friendIds,
+        },
+        isBlock: false,
+      },
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      include: [
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      group: 'id',
+      limit,
+      offset,
+    });
+
+    res.status(200).json({ data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
+// * query cho search bài viết=========search
+exports.search = async (req, res, next) => {
+  try {
+    const page = parseInt(_.get(req, 'query.page', 0));
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+    let textSearch = req.query.textSearch;
+    let wherePost = {};
+    wherePost = {
+      description: {
+        [Op.like]: `%${textSearch}%`,
+      },
+    };
+    const posts = await Post.findAll({
+      subQuery: false,
+      where: {
+        ...wherePost,
+        isBlock: false,
+      },
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      include: [
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      group: 'id',
+      limit,
+      offset,
+    });
+    
+    res.status(200).json({ data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//=====================get posts on profile
+exports.getProfilePost = async (req, res, next) => {
+  try {
+    const username = req.params.username;
+    const page = parseInt(_.get(req, 'query.page', 0));
+
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    const user = await User.findOne({ where: { username } });
+    const userPost = await Post.findAll({
+      subQuery: false,
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      where: { userId: user.id, isBlock: false },
+      limit,
+      offset,
+      include: [
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      group: 'id',
+      // raw: true,
+    });
+    res.status(200).json({ data: userPost });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ===========* create comment
+exports.create = async (req, res, next) => {
+  try {
+    let { postId, text } = req.body;
+    let checkPost = await Post.findByPk(postId);
+    if (!checkPost || _.get(checkPost, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết');
+    let comment = await CommentPost.create({
+      postId,
+      text,
+      userId: req.user.id,
+    });
+    console.log(comment);
+    const newComment = await CommentPost.findOne({
+      where: { id: comment.id },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          required: true,
+          attributes: ['profilePicture', 'fullName', 'username'],
+        },
+      ],
+    });
+    res.status(201).json({ data: newComment });
+  } catch (error) {
+    next(error);
+  }
+};
+// ===========** update comment
+exports.update = async (req, res, next) => {
+  const updates = Object.keys(req.body);
+  const allowsUpdate = ['text'];
+
+  const isValidUpdate = updates.every((update) =>
+    allowsUpdate.includes(update)
+  );
+  try {
+    if (!isValidUpdate) {
+      throw new api400Error('Thay đổi không hợp lệ"');
+    }
+    let id = req.params.id;
+    const comment = await CommentPost.findByPk(id);
+
+    if (comment.userId === req.user.id || true) {
+      updates.forEach((update) => (comment[update] = req.body[update]));
+      comment.save();
+      const editComment = await CommentPost.findOne({
+        where: { id: comment.id },
+        include: [
+          {
+            model: User,
+            as: 'user',
+            required: true,
+            attributes: ['profilePicture', 'fullName', 'username'],
+          },
+        ],
+      });
+      res.status(200).json({ data: editComment });
+    } else {
+      res.status(403).json({ message: 'Sửa bình luận thất bại' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+// ===========** delete a côment
+exports.delete = async (req, res, next) => {
+  try {
+    let id = req.params.id;
+    const commentPost = await CommentPost.findByPk(id);
+    const post = await Post.findByPk(commentPost.postId);
+
+    if (
+      commentPost.userId === req.user.id ||
+      req.user.isAdmin === true ||
+      req.user.id === post.userId
+    ) {
+      await commentPost.destroy();
+      res.status(204).json();
+    } else {
+      res.status(403).json({ message: 'bạn không thể xoá bình luận này' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ===========*  query comment
+exports.queryComments = async (req, res, next) => {
+  try {
+    let postId = req.body.postId;
+    let { limit, page } = req.body;
+    const post = await Post.findByPk(postId);
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
+    const commentsPost = await CommentPost.findAll({
+      where: { postId },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          required: true,
+          attributes: ['profilePicture', 'fullName', 'username'],
+        },
+      ],
+      order: ['createdAt'],
+      limit,
+    });
+    res.status(200).json({ data: { commentsPost } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
