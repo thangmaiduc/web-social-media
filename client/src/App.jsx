@@ -14,6 +14,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as userSlice from './redux/slices/userSlice';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import Search from './pages/search/Search';
+import ForgotPassword from './pages/forgotPassword/ForgotPassword';
 function App() {
   const dispatch = useDispatch();
   // let user =null;
@@ -33,7 +35,7 @@ function App() {
       dispatch(userSlice.getFriends(user.username));
   }, [user]);
   useEffect(() => {
-    const getUser =async () => {
+    const getUser = async () => {
 
       try {
         await dispatch(userSlice.signInGoogle());
@@ -43,7 +45,7 @@ function App() {
     };
     console.log('login google');
     getUser();
-  }, []); 
+  }, []);
 
   return (
     <Router>
@@ -55,12 +57,19 @@ function App() {
         <Route path="/register">
           {user ? <Redirect to="/" /> : <Register />}
         </Route>
+        <Route path="/forgot-password">
+          {user ? <Redirect to="/" /> : <ForgotPassword />}
+        </Route>
         <Route path="/messenger">
           {!user ? <Redirect to="/" /> : <Messenger />}
         </Route>
         <Route path="/profile/:username">
-         
+
           {!user ? <Redirect to="/" /> : <Profile />}
+        </Route>
+        <Route path="/search/:searchText">
+
+          {!user ? <Redirect to="/" /> : <Search /> }
         </Route>
       </Switch>
     </Router>

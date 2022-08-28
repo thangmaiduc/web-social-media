@@ -331,8 +331,13 @@ exports.query = async (req, res, next) => {
       limit,
       offset,
     });
-    
-    res.status(200).json({ data: posts });
+    const length = await Post.count({
+      where: {
+        ...wherePost,
+        isBlock: false,
+      },
+    });
+    res.status(200).json({ data: posts , length});
   } catch (error) {
     next(error);
   }

@@ -3,7 +3,7 @@ const Follower = require('../models/').Follower;
 const ReportUser = require('../models/').ReportUser;
 const sequelize = require('../models/').sequelize;
 const { result } = require('lodash');
-const { QueryTypes,Op } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const api400Error = require('../utils/errors/api400Error');
 const api404Error = require('../utils/errors/api404Error');
 const _ = require('lodash');
@@ -11,7 +11,7 @@ const _ = require('lodash');
 
 exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
-  const allowsUpdate = ['fullName', 'profilePicture', 'coverPicture', 'description', 'city', 'country', ];
+  const allowsUpdate = ['fullName', 'profilePicture', 'coverPicture', 'description', 'city', 'country'];
 
   const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
 
@@ -41,7 +41,7 @@ exports.get = async (req, res, next) => {
       where: { username },
     });
     if (!user) throw new api404Error('Không thấy user');
-    const { id, profilePicture, coverPicture, fullName, city, country, email  } = user;
+    const { id, profilePicture, coverPicture, fullName, city, country, email } = user;
     res.json({
       data: { id, profilePicture, coverPicture, fullName, city, country, email, username },
     });
@@ -116,17 +116,17 @@ exports.follow = async (req, res, next) => {
       throw new api400Error('Người này không tồn tại');
     }
     if (followedId == followingId) {
-      throw new api400Error('Bạn không thể báo cáo chính mình');
+      throw new api400Error('Bạn không thể theo dõi chính mình');
     }
     let followerCheck = await Follower.findOne({
       where: { followedId, followingId },
     });
     if (followerCheck) {
-      throw new api400Error('Bạn đã báo cáo người này rồi');
+      throw new api400Error('Bạn đã theo dõi người này rồi');
     }
     follower = await Follower.create({ followedId, followingId });
 
-    res.json({ message: 'Bạn đã báo cáo thành công' });
+    res.json({ message: 'Bạn đã theo dõi thành công', data: userCheck });
   } catch (error) {
     next(error);
   }
@@ -173,19 +173,19 @@ exports.unfollow = async (req, res, next) => {
       throw new api400Error('Người này không tồn tại');
     }
     if (unfollowingId == followingId) {
-      throw new api400Error('Bạn không thể bỏ báo cáo chính mình');
+      throw new api400Error('Bạn không thể bỏ theo dõi chính mình');
     }
     let followerCheck = await Follower.findOne({
       where: { followedId: unfollowingId, followingId },
     });
     if (!followerCheck) {
-      throw new api400Error('Bạn chưa báo cáo người này');
+      throw new api400Error('Bạn chưa theo dõi người này');
     }
     await Follower.destroy({
       where: { followedId: unfollowingId, followingId },
     });
 
-    res.json({ message: 'Bạn đã bỏ báo cáo thành công' });
+    res.json({ message: 'Bạn đã bỏ theo dõi thành công', data: userCheck });
   } catch (error) {
     next(error);
   }
@@ -209,7 +209,7 @@ exports.query = async (req, res, next) => {
         type: QueryTypes.SELECT,
       }
     );
-   
+
     let whereUser = {};
     whereUser[Op.or] = {
       fullName: {
@@ -218,13 +218,8 @@ exports.query = async (req, res, next) => {
       username: {
         [Op.like]: `%${textSearch}%`,
       },
-      email: {
-        [Op.like]: `%${textSearch}%`,
-      },
+      
     };
-
-    const friendIds = friends.map((friend) => friend.followedId);
-
     const users = await User.findAll({
       subQuery: false,
       where: {
@@ -234,10 +229,15 @@ exports.query = async (req, res, next) => {
       order: [['createdAt', 'DESC']],
       limit,
       offset,
-      raw: true
+      raw: true,
     });
-
-    res.status(200).json({ data: users });
+    const length = await User.count({
+      where: {
+        ...whereUser,
+        isBlock: false,
+      },
+    });
+    res.status(200).json({ data: users, length });
   } catch (error) {
     next(error);
   }

@@ -3,6 +3,7 @@ import axiosClient from '../api/axiosClient';
 
 export default function useQuery(url, page, textSearch) {
   const [data, setData] = useState([]);
+  const [length, setLength] = useState(0);
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -11,11 +12,12 @@ export default function useQuery(url, page, textSearch) {
     setLoading(false);
   };
   const handleSuccess = (res) => {
-      const newData = [...data, ...res.data]
-      setData(newData);
-      setHasMore(res.data.length > 0);
-      setLoading(false);
-    };
+    const newData = [...data, ...res.data];
+    setData(newData);
+    setLength(res.length);
+    setHasMore(res.data.length > 0);
+    setLoading(false);
+  };
   // this function is calling useCallback to stop an infinite loop since it is in the dependency array of useEffect
   const runQuery = useCallback(() => {
     setLoading(true);
@@ -50,5 +52,5 @@ export default function useQuery(url, page, textSearch) {
     runQuery();
   }, [runQuery]);
 
-  return { data, loading, error, hasMore, refetch: runQuery };
+  return { data, loading, error, hasMore, refetch: runQuery, length };
 }

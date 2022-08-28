@@ -114,6 +114,7 @@ exports.forgotPassword = async (req, res, next) => {
     const { email } = req.body;
     console.log(email, req.body);
     const user = await User.findOne({ where: { email } });
+    console.log('user', user);
     let arr = [];
     if (!user) {
       const err = new Error('Dữ liệu nhập vào không hợp lệ');
@@ -157,7 +158,7 @@ exports.forgotPassword = async (req, res, next) => {
         }
       });
     hashPass = await bcrypt.hash(OTP, 8);
-    await User.update({ password: hashPass }, { id: user.id });
+    await User.update({ password: hashPass }, {where:{ id: user.id }});
 
     res.json({ message: 'Mật khẩu mới đã gửi tới email của bạn' });
   } catch (error) {

@@ -20,7 +20,7 @@ router.get('/:username', userController.get);
 router.put('/:id/follow', userController.follow);
 router.put('/:id/report', userController.report);
 //unfollow a user
-router.get('/:id', userController.getById);
+router.get('/:id/id', userController.getById);
 router.put('/:id/unfollow', userController.unfollow);
 router.get('/', userController.getAll);
 

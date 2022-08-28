@@ -9,9 +9,8 @@ import userSlice, { friendSelector, userSelector } from '../../redux/slices/user
 import { useSelector } from 'react-redux';
 import userApi from '../../api/userApi';
 import Tooltip from '@mui/material/Tooltip';
-// import { ToastContainer, toast } from 'react-toastify';
 import { format } from 'timeago.js';
-import { ToastContainer, notify } from '../../utility/toast';
+import {  notify } from '../../utility/toast';
 import { Link } from 'react-router-dom';
 import { forwardRef } from 'react';
 
@@ -33,7 +32,7 @@ const Post = forwardRef(({ post }, ref) => {
   const [length, setLength] = useState(0)
   const [editText, setEditText] = useState(post?.description)
 
-  console.log(1);
+ 
   let friendsId = friends.map(f => f.followedId)
 
   useEffect(() => {
@@ -128,6 +127,8 @@ const Post = forwardRef(({ post }, ref) => {
       setPage(p => p + 1)
     }
   }
+
+
   useEffect(() => {
     let check = friendsId.includes(post?.userId)
     setFollowed(check)
@@ -224,7 +225,6 @@ const Post = forwardRef(({ post }, ref) => {
         // editComment={editComment}
         />
       }
-      <ToastContainer />
       {isShow && (<PostModal
         postObj={postObj}
         editText={editText}

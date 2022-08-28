@@ -1,60 +1,54 @@
 import userApi from '../../api/userApi';
-import moment from 'moment'
-import {
-  createAsyncThunk,
-  createSlice,
-  createSelector,
-} from '@reduxjs/toolkit';
+import moment from 'moment';
+import { createAsyncThunk, createSlice, createSelector } from '@reduxjs/toolkit';
 //  Thunk API
-export const signIn = createAsyncThunk(
-  'user/signIn',
-  async (params, thunkAPI) => {
-    console.log(params);
-    const response = await userApi.signIn(params);
+export const signIn = createAsyncThunk('user/signIn', async (params, thunkAPI) => {
+  console.log(params);
+  const response = await userApi.signIn(params);
 
-    // Save access token to storage
-    console.log(response);
-    const { token} = response;
-    // const accessToken = `${token_type} ${access_token}`;
-    localStorage.setItem('token', token);
-    const expiredAt = moment().add(3,'days');
-    console.log(expiredAt.toISOString());
-    localStorage.setItem('expired_at', expiredAt); // expired_at is a timestamp
-    return response.user
-  }
-);
-export const signInGoogle = createAsyncThunk(
-  'user/signInGoogle',
-  async (params, thunkAPI) => {
-    const response = await userApi.signInGoogle();
+  // Save access token to storage
+  console.log(response);
+  const { token } = response;
+  // const accessToken = `${token_type} ${access_token}`;
+  localStorage.setItem('token', token);
+  const expiredAt = moment().add(3, 'days');
+  console.log(expiredAt.toISOString());
+  localStorage.setItem('expired_at', expiredAt); // expired_at is a timestamp
+  return response.user;
+});
+export const signInGoogle = createAsyncThunk('user/signInGoogle', async (params, thunkAPI) => {
+  const response = await userApi.signInGoogle();
 
-    // Save access token to storage
-    console.log('response', response);
-    const { token} = response;
-    // const accessToken = `${token_type} ${access_token}`;
-    localStorage.setItem('token', token);
-    const expiredAt = moment().add(3,'days');
-    console.log(expiredAt.toISOString());
-    localStorage.setItem('expired_at', expiredAt); // expired_at is a timestamp
-    return response.user
-  }
-);
-export const getFriends = createAsyncThunk(
-  'user/getFriends',
-  async (params, thunkAPI) => {
-    console.log(params);
-    const response = await userApi.getFriends(params);
+  // Save access token to storage
+  console.log('response', response);
+  const { token } = response;
+  // const accessToken = `${token_type} ${access_token}`;
+  localStorage.setItem('token', token);
+  const expiredAt = moment().add(3, 'days');
+  console.log(expiredAt.toISOString());
+  localStorage.setItem('expired_at', expiredAt); // expired_at is a timestamp
+  return response.user;
+});
+export const getFriends = createAsyncThunk('user/getFriends', async (params, thunkAPI) => {
+  console.log(params);
+  const response = await userApi.getFriends(params);
+  console.log(response);
+  return response.data;
+});
+export const followUser = createAsyncThunk('user/followUser', async (followerId, thunkAPI) => {
+  console.log(followerId);
+  const response = await userApi.follow(followerId);
+  console.log(response);
+  return response.data;
+});
+export const unfollowUser = createAsyncThunk('user/unfollowUser', async (params, thunkAPI) => {
+  console.log(params);
+  const response = await userApi.unfollow(params);
+  console.log(response);
+  return response.message;
+});
 
-    // Save access token to storage
-    console.log(response);
-    // const accessToken = `${token_type} ${access_token}`;
-    return response.data
-  }
-);
-
-export const getMe = createAsyncThunk('user/getMe', async (params) =>
-  userApi.getMe(params)
-);
+export const getMe = createAsyncThunk('user/getMe', async (params) => userApi.getMe(params));
 
 // ---------------------
 //      MAIN SLICE
@@ -64,18 +58,23 @@ const userSlice = createSlice({
   initialState: {
     current: null,
     isFetching: false,
-    friends:[]
+    friends: [],
   },
   reducers: {
     updateUser: (state, action) => {
-      state.current={
+      state.current = {
         ...state.current,
-        ...action.payload
-      }
+        ...action.payload,
+      };
     },
-    logout: state => {
-     
-    }
+    logout: (state) => {},
+    follow: (state, action) => {
+      const newFriends = action.payload;
+      state.friends.push(newFriends);
+    },
+    unfollow: (state, action) => {
+      state.friends = state.friends.filter((f) => f.followedId !== action.payload);
+    },
   },
   extraReducers: {
     [signIn.pending]: (state, action) => {
@@ -90,19 +89,28 @@ const userSlice = createSlice({
       state.current = action.payload;
       state.isFetching = false;
     },
-    // [signInGoogle.pending]: (state, action) => {
-    //   state.isFetching = true;
-    // },
-    // [signInGoogle.rejected]: (state, action) => {
-    //   console.log({ action });
-    //   state.isFetching = false;
-    // },
+
     [signInGoogle.fulfilled]: (state, action) => {
       console.log({ action });
       state.current = action.payload;
       state.isFetching = false;
     },
-    
+
+    [followUser.fulfilled]: (state, action) => {
+      console.log({ action });
+      const followedUser = action.payload;
+      state.friends = [
+        ...state.friends,
+        {
+          followerId: followedUser.id,
+          username: followedUser.username,
+          profilePicture: followedUser.profilePicture,
+          coverPicture: followedUser.coverPicture,
+          fullName: followedUser.fullName,
+        },
+      ];
+      // state.isFetching = false;
+    },
     [getFriends.fulfilled]: (state, action) => {
       console.log({ action });
       state.friends = action.payload;

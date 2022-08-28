@@ -5,8 +5,10 @@ import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link } from 'react-router-dom';
 import { ToastContainer } from '../../utility/toast';
 import { Button } from '@material-ui/core';
+import { useState } from 'react';
 export default function Topbar() {
   const user = useSelector(userSelector);
+  const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
   const logout = () => {
     // localStorage.clear();
@@ -23,13 +25,21 @@ export default function Topbar() {
         </Link>
       </div>
       <div className='topbarCenter'>
-        <div className='searchbar'>
-          <Search className='searchIcon' />
+
+
+        <form type='submit' className='searchbar'>
+          <Link to={`/search/${textSearch}`}>
+
+            <Search className='searchIcon' />
+          </Link>
           <input
             placeholder='Search for friend, post or video'
             className='searchInput'
+            value={textSearch}
+            onChange={(e) => setTextSearch(e.target.value)}
           />
-        </div>
+        </form>
+
       </div>
       <div className='topbarRight'>
         <div className='topbarLinks'>

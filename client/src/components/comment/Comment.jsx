@@ -97,7 +97,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
       {comments?.length > 0 ? detailComment : detailComment}
       <div className='showMoreBtn' onClick={handleClickShowMore}>
 
-        <p>Có tất cả {length} bình luận.Xem thêm bình luận</p>
+        <p>Xem thêm.</p>
       </div>
       {isShow && (<CommentModal
         comment={comment}

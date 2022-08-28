@@ -7,10 +7,23 @@ const userApi = {
     const response = axiosClient.post(url, payload);
     return response;
   },
+  register: async (payload) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    const url = '/auth/register';
+    const response = axiosClient.post(url, payload);
+    return response;
+  },
+  forgotPassword: async (payload) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    console.log(payload);
+    const url = '/auth/forgot-password';
+    const response =await axiosClient.put(url, payload);
+    return response;
+  },
   signInGoogle: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = '/auth/login/success';
-    const response = axiosClient.get(url,{withCredentials: true});
+    const response = axiosClient.get(url, { withCredentials: true });
     return response;
   },
   getFriends: async (payload) => {
@@ -21,9 +34,14 @@ const userApi = {
   },
   follow: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    const url = `/users/${payload}/follow`;
-    const response = await axiosClient.put(url);
-    return response;
+    try {
+      const url = `/users/${payload}/follow`;
+      const response = await axiosClient.put(url);
+      return response;
+    } catch (error) {
+      console.log('error.message',error.message);
+      return error.message
+    }
   },
   updateUser: async (payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
@@ -41,6 +59,11 @@ const userApi = {
 
   getUser: async (payload) => {
     const url = api.GET_USER + payload;
+    const response = await axiosClient.get(url);
+    return response.data;
+  },
+  getUserById: async (payload) => {
+    const url = api.GET_USER + payload + '/id';
     const response = await axiosClient.get(url);
     return response.data;
   },

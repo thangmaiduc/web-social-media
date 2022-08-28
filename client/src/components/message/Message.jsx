@@ -1,47 +1,25 @@
 import './message.css';
-import Image from '../image/Image';
 import { format } from 'timeago.js';
 import userApi from '../../api/userApi';
+const _ = require('lodash');
 export default function Message({ message, own }) {
-  // if (message.attachments && message.attachments.length > 0) {
-  // const blob = new Blob([message.body], { type: message.type });
-  //   return (
-  //     <div className={own ? 'message own' : 'message'}>
-  //       <div className='messageTop'>
-  //         <img className='messageImg' src={message.img} alt='' />
-
-  //           <img
-  //             className='messageImage'
-  //             src={
-  //               message.attachments[0]?.fileUrl
-  //               // ? PF + user.profilePicture
-  //               // : PF + "person/noAvatar.png"
-  //             }
-  //             alt=''
-  //           />
-  //           {/* <Image fileName={message.fileName} blob={blob} /> */}
-
-  //         {/* <p className='messageText'>{message.text}</p> */}
-  //       </div>
-  //       <div className='messageBottom'>{format(message.createdAt)}</div>
-  //     </div>
-  //   );
-  // } else {
+  
   return (
     <div className={own ? 'message own' : 'message'}>
       <div className='messageTop'>
-        <img className='messageImg' src={message?.User?.img} alt='' />
+        <img className='messageImg' src={message?.User?.img || message.profilePicture} alt='' />
         <div className='messageTopBottom'>
-        {message?.Attachments?.length>0&&message?.Attachments[0] &&<img
+          {((message?.Attachments?.length > 0 && message?.Attachments[0]) || (message.fileUrl)) && <img
             className='messageImage'
             src={
-              message.Attachments[0]?.fileUrl
+              _.get(message, 'Attachments.0.fileUrl', null)
+              || _.get(message, 'fileUrl', '')
               // ? PF + user.profilePicture
               // : PF + "person/noAvatar.png"
             }
             alt=''
           />}
-          {message.text&&<p className='messageText'>{message.text}</p>}
+          {message.text && <p className='messageText'>{message.text}</p>}
         </div>
       </div>
       <div className='messageBottom'>{format(message?.createdAt)}</div>

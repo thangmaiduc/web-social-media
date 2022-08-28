@@ -77,12 +77,12 @@ exports.getMemberOfGroup = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const username = _.get(req, 'query.username', '');
-    console.log(username);
+    let users = _.get(req, 'body.users', []);
+    if (users.length == 0) throw new api400Error('Không có người dùng nào');
     const title = req.body.title || '';
     const userId = req.user.id;
-    if (!_.isEmpty(username)) {
-      const parner = await User.findOne({ where: { username } });
+    if (users.length === 1) {
+      const parner = await User.findByPk(users[0]);
       if (!parner) {
         throw new Api404Error('Không tìm thấy người dùng muốn thêm');
       }
@@ -183,7 +183,7 @@ exports.create = async (req, res, next) => {
 exports.query = async (req, res, next) => {
   try {
     const page = parseInt(_.get(req, 'query.page', 0));
-    let limit = +req.query.limit || 15;
+    let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
     let textSearch = req.query.textSearch;
     console.log('page', page);
@@ -192,6 +192,7 @@ exports.query = async (req, res, next) => {
     const userId = req.user.id;
     let where = {};
     if (!_.isEmpty(textSearch)) {
+      console.log('textSearch', textSearch);
       where[Op.or] = {
         fullName: {
           [Op.like]: `%${textSearch}%`,
@@ -229,9 +230,9 @@ exports.query = async (req, res, next) => {
       // raw: true
       group: 'conversationId',
     });
-    _.forEach(participants, (i) => {
-      console.log(i.toJSON());
-    });
+    // _.forEach(participants, (i) => {
+    //   console.log(i.toJSON());
+    // });
     participants = participants.map((item) => {
       item = item.toJSON();
       let title;
