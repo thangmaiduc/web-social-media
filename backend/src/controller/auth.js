@@ -7,6 +7,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const api401Error = require('../utils/errors/api401Error');
 const api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
+const _ = require('lodash');
 
 //login
 exports.login = async (req, res, next) => {
@@ -19,15 +20,12 @@ exports.login = async (req, res, next) => {
     // console.log(isMatch);
     // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
     // console.log(user);
-    let token = await jwt.sign(
-      { userId: user.id, isAdmin: user.isAdmin },
-      process.env.JWT_KEY,
-      {
-        expiresIn: '3 days',
-      }
-    );
+    let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
+      expiresIn: '3 days',
+    });
     res.setHeader('authToken', token);
-    res.status(200).json({ user, token });
+
+    res.status(200).json({ user: _.omit(user.toJSON(), ['password']), token });
   } catch (error) {
     next(error);
   }
@@ -40,22 +38,18 @@ exports.loginAdmin = async (req, res, next) => {
     if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
 
     let isMatch = await bcrypt.compare(password, user.password);
-   
+
     // console.log(isMatch);
     // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
     // console.log(user);
-    if(!user.isAdmin){
+    if (!user.isAdmin) {
       throw new api400Error('Bạn không có quyền đăng nhập trang này');
     }
-    let token = await jwt.sign(
-      { userId: user.id, isAdmin: user.isAdmin },
-      process.env.JWT_KEY,
-      {
-        expiresIn: '3 days',
-      }
-    );
+    let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
+      expiresIn: '3 days',
+    });
     res.setHeader('authToken', token);
-    res.status(200).json({ user, token });
+    res.status(200).json({ user: _.omit(user.toJSON()), token });
   } catch (error) {
     next(error);
   }
@@ -84,7 +78,7 @@ exports.register = async (req, res, next) => {
     };
     let user = await User.create(newUser);
     await user.save();
-    res.status(200).json(user);
+    res.status(200).json({ user: _.omit(user.toJSON()) });
   } catch (error) {
     next(error);
   }
@@ -158,7 +152,7 @@ exports.forgotPassword = async (req, res, next) => {
         }
       });
     hashPass = await bcrypt.hash(OTP, 8);
-    await User.update({ password: hashPass }, {where:{ id: user.id }});
+    await User.update({ password: hashPass }, { where: { id: user.id } });
 
     res.json({ message: 'Mật khẩu mới đã gửi tới email của bạn' });
   } catch (error) {

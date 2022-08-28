@@ -196,6 +196,7 @@ exports.query = async (req, res, next) => {
   try {
     console.log(req.query);
     const page = parseInt(_.get(req, 'query.page', 0));
+    // const page = req.query.page;
     const userId = req.user.id;
     console.log(page);
     let limit = +req.query.limit || 10;

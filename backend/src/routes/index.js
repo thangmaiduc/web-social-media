@@ -24,7 +24,6 @@ const adminRouter = require('./admin');
 const conversationRouter = require('./conversations');
 const messageRouter = require('./messages');
 
-
 router.use(
   '/users',
   userRouter
@@ -32,7 +31,16 @@ router.use(
   // #swagger.description = 'Endpoint for users.'
   /* #swagger.security = [{
         "Bearer": []
-    }] */
+    }] 
+     #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
 );
 
 router.use(
@@ -51,7 +59,15 @@ router.use(
   // #swagger.description = 'Endpoint for comments.'
   /* #swagger.security = [{
         "Bearer": []
-    }] */
+    }]  #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
 );
 router.use(
   '/conversations',
@@ -60,7 +76,15 @@ router.use(
   // #swagger.description = 'Endpoint for conversations.'
   /* #swagger.security = [{
         "Bearer": []
-    }] */
+    }]  #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
 );
 router.use(
   '/messages',
@@ -69,21 +93,25 @@ router.use(
   // #swagger.description = 'Endpoint for messages.'
   /* #swagger.security = [{
         "Bearer": []
-    }] */
+    }]  #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
 );
 
-router.post(
-  '/cloudinary-upload',
-  fileUploader.single('file'),
-  (req, res, next) => {
-    if (!req.file) {
-      next(new Error('No file uploaded!'));
-      return;
-    }
-
-    res.json({ secure_url: req.file.path });
+router.post('/cloudinary-upload', fileUploader.single('file'), (req, res, next) => {
+  if (!req.file) {
+    next(new Error('No file uploaded!'));
+    return;
   }
-);
+
+  res.json({ secure_url: req.file.path });
+});
 
 router.use(authAdmin);
 router.use(
@@ -93,6 +121,14 @@ router.use(
   // #swagger.description = 'Endpoint for messages.'
   /* #swagger.security = [{
         "Bearer": []
-    }] */
+    }]  #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
 );
 module.exports = router;

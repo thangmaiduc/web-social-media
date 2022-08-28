@@ -13,6 +13,7 @@ const _ = require('lodash');
 
 exports.create = async (req, res, next) => {
   try {
+    // const {description, img } = req.body;
     const post = await Post.create({ ...req.body, userId: req.user.id });
     //     await post.save();
     res.status(201).json(post);
