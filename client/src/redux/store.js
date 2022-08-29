@@ -15,14 +15,10 @@ import {
 } from 'redux-persist';
 const reducers = combineReducers({
   user: userSlice.reducer,
-  post: postSlice.reducer,
 });
 const rootReducer = (state, action) => {
   if (action.type === 'user/logout') {
-    // localStorage.clear();
     state = undefined;
- 
-
   }
   return reducers(state, action);
 };

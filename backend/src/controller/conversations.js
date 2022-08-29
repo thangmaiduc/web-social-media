@@ -211,15 +211,12 @@ exports.query = async (req, res, next) => {
         type: QueryTypes.SELECT,
       }
     );
-
     const conversationIds = conversations.map((c) => c.conversationId);
     let participants = await Participant.findAll({
       include: [
         { model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'], where },
         { model: Conversation },
-        // { model: Message, attributes: ['createdAt'] },
       ],
-
       where: {
         conversationId: { [Op.in]: conversationIds },
         userId: { [Op.ne]: userId },
@@ -227,12 +224,9 @@ exports.query = async (req, res, next) => {
       limit,
       offset,
       order:[['conversationId', 'DESC']],
-      // raw: true
+
       group: 'conversationId',
     });
-    // _.forEach(participants, (i) => {
-    //   console.log(i.toJSON());
-    // });
     participants = participants.map((item) => {
       item = item.toJSON();
       let title;

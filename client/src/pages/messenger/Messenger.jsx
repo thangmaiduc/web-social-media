@@ -40,19 +40,17 @@ export default function Messenger() {
   const [textSearch, setTextSearch] = useState('')
   const [page, setPage] = useState(0)
   const sendMessage = async () => {
-    // if (!socketRef.current) return;
+    if (!socketRef.current) return;
     let messageObject = {
       senderId: user.id,
       conversationId: currentChat.conversationId,
       text: newMessage,
-
     };
     let objMesSocket = {
       senderId: user.id,
       receiverId: currentChat.userId,
       text: newMessage,
     }
-
     if (file) {
       messageObject = {
         ...messageObject,
@@ -62,10 +60,8 @@ export default function Messenger() {
         ...objMesSocket,
         fileUrl
       };
-
       setNewMessage('');
       setFile();
-
     }
     socketRef.current.emit('sendMessage', objMesSocket);
     const message = await conversationApi.newMessage(messageObject)
@@ -73,7 +69,6 @@ export default function Messenger() {
   };
   const handleSendMessage = (event) => {
     event.preventDefault();
-    // cancelTyping();
     sendMessage(newMessage);
     setNewMessage('');
   };
@@ -90,11 +85,9 @@ export default function Messenger() {
   }, []);
 
   useEffect(() => {
-
     const sendMessage = async () => {
       console.log('currentChat', currentChat);
       console.log('arrivalMessage', arrivalMessage);
-
       if (arrivalMessage &&
         currentChat.userId === arrivalMessage.sender) {
         const sender = await userApi.getUserById(arrivalMessage.sender)
@@ -123,7 +116,6 @@ export default function Messenger() {
     const getConversations = async () => {
       try {
         const res = await conversationApi.getOfUser();
-        // console.log('user', res);
         setConversations(res);
       } catch (err) { }
     };

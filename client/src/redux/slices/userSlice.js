@@ -3,16 +3,12 @@ import moment from 'moment';
 import { createAsyncThunk, createSlice, createSelector } from '@reduxjs/toolkit';
 //  Thunk API
 export const signIn = createAsyncThunk('user/signIn', async (params, thunkAPI) => {
-  console.log(params);
   const response = await userApi.signIn(params);
-
   // Save access token to storage
-  console.log(response);
   const { token } = response;
   // const accessToken = `${token_type} ${access_token}`;
   localStorage.setItem('token', token);
   const expiredAt = moment().add(3, 'days');
-  console.log(expiredAt.toISOString());
   localStorage.setItem('expired_at', expiredAt); // expired_at is a timestamp
   return response.user;
 });

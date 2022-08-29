@@ -196,22 +196,12 @@ exports.query = async (req, res, next) => {
   try {
     console.log(req.query);
     const page = parseInt(_.get(req, 'query.page', 0));
-    // const page = req.query.page;
-    const userId = req.user.id;
     console.log(page);
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
     console.log('offset', offset);
     let textSearch = req.query.textSearch;
-    const friends = await sequelize.query(
-      `select followedId, fullName, profilePicture from Followers fw
-      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
-
-    let whereUser = {};
+      let whereUser = {};
     whereUser[Op.or] = {
       fullName: {
         [Op.like]: `%${textSearch}%`,

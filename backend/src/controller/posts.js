@@ -41,7 +41,7 @@ exports.create = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
   const allowsUpdate = ['description'];
-
+  description = req.body.description;
   const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
   try {
     if (!isValidUpdate) {
@@ -294,7 +294,7 @@ exports.query = async (req, res, next) => {
     console.log('offset', offset);
     let textSearch = req.query.textSearch;
     // const sort = req.query.sort || SORT.REPORT;
-    
+
     let wherePost = {};
     wherePost = {
       description: {
@@ -338,7 +338,7 @@ exports.query = async (req, res, next) => {
         isBlock: false,
       },
     });
-    res.status(200).json({ data: posts , length});
+    res.status(200).json({ data: posts, length });
   } catch (error) {
     next(error);
   }

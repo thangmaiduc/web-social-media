@@ -50,34 +50,8 @@ exports.getMessageOfConversation = async (req, res, next) => {
       order: [['createdAt', 'DESC']],
       limit,
       offset,
-      // raw: true,
     });
-    // const attachments = await Promise.all(
-    //   messages.map((m) => {
-    //     return Attachment.findOne({
-    //       where: { messageId: m.id },
-    //     });
-    //   })
-    // );
-
-    // // const attachments = await Attachment.findOne({
-    // //   where: { messageId : messages.id  },
-    // // })
-
-    // _.forEach(messages, (item) => {
-    //   item.attachments = [];
-    //   item.img = item['User.img'];
-    //   delete item['User.img'];
-    //   _.forEach(attachments, (attachment) => {
-    //     if (attachment && attachment.messageId === item.id) {
-    //       item.attachments.push(attachment);
-    //     }
-    //   });
-    // });
-
-    // const userPost = await Post.findAll({ where: { userId: user.id } });
-
-    res.status(200).json({ data: messages.reverse() });
+       res.status(200).json({ data: messages.reverse() });
   } catch (error) {
     next(error);
   }
@@ -114,18 +88,6 @@ exports.create = async (req, res, next) => {
         ],
       });
     }
-
-    // _.forEach(messages, (item) => {
-    //   item.attachments = [];
-    //   item.img = item['User.img'];
-    //   delete item['User.img'];
-    //   _.forEach(attachments, (attachment) => {
-    //     if (attachment && attachment.messageId === item.id) {
-    //       item.attachments.push(attachment);
-    //     }
-    //   });
-    // });
-
     res.status(201).json({ data: message });
   } catch (error) {
     next(error);

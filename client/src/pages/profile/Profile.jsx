@@ -48,11 +48,8 @@ export default function Profile() {
       console.log('res.data', res.data);
       dispatch(userSlice.actions.updateUser(obj))
       setUser(res.data);
-
-
       notify(res.message);
     } catch (error) {
-
     } finally {
       setFile('');
       setIsCover(false);
@@ -61,7 +58,6 @@ export default function Profile() {
 
   const handleFileUpload = async (e) => {
     try {
-      // setFile(e.target.files[0]);
       const uploadData = new FormData();
       uploadData.append('file', e.target.files[0], 'file');
       const res = await commonApi.cloudinaryUpload(uploadData);

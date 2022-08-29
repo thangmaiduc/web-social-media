@@ -31,23 +31,6 @@ export default function useQuery(url, page, textSearch) {
       .then(handleSuccess)
       .catch(handleError);
   }, [url, page, textSearch]);
-
-  // useEffect(() => {
-  //   const getPosts = async () => {
-  //     try {
-  //       setLoading(true);
-  //       setError(false);
-  //       let res = await postApi.getTimeLine({page});
-  //       setPosts(res.data)
-  //       setHasMore(res.data.length > 0);
-  //       setLoading(false);
-  //     } catch (e) {
-  //       setError(true);
-  //     }
-  //   };
-  //   getPosts();
-  // }, [query, page]);
-
   useEffect(() => {
     runQuery();
   }, [runQuery]);

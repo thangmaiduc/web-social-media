@@ -54,13 +54,13 @@ exports.queryUser = async (req, res, next) => {
   try {
     const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
-    const page = parseInt(_.get(req, 'query.page', 0))
+    const page = parseInt(_.get(req, 'query.page', 0));
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
     let textSearch = req.query.textSearch;
     const sort = req.query.sort || SORT.REPORT;
     const direction = req.query.direction || 'desc';
-
+    // const page = req.query.page || 1;
     const order = [];
     const where = {};
     const orderDESC = [
@@ -202,11 +202,8 @@ exports.queryUser = async (req, res, next) => {
 // TODO: thống kê  bài viết có nhiều tương tác nhất(like or comment)
 exports.queryPost = async (req, res, next) => {
   try {
-    const startOfMonth = moment().startOf('month').format('YYYY-MM-DD hh:mm');
-    const endOfMonth = moment().endOf('month').format('YYYY-MM-DD hh:mm');
-    console.log('req.params', req.params);
-    console.log(req.query);
-    const page = parseInt(_.get(req, 'query.page', 0))
+    const page = parseInt(_.get(req, 'query.page', 0));
+    // const page= req.query.page || 1;
     console.log(page);
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
@@ -288,7 +285,6 @@ exports.queryPost = async (req, res, next) => {
           model: CommentPost,
           attributes: [],
         },
-        // * chọn liên kết nào, với 'as'
         {
           association: 'user',
           attributes: ['fullName', 'id', 'username', 'profilePicture'],
@@ -323,7 +319,6 @@ exports.blockPost = async (req, res, next) => {
     if (post.isBlock === true) {
       post.isBlock = false;
       message = 'Bỏ chặn thành công';
-      // throw new api404Error('Bài viết đã bị chặn');
     } else if (post.isBlock === false) {
       post.isBlock = true;
       message = 'Chặn thành công';
@@ -340,8 +335,10 @@ exports.blockUser = async (req, res, next) => {
     let user = await User.findByPk(userId);
     if (!user) throw new api404Error('không tìm thấy người dùng');
     let message = '';
+    if (user.isAdmin === true) {
+      throw new api404Error('Không thể chặn admin khác');
+    }
     if (user.isBlock === true) {
-      // throw new api404Error('Người dùng đã bị chặn');
       message = 'Bỏ chặn thành công';
       user.isBlock = false;
     } else if (user.isBlock === false) {
@@ -358,7 +355,7 @@ exports.blockUser = async (req, res, next) => {
     }
 
     await user.save();
-    res.status(200).json({ data: user , message});
+    res.status(200).json({ data: user, message });
   } catch (error) {
     next(error);
   }
