@@ -8,7 +8,7 @@ const api401Error = require('../utils/errors/api401Error');
 const api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
 const _ = require('lodash');
-
+const noAvatar = 'https://res.cloudinary.com/dzens2tsj/image/upload/v1661786461/noAvatar_xbtxv7.png';
 //login
 exports.login = async (req, res, next) => {
   try {
@@ -17,9 +17,9 @@ exports.login = async (req, res, next) => {
     if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
 
     let isMatch = await bcrypt.compare(password, user.password);
-    // console.log(isMatch);
-    // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
-    // console.log(user);
+    console.log(isMatch);
+    if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    console.log(user);
     let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
       expiresIn: '3 days',
     });
@@ -39,9 +39,9 @@ exports.loginAdmin = async (req, res, next) => {
 
     let isMatch = await bcrypt.compare(password, user.password);
 
-    // console.log(isMatch);
-    // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
-    // console.log(user);
+    console.log(isMatch);
+    if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    console.log(user);
     if (!user.isAdmin) {
       throw new api400Error('Bạn không có quyền đăng nhập trang này');
     }
@@ -75,10 +75,11 @@ exports.register = async (req, res, next) => {
       fullName,
       email,
       password: hasedPassword,
+      profilePicture: noAvatar,
     };
     let user = await User.create(newUser);
     await user.save();
-    res.status(200).json({ user: _.omit(user.toJSON()) });
+    res.status(201).json({ user: _.omit(user.toJSON()), message: 'Đăng kí tài khoản thành công' });
   } catch (error) {
     next(error);
   }

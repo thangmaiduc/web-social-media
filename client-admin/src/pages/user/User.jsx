@@ -76,6 +76,10 @@ export default function User() {
         setPage(newPage);
 
     };
+    const handleChangeRowsPerPage = (event) => {
+        setLimit(parseInt(event.target.value, 10));
+        setPage(0);
+    };
     const handleBlock = async (userId) => {
         try {
             let res= await userApi.blockUser({userId});
@@ -88,10 +92,7 @@ export default function User() {
         setUser(user)
         setOpen(true)
     }
-    const handleChangeRowsPerPage = (event) => {
-        setLimit(parseInt(event.target.value, 10));
-        setPage(0);
-    };
+    
     const headCells = [
         {
             id: GENERAL_CONSTANTS.SORT.USERID,

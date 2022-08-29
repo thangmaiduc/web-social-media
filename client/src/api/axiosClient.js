@@ -1,6 +1,7 @@
 // api/axiosClient.js
 import axios from 'axios';
 import queryString from 'query-string';
+import { notify } from '../utility/toast';
 
 const axiosClient = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -11,13 +12,11 @@ const axiosClient = axios.create({
 });
 axiosClient.interceptors.request.use(async (config) => {
   const customHeaders = {};
-
   const accessToken = localStorage.getItem('token');
   console.log({ accessToken });
   if (accessToken) {
     customHeaders.Authorization = accessToken;
   }
-
   return {
     ...config,
     headers: {
@@ -34,7 +33,21 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle errors
+    const { response } = error;
+    console.log(error.response);
+    if (!response) {
+      notify('Server đã xảy ra sự cố, vui lòng báo admin');
+      throw error;
+    }
+    const { status } = response;
+    if (!status) notify('Server đã xảy ra sự cố, vui lòng báo admin');
+    if (status === 401) {
+      notify(response.data.message);
+    }
+    if (status === 400) {
+      notify(response.data.message);
+    }
+
     throw error;
   }
 );

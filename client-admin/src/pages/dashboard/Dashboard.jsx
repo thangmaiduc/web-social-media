@@ -1,8 +1,8 @@
-import {Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Stack, Typography} from '@mui/material';
+import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Stack, Typography } from '@mui/material';
 import Layout from '../../components/Layout';
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import postApi from "../../api/postApi";
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 export default function Dashboard() {
     const [result, setResult] = useState({})
@@ -12,7 +12,6 @@ export default function Dashboard() {
                 const res = await postApi.getDashboardAdmin();
                 setResult(res)
             } catch (e) {
-
             }
         }
         fetchDashboard()
@@ -28,12 +27,12 @@ export default function Dashboard() {
                 alignItems='center'
                 spacing={2}
             >
-                <Card sx={{maxWidth: 345, width:'30%'}}>
+                <Card sx={{ maxWidth: 345, width: '30%' }}>
                     <Link
                         to={`/admin/users`}
-                        style={{textDecoration: 'none', color: 'black'}}
+                        style={{ textDecoration: 'none', color: 'black' }}
                     >
-                        <CardActionArea sx={{backgroundColor: '#ccff99'}}>
+                        <CardActionArea sx={{ backgroundColor: '#ccff99' }}>
                             <CardContent>
                                 <Typography gutterBottom variant='h5' component='div'>
                                     Số người dùng mới trong tháng
@@ -50,12 +49,12 @@ export default function Dashboard() {
                         </CardActions>
                     </Link>
                 </Card>
-                <Card sx={{maxWidth: 345, width:'30%'}}>
+                <Card sx={{ maxWidth: 345, width: '30%' }}>
                     <Link
                         to={`/admin/posts`}
-                        style={{textDecoration: 'none', color: 'black'}}
+                        style={{ textDecoration: 'none', color: 'black' }}
                     >
-                        <CardActionArea sx={{backgroundColor: '#ffffcc'}}>
+                        <CardActionArea sx={{ backgroundColor: '#ffffcc' }}>
                             <CardContent>
                                 <Typography gutterBottom variant='h5' component='div'>
                                     Số bài viết mới trong tháng
@@ -72,13 +71,13 @@ export default function Dashboard() {
                         </CardActions>
                     </Link>
                 </Card>
-                <Card sx={{maxWidth: 345, width:'30%'}}>
+                <Card sx={{ maxWidth: 345, width: '30%' }}>
                     <Link
                         to={`/admin/posts`}
-                        style={{textDecoration: 'none', color: 'black'}}
+                        style={{ textDecoration: 'none', color: 'black' }}
                     >
                         <CardActionArea>
-                            <CardContent sx={{backgroundColor: '#66ff33'}}>
+                            <CardContent sx={{ backgroundColor: '#66ff33' }}>
                                 <Typography gutterBottom variant='h5' component='div'>
                                     Số lượng tương tác trong tháng
                                 </Typography>
@@ -95,18 +94,18 @@ export default function Dashboard() {
                     </Link>
                 </Card>
             </Stack>
- <Stack
+            <Stack
                 direction='row'
                 justifyContent='center'
                 alignItems='center'
                 spacing={2}
             >
-                <Card sx={{maxWidth: 345, width:'30%' } }>
+                <Card sx={{ maxWidth: 345, width: '30%' }}>
                     <Link
                         to={`/admin/users`}
-                        style={{textDecoration: 'none', color: 'black'}}
+                        style={{ textDecoration: 'none', color: 'black' }}
                     >
-                        <CardActionArea sx={{backgroundColor: '#ccff99'}}>
+                        <CardActionArea sx={{ backgroundColor: '#ccff99' }}>
                             <CardContent>
                                 <Typography gutterBottom variant='h5' component='div'>
                                     Tất cả người dùng
@@ -123,15 +122,15 @@ export default function Dashboard() {
                         </CardActions>
                     </Link>
                 </Card>
-                <Card sx={{maxWidth: 345, width:'30%'}}>
+                <Card sx={{ maxWidth: 345, width: '30%' }}>
                     <Link
                         to={`/admin/posts`}
-                        style={{textDecoration: 'none', color: 'black'}}
+                        style={{ textDecoration: 'none', color: 'black' }}
                     >
-                        <CardActionArea sx={{backgroundColor: '#ffffcc'}}>
+                        <CardActionArea sx={{ backgroundColor: '#ffffcc' }}>
                             <CardContent>
                                 <Typography gutterBottom variant='h5' component='div'>
-                                   Tất cả bài viết
+                                    Tất cả bài viết
                                 </Typography>
                                 <Typography variant='h5' color='text.primary'>
                                     {result.numPost}
@@ -145,13 +144,13 @@ export default function Dashboard() {
                         </CardActions>
                     </Link>
                 </Card>
-                <Card sx={{maxWidth: 345, width:'30%'}}>
+                <Card sx={{ maxWidth: 345, width: '30%' }}>
                     <Link
                         to={`/admin/posts`}
-                        style={{textDecoration: 'none', color: 'black'}}
+                        style={{ textDecoration: 'none', color: 'black' }}
                     >
                         <CardActionArea>
-                            <CardContent sx={{backgroundColor: '#66ff33'}}>
+                            <CardContent sx={{ backgroundColor: '#66ff33' }}>
                                 <Typography gutterBottom variant='h5' component='div'>
                                     Số lượng tương tác
                                 </Typography>

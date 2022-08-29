@@ -3,9 +3,13 @@ import { useRef } from "react";
 import "./register.css";
 import { useHistory } from "react-router";
 import { Link } from 'react-router-dom';
+import userApi from '../../api/userApi';
+import { ToastContainer } from 'react-toastify';
+import { notify } from '../../utility/toast';
 
 export default function Register() {
   const username = useRef();
+  const fullName = useRef();
   const email = useRef();
   const password = useRef();
   const passwordAgain = useRef();
@@ -13,16 +17,19 @@ export default function Register() {
 
   const handleClick = async (e) => {
     e.preventDefault();
+    console.log(passwordAgain.current.value, password.current.value);
     if (passwordAgain.current.value !== password.current.value) {
-      passwordAgain.current.setCustomValidity("Passwords don't match!");
+      notify("Passwords don't match!");
     } else {
       const user = {
         username: username.current.value,
+        fullName: fullName.current.value,
         email: email.current.value,
         password: password.current.value,
       };
       try {
-        await axios.post("/auth/register", user);
+        const res = await userApi.register(user);
+        notify(res.message);
         history.push("/login");
       } catch (err) {
         console.log(err);
@@ -32,11 +39,12 @@ export default function Register() {
 
   return (
     <div className="login">
+
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Social Media</h3>
           <span className="loginDesc">
-          Kết nối bạn bè và thế giới quanh bạn qua Social Media.
+            Kết nối bạn bè và thế giới quanh bạn qua Social Media.
           </span>
         </div>
         <div className="loginRight">
@@ -45,6 +53,12 @@ export default function Register() {
               placeholder="Username"
               required
               ref={username}
+              className="loginInput"
+            />
+            <input
+              placeholder="Họ tên"
+              required
+              ref={fullName}
               className="loginInput"
             />
             <input
@@ -78,7 +92,7 @@ export default function Register() {
             >
               <button className="loginRegisterbtn">Log into Account</button>
             </Link>
-
+            <ToastContainer />
           </form>
         </div>
       </div>

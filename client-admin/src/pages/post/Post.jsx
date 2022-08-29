@@ -66,7 +66,6 @@ export default function Post() {
     };
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
-
     };
     const handleBlock = async (postId) => {
         try {

@@ -10,7 +10,7 @@ import {
 } from '../../redux/slices/userSlice';
 import { useEffect } from 'react';
 import userApi from '../../api/userApi';
-import { notify } from '../../utility/toast';
+import { notify, ToastContainer } from '../../utility/toast';
 import { Link } from 'react-router-dom';
 
 export default function Login() {
@@ -32,17 +32,10 @@ export default function Login() {
   const google = () => {
     window.open("http://localhost:8080/api/auth/google", "_self");
   };
-  const handleForgotPassword = async () => {
-    try {
-      const res = await userApi.forgotPassword({ email: email.current.value })
-      notify(res.message);
 
-    } catch (error) {
-
-    }
-  }
   return (
     <div className="login">
+    <ToastContainer/>
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Social Media</h3>
@@ -78,7 +71,7 @@ export default function Login() {
               to={"/forgot-password"}
               style={{ textDecoration: "none" }}
             >
-              <div className='showMoreBtn loginForgot' onClick={handleForgotPassword}>
+              <div className='showMoreBtn loginForgot' >
                 <p>Quên mật khẩu</p>
               </div>
             </Link>

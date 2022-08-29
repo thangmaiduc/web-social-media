@@ -2,22 +2,18 @@ import axiosClient from './axiosClient';
 import api from './API';
 const conversationApi = {
   getOfUser: async (payload) => {
-    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    console.log(payload);
     const url = api.GET_CONVERSATIONS;
     const response = await axiosClient.get(url,payload );
     console.log('response', response);
     return response.data;
   },
   newConversation: async (payload) => {
-    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = api.GET_CONVERSATIONS;
     const response = await axiosClient.post(url,payload);
     console.log('response', response);
     return response;
   },
   addMember: async (conversationId, payload) => {
-    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
     const url = api.ADD_MEMBER+conversationId;
     const response = await axiosClient.post(url,payload);
     console.log('response', response);
@@ -31,8 +27,6 @@ const conversationApi = {
     return response.data;
   },
   newMessage: async (payload) => {
-    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    console.log(payload);
     const url = api.CREATE_MESSAGE;
     const response = await axiosClient.post(url, payload);
     console.log('response', response);
