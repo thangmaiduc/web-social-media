@@ -6,9 +6,12 @@ import {
   userSelector,
   fetchSelector,
   signIn,
-  
+
 } from '../../redux/slices/userSlice';
 import { useEffect } from 'react';
+import userApi from '../../api/userApi';
+import { notify } from '../../utility/toast';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   const email = useRef();
@@ -29,14 +32,22 @@ export default function Login() {
   const google = () => {
     window.open("http://localhost:8080/api/auth/google", "_self");
   };
+  const handleForgotPassword = async () => {
+    try {
+      const res = await userApi.forgotPassword({ email: email.current.value })
+      notify(res.message);
 
+    } catch (error) {
+
+    }
+  }
   return (
     <div className="login">
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Social Media</h3>
           <span className="loginDesc">
-            Connect with friends and the world around you on Social Media.
+            Kết nối bạn bè và thế giới quanh bạn qua Social Media.
           </span>
         </div>
         <div className="loginRight">
@@ -63,7 +74,14 @@ export default function Login() {
                 'Log In'
               )}
             </button>
-            <span className="loginForgot">Forgot Password?</span>
+            <Link
+              to={"/forgot-password"}
+              style={{ textDecoration: "none" }}
+            >
+              <div className='showMoreBtn loginForgot' onClick={handleForgotPassword}>
+                <p>Quên mật khẩu</p>
+              </div>
+            </Link>
 
           </form>
           <button className="loginButtonGoogle" onClick={google} disabled={isFetching}>
@@ -73,13 +91,19 @@ export default function Login() {
               'Log In By Google'
             )}
           </button>
-          <button className="loginRegisterButton">
-            {isFetching ? (
-              <CircularProgress color="secondary" size="20px" />
-            ) : (
-              'Create a New Account'
-            )}
-          </button>
+          <Link
+            to={"/register"}
+            style={{ textDecoration: "none" }}
+            className="loginRegisterButton"
+          >
+            <button className="loginRegisterbtn" >
+              {isFetching ? (
+                <CircularProgress color="secondary" size="20px" />
+              ) : (
+                'Create a New Account'
+              )}
+            </button>
+          </Link>
         </div>
       </div>
     </div>

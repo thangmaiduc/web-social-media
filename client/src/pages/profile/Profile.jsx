@@ -9,7 +9,7 @@ import userApi from '../../api/userApi';
 import { Edit, EditOutlined, PhotoCamera } from '@material-ui/icons';
 import { Tooltip } from '@material-ui/core';
 import commonApi from '../../api/commonApi';
-import { ToastContainer, notify } from '../../utility/toast';
+import {  notify } from '../../utility/toast';
 import { useSelector, useDispatch } from 'react-redux';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Button, Stack } from '@mui/material';
@@ -77,7 +77,7 @@ export default function Profile() {
   const handleClick = () => {
     setIsShow(true)
   }
-  const editUser =async (fullName, newPass, oldPass, description, city, country) => {
+  const editUser =async (fullName,  description, city, country) => {
     try {
       let obj = { fullName,  description, city, country };
       const res = await userApi.updateUser(obj)
@@ -85,6 +85,7 @@ export default function Profile() {
       dispatch(userSlice.actions.updateUser(res.data))
       setUser(res.data);
       notify(res.message);
+      setIsShow(false)
     } catch (error) {
 
     }
@@ -95,7 +96,6 @@ export default function Profile() {
       <Topbar />
       <div className='profile'>
         <Sidebar />
-        {/* <ToastContainer /> */}
         {user && (
           <div className='profileRight'>
             <div className='profileRightTop'>

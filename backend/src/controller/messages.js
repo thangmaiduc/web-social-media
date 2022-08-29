@@ -41,7 +41,7 @@ exports.getMessageOfConversation = async (req, res, next) => {
         {
           model: User,
           required: true,
-          attributes: [['profilePicture', 'img']],
+          attributes: [['profilePicture', 'img'], 'fullName', 'id', 'username'],
         },
         {
           model: Attachment,

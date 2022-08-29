@@ -19,6 +19,7 @@ import { notify } from '../../utility/toast';
 import useQuery from '../../hooks/useQuery';
 import useQuerySearch from '../../hooks/useQuerySearch';
 import api from '../../api/API';
+import userApi from '../../api/userApi';
 export default function Messenger() {
   const [conversations, setConversations] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
@@ -41,18 +42,32 @@ export default function Messenger() {
   const sendMessage = async () => {
     // if (!socketRef.current) return;
     let messageObject = {
+      senderId: user.id,
       conversationId: currentChat.conversationId,
       text: newMessage,
+
     };
+    let objMesSocket = {
+      senderId: user.id,
+      receiverId: currentChat.userId,
+      text: newMessage,
+    }
+
     if (file) {
       messageObject = {
         ...messageObject,
         fileUrl
       };
+      objMesSocket = {
+        ...objMesSocket,
+        fileUrl
+      };
+
       setNewMessage('');
       setFile();
-      // socketRef.current.emit('send message', messageObject);
+
     }
+    socketRef.current.emit('sendMessage', objMesSocket);
     const message = await conversationApi.newMessage(messageObject)
     setMessages(m => [...m, message])
   };
@@ -63,31 +78,46 @@ export default function Messenger() {
     setNewMessage('');
   };
 
-  // useEffect(() => {
-  //   socket.current = io('ws://localhost:8900');
-  //   socket.current.on('getMessage', (data) => {
-  //     setArrivalMessage({
-  //       sender: data.senderId,
-  //       text: data.text,
-  //       createdAt: Date.now(),
-  //     });
-  //   });
-  // }, []);
+  useEffect(() => {
+    socketRef.current = io('ws://localhost:8900');
+    socketRef.current.on('getMessage', (data) => {
+      setArrivalMessage({
+        sender: data.senderId,
+        text: data.text,
+        fileUrl: data.fileUrl
+      });
+    });
+  }, []);
 
-  // useEffect(() => {
-  //   arrivalMessage &&
-  //     currentChat?.members.includes(arrivalMessage.sender) &&
-  //     setMessages((prev) => [...prev, arrivalMessage]);
-  // }, [arrivalMessage, currentChat]);
+  useEffect(() => {
 
-  // useEffect(() => {
-  //   socket.current.emit('addUser', user._id);
-  //   socket.current.on('getUsers', (users) => {
-  //     setOnlineUsers(
-  //       user.followings.filter((f) => users.some((u) => u.userId === f))
-  //     );
-  //   });
-  // }, [user]);
+    const sendMessage = async () => {
+      console.log('currentChat', currentChat);
+      console.log('arrivalMessage', arrivalMessage);
+
+      if (arrivalMessage &&
+        currentChat.userId === arrivalMessage.sender) {
+        const sender = await userApi.getUserById(arrivalMessage.sender)
+        let obj = {
+          ...arrivalMessage,
+          createdAt: Date.now(),
+        }
+        obj.profilePicture = sender.profilePicture;
+        console.log('obj', obj);
+        setMessages((prev) => [...prev, obj]);
+      }
+    }
+    sendMessage()
+  }, [arrivalMessage, currentChat]);
+
+  useEffect(() => {
+    socketRef.current.emit('addUser', user.id);
+    // socketRef.current.on('getUsers', (users) => {
+    //   setOnlineUsers(
+    //     user.followings.filter((f) => users.some((u) => u.userId === f))
+    //   );
+    // });
+  }, [user]);
 
   useEffect(() => {
     const getConversations = async () => {
@@ -144,7 +174,7 @@ export default function Messenger() {
       return null;
     }
   }
- 
+
   useEffect(() => {
     if (isTyping) startTypingMessage();
     else {
@@ -161,16 +191,28 @@ export default function Messenger() {
       let memberIds = value.map(member => member.followedId)
       let res = await conversationApi.newConversation({ users: memberIds });
       notify(res.message);
-      setConversations()
+      setConversations(pre => [...pre, res.data])
+      setCurrentChat(res.data)
     } catch (error) {
 
     }
   }
-  
-  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, page, textSearch);
+
+  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, page,);
   useEffect(() => {
-    console.log('data',data);
-   }, [data]);
+    setConversations(data)
+  }, [data]);
+  useEffect(() => {
+    const getConversations = async () => {
+      try {
+        const res = await conversationApi.getOfUser({ params: { textSearch } })
+        setConversations(res);
+      } catch (error) {
+
+      }
+    }
+    getConversations()
+  }, [textSearch]);
   const observer = useRef()
 
   const lastBookElementRef = useCallback(node => {
@@ -191,7 +233,7 @@ export default function Messenger() {
           <div className='chatMenuWrapper'>
             <div className="topChatMenu">
 
-              <input placeholder='Search for friends' className='chatMenuInput' value={textSearch} onChange={(e)=>setTextSearch(e.target.value)}/>
+              <input placeholder='Search for friends' className='chatMenuInput' value={textSearch} onChange={(e) => setTextSearch(e.target.value)} />
               < Button size='small' variant="contained"
                 color='primary'
                 startIcon={<Add />} onClick={
@@ -200,8 +242,8 @@ export default function Messenger() {
                 Thêm cuộc trò chuyện
               </Button>
             </div>
-            {data.length > 0 &&
-              data.map((c) => (
+            {conversations.length > 0 &&
+              conversations.map((c) => (
                 <div ref={lastBookElementRef} key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) }}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
@@ -245,10 +287,16 @@ export default function Messenger() {
           <div className='chatBoxWrapper'>
             {currentChat ? (
               <>
-                <div className="chatTitle">
-                  <img className="sidebarFriendImg" src={user.profilePicture} alt="" />
-                  <span className="sidebarFriendName">{user.fullName}</span>
-                </div>
+                {currentChat.type === 'private' ?
+                  <div className="chatTitle">
+                    <img className="sidebarFriendImg" src={currentChat?.User?.profilePicture} alt="" />
+                    <span className="sidebarFriendName">{currentChat?.User?.fullName}</span>
+                  </div> :
+                  <div className="chatTitle">
+                    <img className="sidebarFriendImg" src={currentChat?.img} alt="" />
+                    <span className="sidebarFriendName">{currentChat?.title}</span>
+                  </div>
+                }
                 <div className='chatBoxTop'>
                   {messages.map((m) => (
                     <div key={m.id} ref={scrollRef}>

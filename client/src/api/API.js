@@ -3,6 +3,7 @@ const api = {
   GET_POST_TIMELINE: baseURL + '/posts/timeline/',
   GET_POST_PROFILE: baseURL + '/posts/profile/',
   CREATE_POST: baseURL + '/posts/',
+  QUERY_POSTS: baseURL + '/posts/query/',
   
   CREATE_COMMENT: baseURL + '/comments/',
   DELETE_COMMENT: baseURL + '/comments/',
@@ -11,6 +12,7 @@ const api = {
 
   GET_FRIENDS: baseURL + '/users/friends/',
   GET_USER: baseURL + '/users/',
+  QUERY_USERS: baseURL + '/users/query/',
   GET_ME: baseURL + '/users/me',
 
   UPLOAD: baseURL + '/cloudinary-upload',
