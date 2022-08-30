@@ -85,7 +85,7 @@ export default function Messenger() {
   }, []);
 
   useEffect(() => {
-    const sendMessage = async () => {
+    const getMessage = async () => {
       console.log('currentChat', currentChat);
       console.log('arrivalMessage', arrivalMessage);
       if (arrivalMessage &&
@@ -100,16 +100,11 @@ export default function Messenger() {
         setMessages((prev) => [...prev, obj]);
       }
     }
-    sendMessage()
+    getMessage()
   }, [arrivalMessage, currentChat]);
 
   useEffect(() => {
     socketRef.current.emit('addUser', user.id);
-    // socketRef.current.on('getUsers', (users) => {
-    //   setOnlineUsers(
-    //     user.followings.filter((f) => users.some((u) => u.userId === f))
-    //   );
-    // });
   }, [user]);
 
   useEffect(() => {

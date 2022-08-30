@@ -23,7 +23,6 @@ io.on('connection', (socket) => {
     //when ceonnect
     console.log('a user connected.');
 
-    //take userId and socketId from user
     socket.on('addUser', (userId) => {
       console.log('[Event addUser]: ', JSON.stringify(userId));
       addUser(userId, socket.id);
@@ -31,10 +30,10 @@ io.on('connection', (socket) => {
       console.log('users::::::::::: ', users);
     });
 
-    //send and get message
     socket.on('sendMessage', ({ senderId, receiverId, text, fileUrl }) => {
       const user = getUser(receiverId);
       console.log('[Event sendMessage]: ', JSON.stringify({ senderId, receiverId, text, fileUrl }));
+      if(user)
       io.to(user.socketId).emit('getMessage', {
         senderId,
         text,
@@ -42,7 +41,6 @@ io.on('connection', (socket) => {
       });
     });
 
-    //when disconnect
     socket.on('disconnect', () => {
       console.log('a user disconnected!');
       removeUser(socket.id);
