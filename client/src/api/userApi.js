@@ -54,6 +54,11 @@ const userApi = {
     const response = await axiosClient.get(url);
     return response.data;
   },
+  queryUsers: async (payload) => {
+    const url = api.QUERY_USERS;
+    const response = await axiosClient.get(url, payload);
+    return response;
+  },
   getUserById: async (payload) => {
     const url = api.GET_USER + payload + '/id';
     const response = await axiosClient.get(url);

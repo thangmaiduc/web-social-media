@@ -51,7 +51,8 @@ exports.getMessageOfConversation = async (req, res, next) => {
       limit,
       offset,
     });
-       res.status(200).json({ data: messages.reverse() });
+    const length = await Message.count({where})
+       res.status(200).json({ data: messages.reverse(), length });
   } catch (error) {
     next(error);
   }

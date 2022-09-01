@@ -12,8 +12,8 @@ import useTyping from '../../hooks/useTyping';
 import conversationApi from '../../api/conversationApi';
 import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
 import commonApi from '../../api/commonApi';
-import { Button, TextField } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
+import { Button, TextField, Tooltip } from '@material-ui/core';
+import { Add, Close, Edit } from '@material-ui/icons';
 import { Autocomplete } from '@mui/material';
 import { notify } from '../../utility/toast';
 import useQuery from '../../hooks/useQuery';
@@ -38,7 +38,11 @@ export default function Messenger() {
   const [value, setValue] = useState([]);
   const fixedOptions = []
   const [textSearch, setTextSearch] = useState('')
+  const [title, setTitle] = useState('')
   const [page, setPage] = useState(0)
+  const [lengthMes, setLengthMes] = useState(0)
+  const [pageMessage, setPageMessage] = useState(0)
+  const [isEdited, setIsEdited] = useState(false)
   const sendMessage = async () => {
     if (!socketRef.current) return;
     let messageObject = {
@@ -122,7 +126,10 @@ export default function Messenger() {
         const res = await conversationApi.getMessage(
           currentChat?.conversationId
         );
-        setMessages(res);
+        setMessages(res.data);
+        setLengthMes(res.length);
+        setTitle(currentChat?.title)
+
       } catch (err) {
         console.log(err);
       }
@@ -168,18 +175,26 @@ export default function Messenger() {
       stopTypingMessage();
     }
   }, [isTyping]);
+
   const handleAdd = () => {
     setIsAdd(true);
     setCurrentChat(false)
   }
+
   const handleSubmit = async () => {
     setIsAdd(false);
     try {
-      let memberIds = value.map(member => member.followedId)
-      let res = await conversationApi.newConversation({ users: memberIds });
-      notify(res.message);
-      setConversations(pre => [...pre, res.data])
-      setCurrentChat(res.data)
+      if (!currentChat) {
+        let memberIds = value.map(member => member.followedId)
+        let res = await conversationApi.newConversation({ users: memberIds });
+        notify(res.message);
+        setConversations(pre => [...pre, res.data])
+        setCurrentChat(res.data)
+      } else {
+        let memberIds = value.map(member => member.followedId)
+        let res = await conversationApi.addMember(currentChat.conversationId, { users: memberIds });
+        notify(res.message);
+      }
     } catch (error) {
 
     }
@@ -212,6 +227,55 @@ export default function Messenger() {
     })
     if (node) observer.current.observe(node)
   }, [loading, hasMore])
+  useEffect(() => {
+    const getMessages = async () => {
+      try {
+        const res = await conversationApi.getMessage(
+          currentChat?.conversationId, {
+          params: {
+            page: pageMessage
+          }
+        }
+        );
+        setMessages([...res.data, ...messages]);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getMessages();
+  }, [pageMessage])
+
+  const handleShowMore = () => {
+    if ((pageMessage + 1) * 10 > lengthMes) return
+    if ((pageMessage + 1) * 10 < lengthMes) {
+      setPageMessage(p => p + 1)
+    }
+  }
+
+  const handleRename =async () => {
+    setIsEdited(false);
+    try {
+      const res = await conversationApi.editConversation(currentChat.conversationId, {title});
+      notify(res.message);
+      conversations.forEach(c=>{
+        if( c.conversationId === res.data.id)
+        {
+          c.title = res.data.title;
+          setCurrentChat(c);
+        }
+      })
+      setConversations(conversations)
+    } catch (error) {
+      
+    }
+  }
+
+  const handleAddMember = async () => {
+    setIsAdd(true);
+    const res = await conversationApi.getMember(currentChat.conversationId);
+    setValue(res)
+
+  }
   return (
     <>
       <Topbar />
@@ -231,7 +295,7 @@ export default function Messenger() {
             </div>
             {conversations.length > 0 &&
               conversations.map((c) => (
-                <div ref={lastBookElementRef} key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) }}>
+                <div ref={lastBookElementRef} key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) ; setIsEdited(false) }}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}
@@ -244,7 +308,7 @@ export default function Messenger() {
               fullWidth={true}
               id="tags-standard"
               options={friends}
-              getOptionLabel={(option) => option.fullName}
+              getOptionLabel={(option) => option.fullName || ''}
               value={value}
               onChange={(event, newValue) => {
                 setValue([
@@ -266,7 +330,7 @@ export default function Messenger() {
                 startIcon={<Add />} onClick={
                   handleSubmit
                 }>
-                Tạo
+                Thêm
               </Button>
             </>
             }
@@ -281,10 +345,39 @@ export default function Messenger() {
                   </div> :
                   <div className="chatTitle">
                     <img className="sidebarFriendImg" src={currentChat?.img} alt="" />
-                    <span className="sidebarFriendName">{currentChat?.title}</span>
+                    {!isEdited ? <span className="sidebarFriendName">{currentChat?.title}</span> :
+                      <div>
+
+                        <TextField id="outlined-search"  value={title} onChange={(e)=>setTitle(e.target.value)}/>
+                        < Button size='small' variant="contained"
+                          color='primary'
+                          onClick={
+                            handleRename
+                          }>
+                          Sửa tên
+                        </Button>
+                      </div>
+                    }
+                    <div className="chatTitleRight">
+                      <div className="editButton" onClick={() => setIsEdited(true)} >
+                        <Tooltip title="Sửa tên nhóm">
+
+                          <Edit />
+                        </Tooltip>
+                      </div>
+                      <div className="removeButton" >
+                        <Tooltip title="Thêm thành viên" onClick={handleAddMember}>
+                          <Add />
+                        </Tooltip>
+                      </div>
+
+                    </div>
                   </div>
                 }
+
+
                 <div className='chatBoxTop'>
+                  <button onClick={handleShowMore}>Load thêm tin nhắn</button>
                   {messages.map((m) => (
                     <div key={m.id} ref={scrollRef}>
                       <Message message={m} own={m.senderId === user.id} />

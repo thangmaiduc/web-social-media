@@ -13,15 +13,28 @@ const conversationApi = {
     console.log('response', response);
     return response;
   },
+  editConversation: async (conversationId,payload) => {
+    const url = api.GET_CONVERSATIONS+conversationId;
+    const response = await axiosClient.put(url,payload);
+    console.log('response', response);
+    return response;
+  },
   addMember: async (conversationId, payload) => {
     const url = api.ADD_MEMBER+conversationId;
     const response = await axiosClient.post(url,payload);
     console.log('response', response);
-    return response.data;
+    return response;
   },
-  getMessage: async (payload) => {
+  getMessage: async (conversationId,payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    const url = api.GET_MESSAGES+payload;
+    const url = api.GET_MESSAGES+conversationId;
+    const response = await axiosClient.get(url, payload);
+    console.log('response', response);
+    return response;
+  },
+  getMember: async (conversationId) => {
+    // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
+    const url = api.ADD_MEMBER+conversationId;
     const response = await axiosClient.get(url);
     console.log('response', response);
     return response.data;

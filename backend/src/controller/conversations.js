@@ -44,6 +44,30 @@ exports.addParticipant = async (req, res, next) => {
     next(error);
   }
 };
+exports.editTitle = async (req, res, next) => {
+  try {
+    console.log(req.params, req.body);
+    let conversationId = req.params.id;
+    let userId = req.user.id;
+    let title = _.get(req, 'body.title', '');
+
+    const check = await Conversation.findOne({
+      where: { id: conversationId },
+    });
+    if (!check) {
+      throw new Api404Error('Không tìm thấy nhóm chat');
+    }
+    const conversation = await Conversation.findOne({ where: { creatorId: userId, id:conversationId } });
+    if (!conversation) {
+      throw new api400Error('Không có quyền sửa tên nhóm');
+    }
+    conversation.title = title;
+    await conversation.save();
+    res.status(200).json({ message: 'Sửa tên nhóm thành công', data: conversation });
+  } catch (error) {
+    next(error);
+  }
+};
 //get member of Conversation
 exports.getMemberOfGroup = async (req, res, next) => {
   try {
@@ -51,8 +75,7 @@ exports.getMemberOfGroup = async (req, res, next) => {
     let conversationId = req.params.id;
     let userId = req.user.id;
 
-    let users = req.body.users;
-    if (users.length == 0) throw new api400Error('Không có người dùng nào');
+    
 
     const check = await Conversation.findOne({
       where: { id: conversationId },
@@ -66,13 +89,23 @@ exports.getMemberOfGroup = async (req, res, next) => {
     }
     let participants = await Participant.findAll({
       where: { conversationId },
-      include: [{ model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'] }],
+      include: [{ model: User, attributes: ['fullName', 'id', 'username', 'profilePicture', 'coverPicture'] }],
     });
-    res.status(200).json({ data: participants });
+    responseData = participants.map(p =>{
+      return {
+        followedId: p.User.id,
+        username: p.User.username,
+        profilePicture: p.User.profilePicture,
+        coverPicture: p.User.coverPicture,
+        fullName: p.User.fullName,
+      }
+    })
+    res.status(200).json({ data: responseData });
   } catch (error) {
     next(error);
   }
 };
+
 //new group chat
 
 exports.create = async (req, res, next) => {

@@ -38,7 +38,6 @@ export const SearchUser = ({ user }) => {
         } catch (err) {
         }
     }
-    console.log(curUser.id , user.id);
 
     return (
        

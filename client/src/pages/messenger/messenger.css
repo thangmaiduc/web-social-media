@@ -81,3 +81,9 @@
   display: flex;
   
 }
+.chatTitleRight{
+  display: flex;
+  position: absolute;
+  right: 0;
+  top: 5;
+}

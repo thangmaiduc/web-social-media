@@ -9,7 +9,7 @@ import userApi from '../../api/userApi';
 import { Edit, EditOutlined, PhotoCamera } from '@material-ui/icons';
 import { Tooltip } from '@material-ui/core';
 import commonApi from '../../api/commonApi';
-import {  notify } from '../../utility/toast';
+import { notify } from '../../utility/toast';
 import { useSelector, useDispatch } from 'react-redux';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Button, Stack } from '@mui/material';
@@ -73,9 +73,9 @@ export default function Profile() {
   const handleClick = () => {
     setIsShow(true)
   }
-  const editUser =async (fullName,  description, city, country) => {
+  const editUser = async (fullName, description, city, country) => {
     try {
-      let obj = { fullName,  description, city, country };
+      let obj = { fullName, description, city, country };
       const res = await userApi.updateUser(obj)
       console.log('res.data', res.data);
       dispatch(userSlice.actions.updateUser(res.data))

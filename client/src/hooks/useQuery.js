@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axiosClient from '../api/axiosClient';
+import _ from 'lodash';
 
 export default function useQuery(url, page, textSearch) {
   const [data, setData] = useState([]);
@@ -12,8 +13,10 @@ export default function useQuery(url, page, textSearch) {
     setLoading(false);
   };
   const handleSuccess = (res) => {
-    const newData = [...data, ...res.data];
-    setData(newData);
+    // const newData = [...data, ...res.data];
+    if (page > 0) setData([...data, ...res.data]);
+    else setData([...res.data]);
+    // setData(newData);
     setLength(res.length);
     setHasMore(res.data.length > 0);
     setLoading(false);

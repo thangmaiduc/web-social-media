@@ -2,7 +2,7 @@ import './topbar.css';
 import { Search, Person, Chat, Notifications, ExitToApp } from '@material-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { ToastContainer } from '../../utility/toast';
 import { Button } from '@material-ui/core';
 import { useState } from 'react';
@@ -10,10 +10,16 @@ export default function Topbar() {
   const user = useSelector(userSelector);
   const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
+  const history = useHistory()
   const logout = () => {
     // localStorage.clear();
     dispatch(userSlice.actions.logout())
     window.open("http://localhost:8080/api/auth/logout", "_self");
+    
+  }
+  const handleSearch=(e)=>{
+    e.preventDefault();
+    history.push(`/search/${textSearch}`)
   }
   const PF = process.env.REACT_APP_PUBLIC_FOLDER;
   return (
@@ -27,15 +33,13 @@ export default function Topbar() {
       <div className='topbarCenter'>
 
 
-        <form type='submit' className='searchbar'>
-          <Link to={`/search/${textSearch}`}>
-
+        <form className='searchbar' type='submit' onSubmit={handleSearch}>
             <Search className='searchIcon' />
-          </Link>
           <input
             placeholder='Search for friend, post or video'
             className='searchInput'
             value={textSearch}
+            // type='submit'
             onChange={(e) => setTextSearch(e.target.value)}
           />
         </form>

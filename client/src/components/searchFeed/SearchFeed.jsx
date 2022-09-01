@@ -10,6 +10,7 @@ import usePostSearch from '../../hooks/usePostSearch'
 import { Stack } from '@mui/system';
 import { Add, Remove } from '@material-ui/icons';
 import { SearchUser } from '../searchUser/SearchUser';
+import userApi from '../../api/userApi';
 
 export default function SearchFeed({ searchText }) {
   const [query, setQuery] = useState('')
@@ -19,20 +20,38 @@ export default function SearchFeed({ searchText }) {
   const user = useSelector(userSelector);
   const [lengthUser, setLengthUser] = useState(0)
   const [lengthPost, setLengthPost] = useState(0)
+  const [userSearch, setUserSearch] = useState([])
+  const [postSearch, setPostSearch] = useState([])
   // const {
   //   data,
   //   hasMore,
   //   loading,
   //   error
   // } = usePostSearch(query, page)
+  // useEffect(()=>{
+  //   const fetchUser= async()=>{
+  //     try {
+  //       const res = await userApi.queryUsers({params:{
+  //         page: pageUser,
+  //         textSearch: searchText
+  //       }})
+  //       if(pageUser>0)
+  //       setUserSearch([...userSearch,...res.data])
+  //       else setUserSearch([...res.data])
+  //       setLengthUser(res.length)
+  //     } catch (error) {
+        
+  //     }
+  //   }
+  //   fetchUser()
+  // },[searchText, pageUser])
+ 
 
 
   let usersQuery = useQuery(api.QUERY_USERS, pageUser, searchText,);
   let postsQuery = useQuery(api.QUERY_POSTS, pagePost, searchText,);
 
-  console.log('postsQuery', postsQuery);
   const handleClickShowMore1 = () => {
-    console.log(lengthUser);
     if ((pageUser + 1) * limit > lengthUser) return
     if ((pageUser + 1) * limit < lengthUser) {
       setPageUser(p => p + 1)
@@ -46,16 +65,31 @@ export default function SearchFeed({ searchText }) {
     }
   }
   useEffect(() => {
+    setUserSearch(usersQuery.data)
+    
     setLengthUser(usersQuery.length)
+
   }, [usersQuery])
   useEffect(() => {
+    setPostSearch(postsQuery.data)
+    
     setLengthPost(postsQuery.length)
+
   }, [postsQuery])
+
+  useEffect(() => { 
+    console.log('usersQuery',usersQuery);
+    if (lengthUser === 0) setUserSearch([])
+  },[lengthUser])
+  useEffect(() => { 
+    console.log('postsQuery',postsQuery);
+    if (lengthPost=== 0) setPostSearch([])
+  },[lengthPost])
   return (
     <div className='feed'>
       <div className='feedWrapper'>
         <div className="userWrapepr">
-          {usersQuery.data.map((u, index) => {
+          {userSearch.map((u, index) => {
             return <SearchUser
               user={u}
               key={index}
@@ -64,25 +98,18 @@ export default function SearchFeed({ searchText }) {
           {
             lengthUser === 0 ?
               <p>{`Không có người dùng nào có từ khóa '${searchText}'`}</p> :
-
-
               <div className='showMoreBtn' onClick={handleClickShowMore1}>
-
                 <p>Xem thêm người dùng.</p>
               </div>}
         </div>
         <div className="postWrapepr">
-          {postsQuery.data.map((p, index) => {
+          {postSearch.map((p, index) => {
             return <Post key={index} post={p} />
           })}
-
           {
             lengthPost === 0 ?
               <p>{`Không có bài viết nào có từ khóa '${searchText}'`}</p> :
-
-
               <div className='showMoreBtn' onClick={handleClickShowMore2}>
-
                 <p>Xem thêm bài viết.</p>
               </div>}
         </div>

@@ -12,6 +12,7 @@ router.get("/members/:id", conversationController.getMemberOfGroup);
 //new group chat
 
 router.post("/", conversationController.create);
+router.put("/:id", conversationController.editTitle);
 
 //get conv of a user
 
