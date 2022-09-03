@@ -23,7 +23,7 @@ export default function Message({ message, own }) {
             }
             alt=''
           />}
-          {message.text && <p className='messageText'>{message.text}</p>}
+          {message.text && <p className='crop messageText'>{message.text}</p>}
         </div>
       </div>
       <div className='messageBottom'>{format(message?.createdAt)}</div>

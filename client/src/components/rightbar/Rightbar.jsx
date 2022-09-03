@@ -13,9 +13,6 @@ export default function Rightbar({ user }) {
   let currentUser = useSelector(userSelector);
   const [followed, setFollowed] = useState(false);
   const [friends, setFriends] = useState(false);
-  // console.log('friendsId', friendsId);
-  // console.log('friendsId.includes(user?.id)', friendsId.includes(user?.id));
-  // console.log('user', user);
   const handleClick = async () => {
   try {
       if (followed) {
@@ -47,12 +44,12 @@ export default function Rightbar({ user }) {
     return (
       <>
         <div className="birthdayContainer">
-          <img className="birthdayImg" src="assets/gift.png" alt="" />
+          <img className="birthdayImg" src="https://res.cloudinary.com/dzens2tsj/image/upload/v1662131052/gift_ylzqt4.png" alt="" />
           <span className="birthdayText">
           <b>Pola Foster</b> and <b>3 other friends</b> have a birhday today.
           </span>
         </div>
-        <img className="rightbarAd" src="assets/ad.png" alt="" />
+        <img className="rightbarAd" src="https://res.cloudinary.com/dzens2tsj/image/upload/v1662131032/ad_i4lplt.png" alt="" />
         
         <h4 className="rightbarTitle">Online Friends</h4>
         <ul className="rightbarFriendList">

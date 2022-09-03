@@ -1,12 +1,37 @@
 const User = require('../models/').User;
 const Follower = require('../models/').Follower;
 const ReportUser = require('../models/').ReportUser;
+const bcrypt = require('bcrypt');
 const sequelize = require('../models/').sequelize;
 const { result } = require('lodash');
 const { QueryTypes, Op } = require('sequelize');
 const api400Error = require('../utils/errors/api400Error');
 const api404Error = require('../utils/errors/api404Error');
 const _ = require('lodash');
+// * change Password
+
+exports.changePassword = async (req, res, next) => {
+  const updates = Object.keys(req.body);
+  const allowsUpdate = ['password', 'oldPassword'];
+
+  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
+  const oldPassword = req.body.oldPassword;
+  if (!isValidUpdate && !oldPassword) throw new api400Error('Chỉnh sửa không hợp lệ');
+  try {
+    let isMatch = await bcrypt.compare(oldPassword, req.user.password);
+    console.log(isMatch);
+    if (isMatch === false) {
+      throw new api400Error('Mật khẩu cũ không chính xác');
+    }
+    const salt = await bcrypt.genSalt(10);
+    hashedPassword =await bcrypt.hash(req.body['password'], salt);
+    req.user['password'] = hashedPassword;
+    await req.user.save();
+    res.json({ message: 'Đổi mật khẩu thành công' });
+  } catch (error) {
+    next(error);
+  }
+};
 // * update
 
 exports.update = async (req, res, next) => {
@@ -41,9 +66,9 @@ exports.get = async (req, res, next) => {
       where: { username },
     });
     if (!user) throw new api404Error('Không thấy user');
-    const { id, profilePicture, coverPicture, fullName, city, country, email } = user;
+    const { id, profilePicture, coverPicture, fullName, city, country, email, description } = user;
     res.json({
-      data: { id, profilePicture, coverPicture, fullName, city, country, email, username },
+      data: { id, profilePicture, coverPicture, fullName, city, country, email, username, description },
     });
   } catch (error) {
     next(error);
@@ -201,7 +226,7 @@ exports.query = async (req, res, next) => {
     let offset = 0 + page * limit;
     console.log('offset', offset);
     let textSearch = req.query.textSearch;
-      let whereUser = {};
+    let whereUser = {};
     whereUser[Op.or] = {
       fullName: {
         [Op.like]: `%${textSearch}%`,
@@ -209,7 +234,6 @@ exports.query = async (req, res, next) => {
       username: {
         [Op.like]: `%${textSearch}%`,
       },
-      
     };
     const users = await User.findAll({
       subQuery: false,

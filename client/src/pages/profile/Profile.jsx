@@ -7,18 +7,22 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import userApi from '../../api/userApi';
 import { Edit, EditOutlined, PhotoCamera } from '@material-ui/icons';
-import { Tooltip } from '@material-ui/core';
+import { Menu, MenuItem, Tooltip } from '@material-ui/core';
 import commonApi from '../../api/commonApi';
 import { notify } from '../../utility/toast';
 import { useSelector, useDispatch } from 'react-redux';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Button, Stack } from '@mui/material';
+import { ChangePasswordModal } from './ChangePasswordModal';
+import { EditImage } from './EditImage';
 import { ProfileModal } from './ProfileModal';
 // import FlipCameraIosIcon from '@mui/icons-material/FlipCameraIos';
 
 export default function Profile() {
   const dispatch = useDispatch();
   const [isShow, setIsShow] = useState(false);
+  const [isShow2, setIsShow2] = useState(false);
+  const [isShow3, setIsShow3] = useState(false);
   const curUser = useSelector(userSelector);
   const { username } = useParams();
   const [user, setUser] = useState({});
@@ -29,6 +33,7 @@ export default function Profile() {
   const [limit, setLimit] = useState(5)
   const [length, setLength] = useState(0)
   const [editText, setEditText] = useState()
+  const [anchorEl, setAnchorEl] = useState(null);
   useEffect(() => {
     const fetchUser = async () => {
       const res = await userApi.getUser(username);
@@ -40,39 +45,37 @@ export default function Profile() {
 
   const handleUploadProfilePicture = async () => {
     try {
+      
+      
       console.log('urlFile', urlFile);
       let obj = {};
       if (isCover && urlFile !== '') obj.coverPicture = urlFile;
       else if (urlFile !== '') obj.profilePicture = urlFile
-      const res = await userApi.updateUser(obj)
+      let res = await userApi.updateUser(obj)
       console.log('res.data', res.data);
       dispatch(userSlice.actions.updateUser(obj))
       setUser(res.data);
       notify(res.message);
+      setIsShow2(false)
     } catch (error) {
     } finally {
-      setFile('');
+      setFile(null);
+      setUrlFile('');
       setIsCover(false);
     }
   }
 
-  const handleFileUpload = async (e) => {
-    try {
-      const uploadData = new FormData();
-      uploadData.append('file', e.target.files[0], 'file');
-      const res = await commonApi.cloudinaryUpload(uploadData);
-      setUrlFile(res.secure_url);
-      if (window.confirm('Bạn có muốn sửa ảnh đại diện?')) {
-        handleUploadProfilePicture()
-      }
 
-    } catch (error) {
-      console.log(error);
-    }
+
+
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
   }
-  const handleClick = () => {
-    setIsShow(true)
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const editUser = async (fullName, description, city, country) => {
     try {
       let obj = { fullName, description, city, country };
@@ -101,14 +104,7 @@ export default function Profile() {
                   src={user.coverPicture}
                   alt=''
                 />
-                <input
-                  style={{ display: 'none' }}
-                  type='file'
-                  id='file'
-                  accept='.png,.jpeg,.jpg'
-                  onChange={(e) => handleFileUpload(e)}
 
-                />
 
                 <img
                   className='profileUserImg'
@@ -116,33 +112,47 @@ export default function Profile() {
                   alt=''
                 />
                 {curUser.id === user.id &&
-                  <div>
-
-
-                    <label htmlFor='file' className="editProfilePicture" >
-                      <Tooltip title="Sửa ảnh đại diện">
-
-                        <PhotoCamera />
-                      </Tooltip>
-                    </label>
+                  <div >
+                    <Tooltip title="Sửa ảnh đại diện" className="editProfilePicture" onClick={() => setIsShow2(true)}>
+                      <PhotoCamera />
+                    </Tooltip>
                     <Stack direction="row" spacing={2}>
-                      < Button size='small' variant="contained"
-                        startIcon={<Edit />} onClick={
-                          handleClick
-                        }>
-                        Sửa thông tin
-                      </Button>
-
-                      < Button size='small' color='success' variant="contained"
-                        startIcon={<PhotoCamera />} onClick={() => { setIsCover(true) }} >
-                        <label htmlFor='file'  >
-
-                          Sửa ảnh bìa
-                        </label>
-                      </Button>
-
-
                     </Stack>
+
+                    <Button
+                      id="basic-button"
+                      size='small' variant="contained"
+                      aria-controls={open ? 'basic-menu' : undefined}
+                      aria-haspopup="true"
+                      aria-expanded={open ? 'true' : undefined}
+                      onClick={handleClick}
+                    >
+                      Chỉnh sửa thông tin
+                    </Button>
+                    <Menu
+                      id="basic-menu"
+                      anchorEl={anchorEl}
+                      open={open}
+                      onClose={handleClose}
+                      MenuListProps={{
+                        'aria-labelledby': 'basic-button',
+                      }}
+                    >
+                      <MenuItem onClick={() => {
+                        setIsShow(true)
+                        handleClose()
+                      }
+                      }>Sửa thông tin</MenuItem>
+                      <MenuItem onClick={() => {
+                        setIsShow2(true)
+                        setIsCover(true)
+                        handleClose()
+                      }}>Sửa ảnh bìa</MenuItem>
+                      <MenuItem onClick={() => {
+                        setIsShow3(true)
+                        handleClose()
+                      }}>Đổi mật khẩu</MenuItem>
+                    </Menu>
                   </div>
                 }
 
@@ -159,13 +169,32 @@ export default function Profile() {
           </div>
         )}
       </div>
-      {isShow &&
+      {
+        isShow &&
         <ProfileModal
           setIsShow={setIsShow}
           user={user}
           editUser={editUser}
         />
-
+      }
+      {
+        isShow3 &&
+        <ChangePasswordModal
+          setIsShow={setIsShow3}
+          user={user}
+          editUser={editUser}
+        />
+      }
+      {
+        isShow2 &&
+        <EditImage
+          setIsShow={setIsShow2}
+          user={user}
+          file={file}
+          setFile={setFile}
+          handleUploadProfilePicture={handleUploadProfilePicture}
+          setUrlFile={setUrlFile}
+        />
       }
     </>
   );

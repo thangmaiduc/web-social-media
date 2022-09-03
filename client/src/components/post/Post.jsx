@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import userApi from '../../api/userApi';
 import Tooltip from '@mui/material/Tooltip';
 import { format } from 'timeago.js';
-import {  notify } from '../../utility/toast';
+import { notify } from '../../utility/toast';
 import { Link } from 'react-router-dom';
 import { forwardRef } from 'react';
 
@@ -32,8 +32,8 @@ const Post = forwardRef(({ post }, ref) => {
   const [length, setLength] = useState(0)
   const [editText, setEditText] = useState(post?.description)
 
- 
-  let friendsId = friends.map(f => f.followedId)
+
+
 
   useEffect(() => {
     const getComments = async () => {
@@ -44,15 +44,32 @@ const Post = forwardRef(({ post }, ref) => {
             page, limit
           }
         });
-        console.log('comments', res);
-        setComments([...comments,...res.data]);
+        setComments([...comments, ...res.data]);
         setLength(res.length);
       } catch (err) { }
     };
     if (isComment)
       getComments();
   }, [currentPost, page,]);
-  const likeHandler = () => {
+
+  useEffect(() => {
+    const fetchLike = async () => {
+      let res = await postApi.getLikePost(post.id);
+      let usersLikeId = res.data.map(f => f.UserId)
+      let check = usersLikeId.includes(user?.id)
+      setIsLiked(check)
+    }
+    fetchLike()
+  }, [user?.id, post?.id])
+
+
+  const likeHandler = async () => {
+    try {
+      await postApi.likePost(post.id)
+    } catch (error) {
+
+    }
+
     setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
   }
@@ -67,6 +84,7 @@ const Post = forwardRef(({ post }, ref) => {
       if (res?.status === 204) {
         setDeleted(true)
       }
+      notify('Bài viết đã xoá thành công')
     } catch (err) {
 
     }
@@ -122,24 +140,26 @@ const Post = forwardRef(({ post }, ref) => {
     // else {
     //   return
     // }
-    if((page + 1) * limit > length) return
-    if((page + 1) * limit < length){
+    if ((page + 1) * limit > length) return
+    if ((page + 1) * limit < length) {
       setPage(p => p + 1)
     }
   }
 
 
   useEffect(() => {
+    let friendsId = friends.map(f => f.followedId)
     let check = friendsId.includes(post?.userId)
     setFollowed(check)
   }, [post?.userId])
-  const PostDeleted =
-    <div className="post">
-      Bài viết đã xoá
-    </div>
+  // const PostDeleted =
+  //   <div className="post" ref={ref}>
+  //     Bài viết đã xoá
+  //   </div>
 
-  if (deleted) return <PostDeleted />
+  // if (deleted) return <PostDeleted  />
   return (
+
     <div className="post" ref={ref}>
       <div className="postWrapper">
         <div className="postTop">

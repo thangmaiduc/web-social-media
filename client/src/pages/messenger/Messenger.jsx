@@ -13,7 +13,7 @@ import conversationApi from '../../api/conversationApi';
 import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
 import commonApi from '../../api/commonApi';
 import { Button, TextField, Tooltip } from '@material-ui/core';
-import { Add, Close, Edit } from '@material-ui/icons';
+import { Add, AddOutlined, Close, Edit, PersonAdd, PersonAddDisabled } from '@material-ui/icons';
 import { Autocomplete } from '@mui/material';
 import { notify } from '../../utility/toast';
 import useQuery from '../../hooks/useQuery';
@@ -188,7 +188,7 @@ export default function Messenger() {
         let memberIds = value.map(member => member.followedId)
         let res = await conversationApi.newConversation({ users: memberIds });
         notify(res.message);
-        setConversations(pre => [...pre, res.data])
+        setConversations(pre => [,...pre, res.data])
         setCurrentChat(res.data)
       } else {
         let memberIds = value.map(member => member.followedId)
@@ -294,8 +294,8 @@ export default function Messenger() {
               </Button>
             </div>
             {conversations.length > 0 &&
-              conversations.map((c) => (
-                <div ref={lastBookElementRef} key={c?.conversationId} onClick={() => { setIsAdd(false); setCurrentChat(c) ; setIsEdited(false) }}>
+              conversations.map((c, i) => (
+                <div ref={lastBookElementRef} key={i} onClick={() => { setIsAdd(false); setCurrentChat(c) ; setIsEdited(false) }}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}
@@ -340,8 +340,8 @@ export default function Messenger() {
               <>
                 {currentChat.type === 'private' ?
                   <div className="chatTitle">
-                    <img className="sidebarFriendImg" src={currentChat?.User?.profilePicture} alt="" />
-                    <span className="sidebarFriendName">{currentChat?.User?.fullName}</span>
+                    <img className="sidebarFriendImg" src={currentChat?.User?.profilePicture|| currentChat?.img} alt="" />
+                    <span className="sidebarFriendName">{currentChat?.User?.fullName || currentChat?.title}</span>
                   </div> :
                   <div className="chatTitle">
                     <img className="sidebarFriendImg" src={currentChat?.img} alt="" />
@@ -349,6 +349,7 @@ export default function Messenger() {
                       <div>
 
                         <TextField id="outlined-search"  value={title} onChange={(e)=>setTitle(e.target.value)}/>
+                       
                         < Button size='small' variant="contained"
                           color='primary'
                           onClick={
@@ -359,15 +360,16 @@ export default function Messenger() {
                       </div>
                     }
                     <div className="chatTitleRight">
+                    {(currentChat?.Conversation?.creatorId === user?.id|| currentChat?.creatorId === user?.id)&&
                       <div className="editButton" onClick={() => setIsEdited(true)} >
                         <Tooltip title="Sửa tên nhóm">
 
                           <Edit />
                         </Tooltip>
-                      </div>
+                      </div>}
                       <div className="removeButton" >
                         <Tooltip title="Thêm thành viên" onClick={handleAddMember}>
-                          <Add />
+                          <PersonAdd />
                         </Tooltip>
                       </div>
 

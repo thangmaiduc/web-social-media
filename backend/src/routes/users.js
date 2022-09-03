@@ -6,6 +6,7 @@ const userController = require('../controller/users');
 //update
 
 router.put('/', userController.update);
+router.put('/change-password', userController.changePassword);
 //delete a user
 router.delete('/:id', userController.delete);
 //query

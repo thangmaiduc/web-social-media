@@ -37,7 +37,6 @@ export default function Feed({ username }) {
   }, [loading, hasMore])
 
 
-  console.log(data, loading);
   return (
     <div className='feed'>
       <div className='feedWrapper'>

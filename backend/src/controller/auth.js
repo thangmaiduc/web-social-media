@@ -8,17 +8,25 @@ const api401Error = require('../utils/errors/api401Error');
 const api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
 const _ = require('lodash');
+var { validationResult } = require("express-validator");
 const noAvatar = 'https://res.cloudinary.com/dzens2tsj/image/upload/v1661786461/noAvatar_xbtxv7.png';
 //login
 exports.login = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const error = new Error("Dữ liệu nhập vào không hợp lệ");
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+      }
     let { email, password } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
 
-    // let isMatch = await bcrypt.compare(password, user.password);
-    // console.log(isMatch);
-    // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    let isMatch = await bcrypt.compare(password, user.password);
+    console.log(isMatch);
+    if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
     console.log(user);
     let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
       expiresIn: '3 days',
@@ -33,14 +41,21 @@ exports.login = async (req, res, next) => {
 //login admin
 exports.loginAdmin = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const error = new Error("Dữ liệu nhập vào không hợp lệ");
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+      }
     let { email, password } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
 
-    // let isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = await bcrypt.compare(password, user.password);
 
-    // console.log(isMatch);
-    // if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
+    console.log(isMatch);
+    if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
     console.log(user);
     if (!user.isAdmin) {
       throw new api400Error('Bạn không có quyền đăng nhập trang này');
@@ -58,6 +73,13 @@ exports.loginAdmin = async (req, res, next) => {
 
 exports.register = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        const error = new Error("Dữ liệu nhập vào không hợp lệ");
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+      }
     let { email, password, username, fullName } = req.body;
     let userNameCheck = await User.findOne({ where: { username } });
     // console.log(userNameCheck);
@@ -152,7 +174,8 @@ exports.forgotPassword = async (req, res, next) => {
           next(error);
         }
       });
-    hashPass = await bcrypt.hash(OTP, 8);
+      const salt = await bcrypt.genSalt(10);
+    hashPass = await bcrypt.hash(OTP, salt);
     await User.update({ password: hashPass }, { where: { id: user.id } });
 
     res.json({ message: 'Mật khẩu mới đã gửi tới email của bạn' });

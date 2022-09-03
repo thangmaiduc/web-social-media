@@ -22,10 +22,8 @@ export default function Share() {
       description: desc.current.value,
       img: urlFile,
     };
-    console.log('newPost', newPost);
     try {
       const res = await postApi.createPost(newPost);
-      console.log(res);
       window.location.reload();
     } catch (err) {}
   };

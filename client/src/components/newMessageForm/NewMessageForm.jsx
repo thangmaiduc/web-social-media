@@ -25,7 +25,6 @@ function NewMessageForm({
     setShowEmoji((v) => !v);
   };
   const handleEmojiSelect = (e) => {
-    console.log(newMessage += e.native);
     setNewMessage((newMessage) => (newMessage += e.native));
   };
   const handleNewMessageChange = (e) => {

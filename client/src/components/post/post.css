@@ -33,6 +33,7 @@
   font-size: 15px;
   font-weight: 500;
   margin: 0 10px;
+  color: black;
 }
 
 .postDate {
@@ -83,9 +84,12 @@
 }
 .postWrapper:hover .postTopRight {
   display: flex;
+ 
 }
 .editButton, .removeButton{
   cursor: pointer;
+  align-self: end;
+ 
 }
 .optionButton{
   display: flex;

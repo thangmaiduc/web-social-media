@@ -64,6 +64,11 @@ const userApi = {
     const response = await axiosClient.get(url);
     return response.data;
   },
+  changePassword: async (payload) => {
+    const url = api.CHANGE_PASSWORD;
+    const response = await axiosClient.put(url,payload);
+    return response.message;
+  },
 };
 
 export default userApi;

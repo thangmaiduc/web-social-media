@@ -2,7 +2,7 @@ const router = require('express').Router();
 const authController = require('../controller/auth');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-
+const { validate } = require("../middlewares/validation");
 const CLIENT_URL = 'http://localhost:3000/';
 const ADMIN_URL = 'http://localhost:3005/';
 
@@ -52,9 +52,11 @@ router.get(
   })
 );
 
-router.post('/login', authController.login);
-router.post('/admin/login', authController.loginAdmin);
-router.post('/register', authController.register);
+router.post('/login', 
+validate.validateLogin()
+,authController.login);
+router.post('/admin/login',validate.validateLogin(), authController.loginAdmin);
+router.post('/register',validate.validateRegisterUser(), authController.register);
 router.put('/forgot-password', authController.forgotPassword);
 // get friends
 

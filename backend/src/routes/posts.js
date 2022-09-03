@@ -22,6 +22,7 @@ router.get("/profile/:username", postController.getProfilePost);
 router.get("/:id", postController.get);
 // like a post
 router.put("/:id/like", postController.like);
+router.get("/:id/like", postController.getLikePost);
 router.put("/:id/report", postController.report);
 // // comment a post
 // router.post("/:id/comment", postController.addComment);

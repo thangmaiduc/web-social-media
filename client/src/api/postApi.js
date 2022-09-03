@@ -27,6 +27,16 @@ const postApi = {
     const response = await axiosClient.put(url);
     return response.message;
   },
+  likePost: async (payload) => {
+    const url = `posts/${payload}/like` ;
+    const response = await axiosClient.put(url);
+    return response.message;
+  },
+  getLikePost: async (payload) => {
+    const url = `posts/${payload}/like` ;
+    const response = await axiosClient.get(url);
+    return response;
+  },
 
   getComments: async (payload) => {
     const url = api.GET_COMMENTS + payload.postId;

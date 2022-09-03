@@ -68,6 +68,11 @@ exports.delete = async (req, res, next) => {
     const post = await Post.findByPk(id);
     if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id || req.user.isAdmin === true) {
+      await CommentPost.destroy({
+        where: {
+          postId: post.id,
+        },
+      });
       await post.destroy();
       res.status(204).json();
     } else {
@@ -84,6 +89,21 @@ exports.get = async (req, res, next) => {
     const post = await Post.findByPk(id);
     if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     res.status(200).json({ data: { post } });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.getLikePost = async (req, res, next) => {
+  try {
+    let postId = req.params.id;
+    const post = await Post.findByPk(postId);
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
+    const likesPost = await LikePost.findAll({
+      where: { postId },
+    });
+    const length = await LikePost.count({ where: { postId } });
+    res.status(200).json({ data: likesPost, length });
   } catch (error) {
     next(error);
   }

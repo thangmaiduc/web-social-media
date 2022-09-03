@@ -45,9 +45,9 @@ export const SearchUser = ({ user }) => {
         <div className="postWrapper">
             <div className="postTop">
                 <div className="postTopLeft">
-                    <Link to={`/profile/${user.username}`}>
+                    <Link to={`/profile/${user.username}` } className="postTopLeft">
 
-                    </Link>
+                   
                     <img
                         className="postProfileImg"
                         src={user.profilePicture}
@@ -56,6 +56,7 @@ export const SearchUser = ({ user }) => {
                     <span className="postUsername">
                         {user.fullName}
                     </span>
+                    </Link>
                 </div>
                 <div style={{ display: 'block' }} className="postTopRight">
                     <div className="optionButton">

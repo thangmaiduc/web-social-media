@@ -12,6 +12,7 @@ const api = {
 
   GET_FRIENDS: baseURL + '/users/friends/',
   GET_USER: baseURL + '/users/',
+  CHANGE_PASSWORD: baseURL + '/users/change-password/',
   QUERY_USERS: baseURL + '/users/query/',
   GET_ME: baseURL + '/users/me',
 

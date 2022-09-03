@@ -16,21 +16,12 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import Search from './pages/search/Search';
 import ForgotPassword from './pages/forgotPassword/ForgotPassword';
+import './App.css'
 function App() {
   const dispatch = useDispatch();
-  // let user =null;
   const user = useSelector(userSlice.userSelector);
   const fetch = useSelector(userSlice.fetchSelector);
-
-  // console.log('fetch', fetch);
-  // const user = {
-  //   id: 1,
-  //   profilePicture: 'assets/person/1.jpeg',
-  //   username: 'Safak Kocaoglu',
-  // };
   useEffect(() => {
-    console.log(1);
-    console.log(_.get(user, 'username', null));
     if (_.get(user, 'username', null) !== null)
       dispatch(userSlice.getFriends(user.username));
   }, [user]);
@@ -40,10 +31,8 @@ function App() {
       try {
         await dispatch(userSlice.signInGoogle());
       } catch (error) {
-        console.log(error);
       }
     };
-    console.log('login google');
     getUser();
   }, []);
 

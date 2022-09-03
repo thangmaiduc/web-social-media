@@ -78,11 +78,9 @@ export default function SearchFeed({ searchText }) {
   }, [postsQuery])
 
   useEffect(() => { 
-    console.log('usersQuery',usersQuery);
     if (lengthUser === 0) setUserSearch([])
   },[lengthUser])
   useEffect(() => { 
-    console.log('postsQuery',postsQuery);
     if (lengthPost=== 0) setPostSearch([])
   },[lengthPost])
   return (

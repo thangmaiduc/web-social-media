@@ -198,6 +198,7 @@ exports.create = async (req, res, next) => {
       });
       let dataResponse = {
         conversationId: conversation.id,
+        creatorId: conversation.creatorId,
         type: 'public',
         title: conversation.title || 'Không có tên nhóm',
         img: noAvatar,

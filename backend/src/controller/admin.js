@@ -140,7 +140,7 @@ exports.queryUser = async (req, res, next) => {
           [Op.like]: `%${textSearch}%`,
         },
         id: {
-          [Op.like]: textSearch,
+          [Op.eq]: textSearch,
         },
         username: {
           [Op.like]: `%${textSearch}%`,

@@ -21,7 +21,7 @@ app.use(morgan('common'));
 
 app.use(express.json());
 
-app.use(cookieSession({ name: 'session', keys: ['lama'], maxAge: 24 * 60 * 60 * 100 }));
+app.use(cookieSession({ name: 'session', keys: ['thangmd'], maxAge: 24 * 60 * 60 * 100 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -29,11 +29,10 @@ app.use(passport.session());
 app.use(
   cors({
     origin: ['http://localhost:3000', 'http://localhost:3005'],
-    methods: 'GET,POST,PUT,DELETE',
+    methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true,
   })
 );
-
 
 app.use(
   '/api',

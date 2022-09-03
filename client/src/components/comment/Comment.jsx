@@ -7,6 +7,7 @@ import { Tooltip } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import { userSelector } from '../../redux/slices/userSlice';
 import { format } from 'timeago.js';
+import { notify } from '../../utility/toast';
 
 export default function Comment({ comments, setComments, handleSubmit, user, handleClickShowMore, length, setLength, }) {
   // const user = useSelector(userSelector);
@@ -33,7 +34,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
 
     try {
       const res = await postApi.deleteComment(commentId);
-
+      notify('Xoá bình luận thành công')
       setComments(comments.filter(comment => comment.id !== commentId))
       setLength(length - 1)
     } catch (err) {
@@ -50,7 +51,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
         <div className="commentCenterBottom">
           <h4 className='commentOwner'>{c?.user?.fullName}</h4>
           <div className="commentCenterBottomRight">
-            <p>{comment.id !== c.id ? c?.text : comment.text}</p>
+            <p className='crop'>{comment.id !== c.id ? c?.text : comment.text}</p>
            
             {user?.id === c?.userId &&
               <div className="commentOption">

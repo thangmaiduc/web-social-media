@@ -19,7 +19,7 @@ export default function Register() {
     e.preventDefault();
     console.log(passwordAgain.current.value, password.current.value);
     if (passwordAgain.current.value !== password.current.value) {
-      notify("Passwords don't match!");
+      notify("Passwords không giống nhau!");
     } else {
       const user = {
         username: username.current.value,
