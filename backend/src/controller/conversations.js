@@ -24,15 +24,16 @@ exports.addParticipant = async (req, res, next) => {
     if (!check) {
       throw new Api404Error('Không tìm thấy nhóm chat');
     }
-    const isMember = await Participant.findOne({ where: { userId, conversationId } });
+    const isMember = await Participant.findOne({ where: { userId, conversationId, type: 'public' } });
     if (!isMember) {
       throw new Api404Error('Không tìm thấy nhóm này');
     }
-    users.forEach(async (userId) => {
-      let checkPar = await Participant.findOne({
-        where: { userId, conversationId },
-      });
-      let check = await User.findOne({ where: { id: userId } });
+    const participants = await Participant.findAll({ where: { conversationId } });
+    const participantsUserId = participants.map((p) => p.userId);
+    const differenceUser = _.difference(users, participantsUserId);
+    console.log(differenceUser);
+    differenceUser.forEach(async (userId) => {
+      let check = await User.findOne({ where: { id: userId, isBlock: false } });
       try {
         check && !checkPar && (await Participant.create({ userId, conversationId, type: 'public' }));
       } catch (error) {
@@ -57,7 +58,7 @@ exports.editTitle = async (req, res, next) => {
     if (!check) {
       throw new Api404Error('Không tìm thấy nhóm chat');
     }
-    const conversation = await Conversation.findOne({ where: { creatorId: userId, id:conversationId } });
+    const conversation = await Conversation.findOne({ where: { creatorId: userId, id: conversationId } });
     if (!conversation) {
       throw new api400Error('Không có quyền sửa tên nhóm');
     }
@@ -75,8 +76,6 @@ exports.getMemberOfGroup = async (req, res, next) => {
     let conversationId = req.params.id;
     let userId = req.user.id;
 
-    
-
     const check = await Conversation.findOne({
       where: { id: conversationId },
     });
@@ -91,15 +90,15 @@ exports.getMemberOfGroup = async (req, res, next) => {
       where: { conversationId },
       include: [{ model: User, attributes: ['fullName', 'id', 'username', 'profilePicture', 'coverPicture'] }],
     });
-    responseData = participants.map(p =>{
+    responseData = participants.map((p) => {
       return {
         followedId: p.User.id,
         username: p.User.username,
         profilePicture: p.User.profilePicture,
         coverPicture: p.User.coverPicture,
         fullName: p.User.fullName,
-      }
-    })
+      };
+    });
     res.status(200).json({ data: responseData });
   } catch (error) {
     next(error);
@@ -249,7 +248,7 @@ exports.query = async (req, res, next) => {
     let participants = await Participant.findAll({
       include: [
         { model: User, attributes: ['fullName', 'id', 'username', 'profilePicture'], where },
-        { model: Conversation },
+        { model: Conversation, include: [{ model: Message, attributes: [] }] },
       ],
       where: {
         conversationId: { [Op.in]: conversationIds },
@@ -257,7 +256,10 @@ exports.query = async (req, res, next) => {
       },
       limit,
       offset,
-      order:[['conversationId', 'DESC']],
+      order: [
+        ['Conversation','Messages' ,'updatedAt','DESC'],
+        ['conversationId', 'DESC'],
+      ],
 
       group: 'conversationId',
     });
@@ -343,3 +345,8 @@ exports.get = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.createId = async (req, res, next) => {
+ 
+
+}

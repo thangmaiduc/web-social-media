@@ -51,8 +51,8 @@ exports.getMessageOfConversation = async (req, res, next) => {
       limit,
       offset,
     });
-    const length = await Message.count({where})
-       res.status(200).json({ data: messages.reverse(), length });
+    const length = await Message.count({ where });
+    res.status(200).json({ data: messages.reverse(), length });
   } catch (error) {
     next(error);
   }
@@ -89,6 +89,7 @@ exports.create = async (req, res, next) => {
         ],
       });
     }
+
     res.status(201).json({ data: message });
   } catch (error) {
     next(error);

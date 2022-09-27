@@ -164,9 +164,9 @@ const Post = forwardRef(({ post }, ref) => {
       <div className="postWrapper">
         <div className="postTop">
           <div className="postTopLeft">
-            <Link to={`/profile/${post.user.username}`}>
+            <Link to={`/profile/${post.user.username}`} className="postTopLeft">
 
-            </Link>
+           
             <img
               className="postProfileImg"
               src={post.user.profilePicture}
@@ -175,6 +175,7 @@ const Post = forwardRef(({ post }, ref) => {
             <span className="postUsername">
               {post.user.fullName}
             </span>
+            </Link>
             <span className="postDate">{format(post.createdAt)}</span>
           </div>
           <div className="postTopRight">
