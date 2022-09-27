@@ -1,5 +1,5 @@
 node_modules
-# .env
+.env
 backend/demo.sql
 client-admin/.idea/client-admin.iml
 client-admin/.idea/modules.xml
