@@ -27,7 +27,7 @@ exports.login = async (req, res, next) => {
     let isMatch = await bcrypt.compare(password, user.password);
     console.log(isMatch);
     if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
-    console.log(user);
+    // console.log(user);
     let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
       expiresIn: '3 days',
     });
@@ -54,9 +54,9 @@ exports.loginAdmin = async (req, res, next) => {
 
     let isMatch = await bcrypt.compare(password, user.password);
 
-    console.log(isMatch);
+    // console.log(isMatch);
     if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
-    console.log(user);
+    // console.log(user);
     if (!user.isAdmin) {
       throw new api400Error('Bạn không có quyền đăng nhập trang này');
     }
@@ -129,9 +129,9 @@ exports.forgotPassword = async (req, res, next) => {
   //#swagger.responses[400] ={description: 'Bad Request' }
   try {
     const { email } = req.body;
-    console.log(email, req.body);
+    // console.log(email, req.body);
     const user = await User.findOne({ where: { email } });
-    console.log('user', user);
+    // console.log('user', user);
     let arr = [];
     if (!user) {
       const err = new Error('Dữ liệu nhập vào không hợp lệ');

@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models').User;
 const api401Error = require('../utils/errors/api401Error');
+const redis = require('../utils/redis');
 
 const authUser = async (req, res, next) => {
   try {
-    const token =
-      req.header('Authorization') &&
-      req.header('Authorization').replace('Bearer ', '');
+    const token = req.header('Authorization') && req.header('Authorization').replace('Bearer ', '');
     if (!token) {
       const error = new Error('Bạn chưa đăng nhập, vui lòng đăng nhập');
       error.statusCode = 417;
@@ -18,7 +17,12 @@ const authUser = async (req, res, next) => {
       const error = new Error('Tài khoản không tồn tài');
       error.statusCode = 401;
     }
-    req.user = user;
+    const isBlockInteration =await redis.get(`BLOCK_INTERACTION_USER_ID_${user.id}`) || false;
+    req.user = {
+      ...user.dataValues,
+      isBlockInteration,
+    };
+    // console.log(req.user);
 
     next();
   } catch (error) {
@@ -31,11 +35,10 @@ const authUser = async (req, res, next) => {
 };
 function authAdmin(req, res, next) {
   console.log(req.user);
-    if (req.user.isAdmin !== true) {
-      console.log('you are not admin', req.user);
-      throw new api401Error('Not allowed');
-    }
-    next();
+  if (req.user.isAdmin !== true) {
+    throw new api401Error('Not allowed');
+  }
+  next();
 }
 
 module.exports = {

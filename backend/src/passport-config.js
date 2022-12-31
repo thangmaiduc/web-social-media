@@ -37,7 +37,7 @@ passport.use(
       try {
         // console.log(JSON.stringify(profile));
         const data = profile._json;
-        console.log(profile._json);
+        // console.log(profile._json);
         const checkUser = await User.findOne({ where: { email: data.email }, raw: true });
         let OTP = otpGenerator.generate(6, {
           digits: true,
@@ -45,7 +45,7 @@ passport.use(
           specialChars: false,
         });
         if (checkUser) {
-          console.log('checkUser:=========>',checkUser);
+          // console.log('checkUser:=========>',checkUser);
           return done(null, checkUser);
         }
         username = data.email.split('@')[0];
@@ -56,7 +56,7 @@ passport.use(
           profilePicture: data.picture,
           password: OTP,
         });
-        console.log('newUser:=========>',newUser);
+        // console.log('newUser:=========>',newUser);
         return done(null, newUser);
       } catch (error) {
         return done(error);

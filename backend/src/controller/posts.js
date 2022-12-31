@@ -1,14 +1,20 @@
 const api401Error = require('../utils/errors/api401Error');
 const api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
+const redis = require('../utils/redis');
 const User = require('../models/').User;
 const Post = require('../models/').Post;
 const LikePost = require('../models/').LikePost;
 const ReportPost = require('../models/').ReportPost;
 const CommentPost = require('../models/').CommentPost;
 const sequelize = require('../models/').sequelize;
+const alertInteraction = require('../utils/alertInteraction');
 const { QueryTypes, Op } = require('sequelize');
 const _ = require('lodash');
+const client = require('../../config/es');
+const moment = require('moment');
+const { format } = require('../utils/time');
+require('moment-duration-format');
 //create
 
 exports.create = async (req, res, next) => {
@@ -17,6 +23,38 @@ exports.create = async (req, res, next) => {
     const post = await Post.create({ ...req.body, userId: req.user.id });
     //     await post.save();
     res.status(201).json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+exports.index = async (req, res, next) => {
+  try {
+    Post.findAll().then((posts) => {
+      posts.forEach((post) => {
+        client.index(
+          {
+            index: 'posts',
+            type: 'posts',
+            id: post.id,
+            body: {
+              id: post.id,
+              description: post.description,
+              isBlock: post.isBlock,
+              userId: post.userId,
+            },
+          },
+          (error, response) => {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log(response);
+            }
+          }
+        );
+      });
+    });
+
+    res.status(201).json('Success');
   } catch (error) {
     next(error);
   }
@@ -97,8 +135,7 @@ exports.getLikePost = async (req, res, next) => {
   try {
     let postId = req.params.id;
     const post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false) === true)
-      throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     const likesPost = await LikePost.findAll({
       where: { postId },
     });
@@ -113,6 +150,10 @@ exports.like = async (req, res, next) => {
   try {
     const postId = req.params.id;
     let UserId = req.user.id;
+    if (req.user.isBlockInteration) {
+      const ttl = await redis.getTTL(`BLOCK_INTERACTION_USER_ID_${req.user.id}`);
+      throw new api401Error(`Bạn bị cấm tương tác trong ${format(ttl)}`);
+    }
     let post = await Post.findByPk(postId);
     if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
     let likedPost = await LikePost.findAll({
@@ -123,11 +164,13 @@ exports.like = async (req, res, next) => {
     });
     if (likedPost.length === 0) {
       await LikePost.create({ postId, UserId });
+      // await alertInteraction({ userId: req.user.id });
       res.status(200).json({ message: 'bạn đã thích thành công' });
     } else {
       await LikePost.destroy({ where: { postId, UserId } });
       res.status(200).json({ message: 'bạn đã bỏ thích thành công' });
     }
+    await alertInteraction({ userId: req.user.id });
   } catch (error) {
     next(error);
   }
@@ -190,7 +233,7 @@ exports.getTimeLine = async (req, res, next) => {
         type: QueryTypes.SELECT,
       }
     );
-    console.log(friends);
+    // console.log(friends);
     const friendPosts = await Promise.all(
       friends.map(async (friend) => {
         return Post.findAll({
@@ -200,8 +243,8 @@ exports.getTimeLine = async (req, res, next) => {
       })
     );
 
-    console.log(friendPosts);
-    data = userPost.concat(...friendPosts);
+    // console.log(friendPosts);
+    let data = userPost.concat(...friendPosts);
     _.forEach(data, (item) => {
       const friend = _.find(friends, { followedId: item.userId });
       if (friend) {
@@ -301,6 +344,31 @@ exports.queryTimeLine = async (req, res, next) => {
   }
 };
 
+// search(req, res) {
+//   try{
+//       const result = await es.search({
+//           index: 'articles',
+//           type: 'articles',
+//           q: req.query.q
+//       })
+
+//       const ids = result.hits.hits.map((item) => {
+//           return item._id
+//       })
+
+//       articles = await Article.findAll({
+//           where: {
+//               id: ids
+//           }
+//       })
+//        res.send(articles)
+//   }
+//   catch(err){
+//       res.status(500).send({
+//           error: 'An error has occured trying to get the articles'
+//       })
+//   }
+// }
 // * query cho search gồm có tìm bạn bè, bài viết
 exports.query = async (req, res, next) => {
   try {
@@ -316,9 +384,28 @@ exports.query = async (req, res, next) => {
     // const sort = req.query.sort || SORT.REPORT;
 
     let wherePost = {};
+
+    const result = await client.search({
+      index: 'posts',
+      type: 'posts',
+      body: {
+        query: {
+          match: { description: textSearch },
+        },
+      },
+    });
+    // console.log(JSON.stringify(result.hits.hits));
+
+    const ids = result.hits.hits.map((item) => {
+      return item._id;
+    });
+    console.log(ids);
     wherePost = {
-      description: {
-        [Op.like]: `%${textSearch}%`,
+      // description: {
+      //   [Op.like]: `%${textSearch}%`,
+      // },
+      id: {
+        [Op.in]: ids,
       },
     };
     const posts = await Post.findAll({

@@ -8,6 +8,7 @@ const CommentPost = require('../models/').CommentPost;
 const ReportPost = require('../models/').ReportPost;
 const ReportUser = require('../models/').ReportUser;
 const sequelize = require('../models/').sequelize;
+const redis = require('../utils/redis');
 const { QueryTypes, Op } = require('sequelize');
 const _ = require('lodash');
 const moment = require('moment');
@@ -185,7 +186,7 @@ exports.queryUser = async (req, res, next) => {
       offset,
       limit,
     });
-    length = await User.count({
+    const length = await User.count({
       where,
     });
 
@@ -296,7 +297,7 @@ exports.queryPost = async (req, res, next) => {
       offset,
       limit,
     });
-    length = await Post.count({
+    const length = await Post.count({
       where,
     });
     res.json({
@@ -332,18 +333,20 @@ exports.blockPost = async (req, res, next) => {
 exports.blockUser = async (req, res, next) => {
   try {
     let userId = req.body.userId;
+    let ttl = req.body.ttl;
     let user = await User.findByPk(userId);
     if (!user) throw new api404Error('không tìm thấy người dùng');
     let message = '';
     if (user.isAdmin === true) {
       throw new api404Error('Không thể chặn admin khác');
     }
+    redis.set(`BLOCK_USER_ID_${userId}`, 1, ttl);
     if (user.isBlock === true) {
       message = 'Bỏ chặn thành công';
       user.isBlock = false;
     } else if (user.isBlock === false) {
       user.isBlock = true;
-      message = ' Chặn thành công';
+      message = 'Chặn thành công';
       const posts = await Post.update(
         {
           isBlock: true,

@@ -1,20 +1,19 @@
 const morgan = require('morgan');
 const cors = require('cors');
 // const dotenv = require("dotenv");
-const multer = require('multer');
-const path = require('path');
 const indexRouter = require('./routes/index');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('../swagger_output.json');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
+const redisClient = require('./utils/redis');
 // const session = require('express-session');
 require('./passport-config');
 const express = require('express');
 
 const app = express();
-
+// const redisClient = redis.createClient(6379);
 // dotenv.config();
 app.use(helmet());
 app.use(morgan('common'));
@@ -33,7 +32,10 @@ app.use(
     credentials: true,
   })
 );
-
+app.use((req, res, next) => {
+  req.redis = redisClient;
+  next();
+});
 app.use(
   '/api',
   indexRouter
@@ -61,7 +63,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use((error, req, res, next) => {
+app.use((error, req, res) => {
   console.error(error);
   const status = error.statusCode || 500;
   const message = error.message;
