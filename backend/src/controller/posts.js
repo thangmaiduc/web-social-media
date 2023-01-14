@@ -20,7 +20,7 @@ require('moment-duration-format');
 exports.create = async (req, res, next) => {
   try {
     // const {description, img } = req.body;
-    const post = await Post.create({ ...req.body, userId: req.user.id });
+    const post = await Post.create({ ...req.body, userId: req.user.id , groupId: 1 });
     //     await post.save();
     res.status(201).json(post);
   } catch (error) {

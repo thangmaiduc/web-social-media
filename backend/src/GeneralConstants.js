@@ -10,6 +10,16 @@ module.exports = {
     FULLNAME: 'FULLNAME',
     FOLLOWING: 'FOLLOWING',
     FOLLOWED: 'FOLLOWED',
-
+  },
+  STATE_MEMBER: {
+    APPROVED: 'APPROVED',
+    PENDING: 'PENDING',
+    REJECTED: 'REJECTED',
+    BANNED: 'BANNED',
+  },
+  STATE_GROUP: {
+    ACTIVATED: 'ACTIVATED',
+    INACTIVATED: 'INACTIVATED',
+    
   },
 };

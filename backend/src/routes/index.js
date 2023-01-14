@@ -22,6 +22,7 @@ const postRouter = require('./posts');
 const commentRouter = require('./comments');
 const adminRouter = require('./admin');
 const conversationRouter = require('./conversations');
+const groupsRouter = require('./groups');
 const messageRouter = require('./messages');
 
 router.use(
@@ -72,8 +73,25 @@ router.use(
 router.use(
   '/conversations',
   conversationRouter
-  // #swagger.tags = ['Conversations']
-  // #swagger.description = 'Endpoint for conversations.'
+  // #swagger.tags = ['Group']
+  // #swagger.description = 'Endpoint for Group.'
+  /* #swagger.security = [{
+        "Bearer": []
+    }]  #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
+);
+router.use(
+  '/groups',
+  groupsRouter
+  // #swagger.tags = ['Group']
+  // #swagger.description = 'Endpoint for Group.'
   /* #swagger.security = [{
         "Bearer": []
     }]  #swagger.responses[500] = {

@@ -1,63 +1,62 @@
-"use strict";
+'use strict';
 const es = require('../../config/es');
-const { Model } = require("sequelize");
+const { Model } = require('sequelize');
 const redis = require('../utils/redis');
 
 const saveDocument = (instance) => {
-  redis.set(`USER_ID:${instance.id}`, instance)
+  redis.set(`USER_ID:${instance.id}`, instance);
   return es.create({
-      index: 'posts',
-      type: 'posts',
-      id: instance.dataValues.id,
-      body: { 
-        description: instance.dataValues.description,
-       },
+    index: 'posts',
+    type: 'posts',
+    id: instance.dataValues.id,
+    body: {
+      description: instance.dataValues.description,
+    },
   });
-}
+};
 const updateDocument = (instance) => {
-  redis.set(`USER_ID:${instance.id}`, instance)
+  redis.set(`USER_ID:${instance.id}`, instance);
   return es.update({
-      index: 'posts',
-      type: 'posts',
-      id: instance.dataValues.id,
-      body: { 
-        description: instance.dataValues.description,
-       },
+    index: 'posts',
+    type: 'posts',
+    id: instance.dataValues.id,
+    body: {
+      description: instance.dataValues.description,
+    },
   });
-}
+};
 const deleteDocument = (instance) => {
-  redis.del(`USER_ID:${instance.id}`, instance)
+  redis.del(`USER_ID:${instance.id}`, instance);
   return es.delete({
-      index: 'posts',
-      type: 'posts',
-      id: instance.dataValues.id,
+    index: 'posts',
+    type: 'posts',
+    id: instance.dataValues.id,
   });
-}
+};
 module.exports = (sequelize, DataTypes) => {
   class Post extends Model {
     static associate(models) {
       Post.belongsTo(models.User, {
-        foreignKey: "userId",
-        as: "user",
+        foreignKey: 'userId',
+        as: 'user',
       });
       Post.belongsTo(models.Group, {
-        foreignKey: "groupId",
-        as: "group",
+        foreignKey: 'groupId',
+        as: 'group',
       });
       Post.belongsToMany(models.User, {
         through: models.LikePost,
-        foreignKey: "postId",
-        onDelete: "CASCADE",
+        foreignKey: 'postId',
+        onDelete: 'CASCADE',
       });
       Post.belongsToMany(models.User, {
-      
         through: models.ReportPost,
-        foreignKey: "postId",
-        onDelete: "CASCADE",
+        foreignKey: 'postId',
+        onDelete: 'CASCADE',
       });
       Post.hasMany(models.CommentPost, {
-        foreignKey: "postId",
-        onDelete: "CASCADE",
+        foreignKey: 'postId',
+        onDelete: 'CASCADE',
       });
       // * super Many - Many
       Post.hasMany(models.ReportPost, {
@@ -75,10 +74,14 @@ module.exports = (sequelize, DataTypes) => {
         require: true,
         allowNull: false,
       },
+      groupId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
 
       img: {
         type: DataTypes.STRING,
-        defaultValue: "",
+        defaultValue: '',
       },
 
       description: {
@@ -97,13 +100,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Post",
+      modelName: 'Post',
       timestamps: true,
       hooks: {
         afterCreate: saveDocument,
         afterUpdate: updateDocument,
-        afterDestroy: deleteDocument
-    }
+        afterDestroy: deleteDocument,
+      },
     }
   );
   return Post;

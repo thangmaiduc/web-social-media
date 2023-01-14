@@ -1,5 +1,33 @@
 'use strict';
 const { Model } = require('sequelize');
+const es = require('../../config/es');
+const saveDocument = (instance) => {
+  return es.create({
+    index: 'groups',
+    type: 'groups',
+    id: instance.dataValues.id,
+    body: {
+      title: instance.dataValues.title,
+    },
+  });
+};
+const updateDocument = (instance) => {
+  return es.update({
+    index: 'groups',
+    type: 'groups',
+    id: instance.dataValues.id,
+    body: {
+      title: instance.dataValues.title,
+    },
+  });
+};
+const deleteDocument = (instance) => {
+  return es.delete({
+    index: 'groups',
+    type: 'groups',
+    id: instance.dataValues.id,
+  });
+};
 module.exports = (sequelize, DataTypes) => {
   class Group extends Model {
     static associate(models) {
@@ -9,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       Group.belongsToMany(models.User, {
         as: 'members',
         foreignKey: 'groupId',
-        through: models.GroupMembers,
+        through: models.GroupMember,
         onDelete: 'CASCADE',
       });
       Group.hasMany(models.Post, {
@@ -34,15 +62,22 @@ module.exports = (sequelize, DataTypes) => {
       },
       type: {
         type: DataTypes.ENUM('APPROVED', 'FREE'),
+        defaultValue: 'FREE',
       },
       state: {
         type: DataTypes.ENUM('ACTIVATED', 'INACTIVATED'),
+        defaultValue: 'ACTIVATED',
       },
     },
     {
       sequelize,
       modelName: 'Group',
       timestamps: true,
+      hooks: {
+        afterCreate: saveDocument,
+        afterUpdate: updateDocument,
+        afterDestroy: deleteDocument,
+      },
     }
   );
   return Group;
