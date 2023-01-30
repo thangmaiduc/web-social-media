@@ -7,6 +7,8 @@ router.get("/", (req, res) => {
 });
 //create
 router.post("/", postController.create);
+router.post("/notify", postController.notify);
+router.post("/viewNotification", postController.viewed);
 //query
 router.get("/query", postController.query);
 //update
@@ -30,6 +32,5 @@ router.put("/:id/report", postController.report);
 // router.get("/:id/comment", postController.getComments);
 
 
-const userController = require("../controller/users");
 
 module.exports = router;
