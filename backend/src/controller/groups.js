@@ -64,7 +64,7 @@ exports.updateGroup = async (req, res, next) => {
     console.log(req.params, req.body);
     let groupId = req.params.id;
     let userId = req.user.id;
-    const { title, type } = req.body;
+    const { title = null, type } = req.body;
 
     const group = await Group.findOne({
       where: { id: groupId },
@@ -76,7 +76,8 @@ exports.updateGroup = async (req, res, next) => {
 
     if (title) group.title = title;
     if (type) group.type = type;
-    res.status(200).json({ message: 'Sửa nhóm thành công', data: await group.save() });
+    const groupEdited = await group.save();
+    res.status(200).json({ message: 'Sửa nhóm thành công', data: groupEdited });
   } catch (error) {
     next(error);
   }
@@ -229,14 +230,14 @@ exports.create = async (req, res, next) => {
         state: GeneralConstants.STATE_MEMBER.APPROVED,
       };
     });
-    await GroupMember.create({
+    const newGr = await GroupMember.create({
       userId: req.user.id,
       groupId: group.id,
       isAdmin: true,
       state: GeneralConstants.STATE_MEMBER.APPROVED,
     });
     await GroupMember.bulkCreate(members);
-    res.status(200).json({ message: 'Create group successfully' });
+    res.status(200).json({ message: 'Create group successfully', data: group });
   } catch (error) {
     next(error);
   }
@@ -335,4 +336,14 @@ exports.get = async (req, res, next) => {
     next(error);
   }
 };
+exports.getAll = async (req, res, next) => {
+  try {
+    const groups = await Group.findAll();
 
+    // const userPost = await Post.findAll({ where: { userId: user.id } });
+
+    res.status(200).json({ data: groups });
+  } catch (error) {
+    next(error);
+  }
+};

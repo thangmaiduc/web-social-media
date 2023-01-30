@@ -4,9 +4,11 @@ const api400Error = require('../utils/errors/api400Error');
 const redis = require('../utils/redis');
 const User = require('../models/').User;
 const Post = require('../models/').Post;
+const Group = require('../models/').Group;
 const LikePost = require('../models/').LikePost;
 const ReportPost = require('../models/').ReportPost;
 const CommentPost = require('../models/').CommentPost;
+const Notification = require('../models/').Notification;
 const sequelize = require('../models/').sequelize;
 const alertInteraction = require('../utils/alertInteraction');
 const { QueryTypes, Op } = require('sequelize');
@@ -14,15 +16,77 @@ const _ = require('lodash');
 const client = require('../../config/es');
 const moment = require('moment');
 const { format } = require('../utils/time');
+const GeneralConstants = require('../GeneralConstants');
 require('moment-duration-format');
 //create
 
 exports.create = async (req, res, next) => {
   try {
-    // const {description, img } = req.body;
-    const post = await Post.create({ ...req.body, userId: req.user.id , groupId: 1 });
-    //     await post.save();
+    const { description, img, groupId = null } = req.body;
+    let statePost =  GeneralConstants.STATE_POST.PENDING;
+
+    if (groupId !== null) {
+      const checkGroup = await Group.findOne({
+        where: {
+          id: groupId,
+          state: GeneralConstants.STATE_GROUP.ACTIVATED,
+        },
+      });
+
+      if (!checkGroup) {
+        throw new api400Error('Group does not exist or is not activated');
+      }
+
+      if (checkGroup.type === GeneralConstants.TYPE_GROUP.FREE) {
+        statePost = GeneralConstants.STATE_POST.APPROVED;
+      }
+    }
+    const post = await Post.create({ ...req.body, userId: req.user.id, groupId, state: statePost });
+    // await post.save();
     res.status(201).json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+exports.notify = async (req, res, next) => {
+  try {
+    const { userId, postId, text } = req.body;
+    const checkUser = await User.findByPk(userId);
+    if (!checkUser) throw new api400Error('User not found');
+    const checkPost = await Post.findByPk(postId);
+    if (!checkPost) throw new api400Error('Post not found');
+
+    const notification = await Notification.create({ userId, postId, text });
+    res.status(201).json({ data: notification });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.viewed = async (req, res, next) => {
+  try {
+    const page = parseInt(_.get(req, 'query.page', 0));
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    let notification = await Notification.findAll({
+      where: {
+        userId: req.user.id,
+      },
+      order: [['id', 'DESC']],
+      limit,
+      offset,
+    });
+    Notification.update({ isView: true }, { where: { userId: req.user.id, isView: false } });
+    res.status(200).json({ data: notification });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.numNotifications = async (req, res, next) => {
+  try {
+    const numNotifications = await Notification.count({ userId: req.user.id, isView: false });
+
+    res.status(200).json({ data: numNotifications });
   } catch (error) {
     next(error);
   }

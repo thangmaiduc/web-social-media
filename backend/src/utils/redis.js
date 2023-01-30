@@ -1,6 +1,12 @@
 const Redis = require('ioredis');
 const _ = require('lodash');
-const redis = new Redis();
+const redis = new Redis({
+  port: 49153, // Redis port
+  host: '127.0.0.1', // Redis host
+  username: 'default', // needs Redis >= 6
+  password: 'redispw',
+  db: 0, // Defaults to 0
+});
 
 const set = (key, value, ttl) => {
   try {
@@ -31,5 +37,5 @@ module.exports = {
   get,
   del,
   getTTL,
-  keys
+  keys,
 };

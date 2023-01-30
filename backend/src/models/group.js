@@ -12,14 +12,15 @@ const saveDocument = (instance) => {
   });
 };
 const updateDocument = (instance) => {
-  return es.update({
-    index: 'groups',
-    type: 'groups',
-    id: instance.dataValues.id,
-    body: {
-      title: instance.dataValues.title,
-    },
-  });
+  if (instance.dataValues.title)
+    return es.update({
+      index: 'groups',
+      type: 'groups',
+      id: instance.dataValues.id,
+      body: {
+        doc: { title: instance.dataValues.title },
+      },
+    });
 };
 const deleteDocument = (instance) => {
   return es.delete({

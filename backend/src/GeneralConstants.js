@@ -17,9 +17,18 @@ module.exports = {
     REJECTED: 'REJECTED',
     BANNED: 'BANNED',
   },
+  STATE_POST: {
+    APPROVED: 'APPROVED',
+    PENDING: 'PENDING',
+    REJECTED: 'REJECTED',
+    BANNED: 'BANNED',
+  },
   STATE_GROUP: {
     ACTIVATED: 'ACTIVATED',
     INACTIVATED: 'INACTIVATED',
-    
+  },
+  TYPE_GROUP: {
+    APPROVED: 'APPROVED',
+    FREE: 'FREE',
   },
 };

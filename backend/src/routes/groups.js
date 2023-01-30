@@ -16,6 +16,7 @@ router.post("/members/:id", groupController.addMembers);
 router.post("/", groupController.create);
 router.put("/:id", groupController.updateGroup);
 
-router.get("/", groupController.query);
+router.get("/query", groupController.query);
+router.get("/", groupController.getAll);
 
 module.exports = router;

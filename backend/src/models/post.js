@@ -15,15 +15,17 @@ const saveDocument = (instance) => {
   });
 };
 const updateDocument = (instance) => {
-  redis.set(`USER_ID:${instance.id}`, instance);
-  return es.update({
-    index: 'posts',
-    type: 'posts',
-    id: instance.dataValues.id,
-    body: {
-      description: instance.dataValues.description,
-    },
-  });
+  if (instance.dataValues.description) {
+    redis.set(`USER_ID:${instance.id}`, instance);
+    return es.update({
+      index: 'posts',
+      type: 'posts',
+      id: instance.dataValues.id,
+      body: {
+        doc: { description: instance.dataValues.description },
+      },
+    });
+  }
 };
 const deleteDocument = (instance) => {
   redis.del(`USER_ID:${instance.id}`, instance);
@@ -96,6 +98,10 @@ module.exports = (sequelize, DataTypes) => {
       isBlock: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      state: {
+        type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED', 'BANNED'),
+        defaultValue: 'PENDING',
       },
     },
     {
