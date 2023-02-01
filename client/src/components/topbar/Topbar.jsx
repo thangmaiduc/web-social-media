@@ -4,24 +4,34 @@ import { useDispatch, useSelector } from 'react-redux';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link, useHistory } from 'react-router-dom';
 import { ToastContainer } from '../../utility/toast';
-import { Button } from '@material-ui/core';
+import { Button, Divider, Popover, Typography } from '@material-ui/core';
 import { useState } from 'react';
 export default function Topbar() {
   const user = useSelector(userSelector);
   const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
   const history = useHistory()
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const logout = () => {
     // localStorage.clear();
     dispatch(userSlice.actions.logout())
     window.open("http://localhost:8080/api/auth/logout", "_self");
-    
+
   }
-  const handleSearch=(e)=>{
+  const handleSearch = (e) => {
     e.preventDefault();
     history.push(`/search/${textSearch}`)
   }
   const PF = process.env.REACT_APP_PUBLIC_FOLDER;
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   return (
     <div className='topbarContainer'>
       <ToastContainer />
@@ -34,7 +44,7 @@ export default function Topbar() {
 
 
         <form className='searchbar' type='submit' onSubmit={handleSearch}>
-            <Search className='searchIcon' />
+          <Search className='searchIcon' />
           <input
             placeholder='Search for friend, post or video'
             className='searchInput'
@@ -61,10 +71,44 @@ export default function Topbar() {
             </Link>
             <span className='topbarIconBadge'>2</span>
           </div>
+          <Popover
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+          >
+            <Link to='/messenger' style={{ color: 'black' }}>
+              <Typography className='notificationDiv' >
+                fareio;tgjlk.fn
+              </Typography>
+              <Divider />
+              <Typography className='notificationDiv' >
+                fareio;tgjlk.fn
+              </Typography>
+              <Divider />
+              <Divider />
+            </Link>
+
+          </Popover>
           <div className='topbarIconItem'>
-            <Notifications className='logoIcon' />
+            <Notifications className='logoIcon'
+              id="basic-button"
+              size='small' variant="contained"
+              aria-controls={open ? 'basic-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+              onClick={handleClick} />
+
             <span className='topbarIconBadge'>1</span>
           </div>
+
         </div>
         <Link to={`/profile/${user.username}`}>
           <img

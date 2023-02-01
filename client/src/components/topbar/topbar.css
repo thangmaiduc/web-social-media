@@ -94,6 +94,15 @@
   object-fit: cover;
   cursor: pointer;
 }
-.logoIcon{
+.logoIcon {
   color: white;
+}
+.notificationDiv {
+  max-width: 300px;
+  width: 300px;
+  padding: 5px;
+}
+.notificationDiv:hover {
+  opacity: 0.7;
+  cursor: pointer;
 }

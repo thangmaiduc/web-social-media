@@ -84,7 +84,7 @@ app.use((error, req, res) => {
 
 const db = require('./models').sequelize;
 
-db.sync({ force: false, alter: true })
+db.sync({ force: false, alter: false })
   .then()
   .catch((err) => {
     console.log(err);

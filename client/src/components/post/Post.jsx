@@ -66,6 +66,8 @@ const Post = forwardRef(({ post }, ref) => {
   const likeHandler = async () => {
     try {
       await postApi.likePost(post.id)
+      await postApi.getLikePost(post.id)
+
     } catch (error) {
 
     }
