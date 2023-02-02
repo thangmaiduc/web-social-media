@@ -1,10 +1,10 @@
 const Redis = require('ioredis');
 const _ = require('lodash');
 const redis = new Redis({
-  port: 49153, // Redis port
-  host: '127.0.0.1', // Redis host
-  username: 'default', // needs Redis >= 6
-  password: 'redispw',
+  port: process.env.REDIS_PORT, // Redis port
+  host: process.env.REDIS_HOST, // Redis host
+  // username: 'default', // needs Redis >= 6
+  // password: 'redispw',
   db: 0, // Defaults to 0
 });
 
