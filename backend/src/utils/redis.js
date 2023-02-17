@@ -3,8 +3,8 @@ const _ = require('lodash');
 const redis = new Redis({
   port: process.env.REDIS_PORT, // Redis port
   host: process.env.REDIS_HOST, // Redis host
-  // username: 'default', // needs Redis >= 6
-  // password: 'redispw',
+  username: 'default', // needs Redis >= 6
+  password: '12345',
   db: 0, // Defaults to 0
 });
 
