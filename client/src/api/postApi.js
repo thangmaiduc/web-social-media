@@ -3,7 +3,7 @@ import api from './API';
 const postApi = {
   getTimeLine: async (params) => {
     const url = '/posts/timeline/';
-    const response = axiosClient.get(url, {params});
+    const response = axiosClient.get(url, { params });
     return response;
   },
   createPost: async (payload) => {
@@ -11,8 +11,8 @@ const postApi = {
     const response = await axiosClient.post(url, payload);
     return response.data;
   },
-  editPost: async (postId,payload) => {
-    const url = api.CREATE_POST+postId;
+  editPost: async (postId, payload) => {
+    const url = api.CREATE_POST + postId;
     const response = await axiosClient.put(url, payload);
     return response;
   },
@@ -23,17 +23,27 @@ const postApi = {
     return response.data;
   },
   reportPost: async (payload) => {
-    const url = `posts/${payload}/report` ;
+    const url = `posts/${payload}/report`;
     const response = await axiosClient.put(url);
     return response.message;
   },
   likePost: async (payload) => {
-    const url = `posts/${payload}/like` ;
+    const url = `posts/${payload}/like`;
     const response = await axiosClient.put(url);
     return response.message;
   },
+  notifyPost: async (payload) => {
+    const url = `posts/notify`;
+    const response = await axiosClient.post(url, payload);
+    return response.data;
+  },
+  viewNotify: async (payload) => {
+    const url = `posts/viewNotification`;
+    const response = await axiosClient.post(url);
+    return response.data;
+  },
   getLikePost: async (payload) => {
-    const url = `posts/${payload}/like` ;
+    const url = `posts/${payload}/like`;
     const response = await axiosClient.get(url);
     return response;
   },

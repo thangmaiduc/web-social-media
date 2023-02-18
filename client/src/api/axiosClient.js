@@ -2,9 +2,11 @@
 import axios from 'axios';
 import queryString from 'query-string';
 import { notify } from '../utility/toast';
+let host = window.location.host + '/api';
+if (process.env.REACT_APP_API_URL) host = process.env.REACT_APP_API_URL;
 
 const axiosClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: host,
   headers: {
     'content-type': 'application/json',
   },
@@ -34,8 +36,9 @@ axiosClient.interceptors.response.use(
   (error) => {
     const { response } = error;
     console.log(error.response);
+    console.log(process.env.REACT_APP_API_URL);
     if (!response) {
-      notify('Server đã xảy ra sự cố, vui lòng báo admin');
+      notify('Server đã xảy ra sự cố, vui lòng báo admin,');
       throw error;
     }
     const { status } = response;

@@ -1,4 +1,7 @@
-const baseURL = process.env.REACT_APP_API_URL;
+let host = window.location.host+'/api';
+if (process.env.REACT_APP_API_URL) host = process.env.REACT_APP_API_URL;
+
+
 const api = {
   GET_POST_TIMELINE: baseURL + '/posts/timeline/',
   GET_POST_PROFILE: baseURL + '/posts/profile/',
@@ -23,8 +26,6 @@ const api = {
   GET_USER_ADMIN: baseURL + '/admin/users/',
 
   BLOCK_USER: baseURL + '/admin/block-user/',
-  BLOCK_POST: baseURL + '/admin/block-posts/'
-
-
+  BLOCK_POST: baseURL + '/admin/block-posts/',
 };
 export default api;

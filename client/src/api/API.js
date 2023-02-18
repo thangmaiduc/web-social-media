@@ -1,10 +1,12 @@
-const baseURL = process.env.REACT_APP_API_URL;
+let host = window.location.host + '/api';
+if (process.env.REACT_APP_API_URL) host = process.env.REACT_APP_API_URL;
+const baseURL = host;
 const api = {
   GET_POST_TIMELINE: baseURL + '/posts/timeline/',
   GET_POST_PROFILE: baseURL + '/posts/profile/',
   CREATE_POST: baseURL + '/posts/',
   QUERY_POSTS: baseURL + '/posts/query/',
-  
+
   CREATE_COMMENT: baseURL + '/comments/',
   DELETE_COMMENT: baseURL + '/comments/',
   EDIT_COMMENT: baseURL + '/comments/',
@@ -24,7 +26,5 @@ const api = {
   GET_MESSAGES: baseURL + '/messages/',
 
   CREATE_MESSAGE: baseURL + '/messages/',
-
-  
 };
 export default api;

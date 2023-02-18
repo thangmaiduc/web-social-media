@@ -26,14 +26,14 @@ app.use(cookieSession({ name: 'session', keys: ['thangmd'], maxAge: 24 * 60 * 60
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.use(
-  cors({
-    origin: [`http://${SERVER_HOST}:3000`, `http://${SERVER_HOST}:3005`, `http://${SERVER_HOST}:80`, '*'],
-    methods: 'GET,POST,PUT,DELETE,PATCH',
-    credentials: true,
-  })
-);
+app.use(cors())
+// app.use(
+//   cors({
+//     origin: [`http://${SERVER_HOST}:3000`, `http://${SERVER_HOST}:3005`, `http://${SERVER_HOST}:80`, '*'],
+//     methods: 'GET,POST,PUT,DELETE,PATCH',
+//     credentials: true,
+//   })
+// );
 app.use((req, res, next) => {
   req.redis = redisClient;
   next();
