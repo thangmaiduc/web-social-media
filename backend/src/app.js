@@ -12,6 +12,8 @@ const redisClient = require('./utils/redis');
 require('./passport-config');
 const express = require('express');
 
+const SERVER_HOST = process.env.SERVER_HOST;
+
 const app = express();
 // const redisClient = redis.createClient(6379);
 // dotenv.config();
@@ -27,7 +29,7 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://localhost:3005', 'http://localhost:80', '*'],
+    origin: [`http://${SERVER_HOST}:3000`, `http://${SERVER_HOST}:3005`, `http://${SERVER_HOST}:80`, '*'],
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true,
   })
