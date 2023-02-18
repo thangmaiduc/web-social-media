@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node src/app.js",
+    "prod": "pm2 start src/app.js --watch --name api-social-media",
     "dev": "nodemon src/app.js",
     "sa": "node ./src/swagger.js"
   },
