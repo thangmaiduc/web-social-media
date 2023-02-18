@@ -24,7 +24,7 @@ exports.changePassword = async (req, res, next) => {
       throw new api400Error('Mật khẩu cũ không chính xác');
     }
     const salt = await bcrypt.genSalt(10);
-    hashedPassword =await bcrypt.hash(req.body['password'], salt);
+    hashedPassword = await bcrypt.hash(req.body['password'], salt);
     req.user['password'] = hashedPassword;
     await req.user.save();
     res.json({ message: 'Đổi mật khẩu thành công' });
@@ -114,6 +114,8 @@ exports.getFriends = async (req, res, next) => {
     let user = await User.findOne({
       where: { username },
     });
+    if (!user) throw new api404Error('Không thấy người dùng');
+
     let followingId = user.id;
     const users = await sequelize.query(
       `select followedId, username, profilePicture, coverPicture,  fullName from Followers fw
