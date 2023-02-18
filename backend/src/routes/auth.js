@@ -2,14 +2,14 @@ const router = require('express').Router();
 const authController = require('../controller/auth');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
-const { validate } = require("../middlewares/validation");
-const CLIENT_URL = 'http://localhost:3000/';
+const { validate } = require('../middlewares/validation');
+const CLIENT_URL = `http://${process.env.SERVER_HOST}/`;
 const ADMIN_URL = 'http://localhost:3005/';
 
-router.get("/logout", (req, res) => {
-    req.logout();
-    res.redirect(CLIENT_URL);
-  });
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect(CLIENT_URL);
+});
 router.get('/login/success', (req, res) => {
   if (req.user) {
     console.log(req.user);
@@ -22,11 +22,11 @@ router.get('/login/success', (req, res) => {
       success: true,
       message: 'successfull',
       user: req.user,
-      token
+      token,
       //   cookies: req.cookies
     });
-  }else{
-    res.status(401).send('authorizationError')
+  } else {
+    res.status(401).send('authorizationError');
   }
 });
 
@@ -52,11 +52,9 @@ router.get(
   })
 );
 
-router.post('/login', 
-validate.validateLogin()
-,authController.login);
-router.post('/admin/login',validate.validateLogin(), authController.loginAdmin);
-router.post('/register',validate.validateRegisterUser(), authController.register);
+router.post('/login', validate.validateLogin(), authController.login);
+router.post('/admin/login', validate.validateLogin(), authController.loginAdmin);
+router.post('/register', validate.validateRegisterUser(), authController.register);
 router.put('/forgot-password', authController.forgotPassword);
 // get friends
 

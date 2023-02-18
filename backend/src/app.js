@@ -66,7 +66,7 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use((error, req, res) => {
-  console.error(error);
+  // console.error(error);
   const status = error.statusCode || 500;
   const message = error.message;
 
@@ -78,7 +78,7 @@ app.use((error, req, res) => {
 
       errors[key] = value;
     });
-    res.status(status).json({ message: message, errors });
+    res.status(status).json({ message: message });
     return;
   }
   res.status(status).json({ message: message });
