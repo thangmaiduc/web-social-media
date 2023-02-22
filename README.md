@@ -1,14 +1,12 @@
 # Social Media
 
-![Project Image](project-image-url)
+![Project Image](https://res.cloudinary.com/dzens2tsj/image/upload/v1677055491/xam_cartiw.png)
 
 > Deploy on: http://18.217.248.215/
 
 ---
 
 ### Table of Contents
-
-You're sections headers will be used to reference location of destination.
 
 - [Description](#description)
 - [Features](#Features)
@@ -27,7 +25,7 @@ After working at the company, I have applied some more technologies to the proje
 - Backend: SocketIO, Express, Redis, Elastic Search, MySQL Server(Sequelize), JWT authentication, Passport.
 - Font-end: MaterialUi, React(useHook, redux), CSS
 
-[Back To The Top](#read-me-template)
+[Back To The Top](#social-media)
 
 ---
 
@@ -48,10 +46,10 @@ After working at the company, I have applied some more technologies to the proje
 
 #### Updated:
 
-- Allows adding, editing, deleting groups.
+- Allow adding, editing, deleting groups.
 - Manage group members, invite others to join the group, change group status.
-- Group admin approves members joining, browses posts posted in the group.
-- Receive notifications when others comment and like their posts in real time.
+- Group admin approve members joining, approve posts is posted in the group.
+- Receive notifications when others comment or like their posts in real time.
 
 #### Updating:
 
@@ -59,21 +57,20 @@ After working at the company, I have applied some more technologies to the proje
 - Recommended to follow other in the area, celebrities, friends of friends.
 - Proposing to join a group that has friends join,...
 
-[Back To The Top](#read-me-template)
+[Back To The Top](#social-media)
 
 ## License
 
 MIT License
 
-Copyright (c) [2022] [Mai Duc Thang]
+Copyright (c) [2022] [thangmaiduc]
 
-[Back To The Top](#read-me-template)
+[Back To The Top](#social-media)
 
 ---
 
 ## Author Info
 
-- Email - [@jamesqquick](thangmaiduc00@gmail.com)
-- Website - [James Q Quick](https://jamesqquick.com)
+- Facebook - [@thang00lata](https://www.facebook.com/thang00lata/)
 
-[Back To The Top](#read-me-template)
+[Back To The Top](#social-media)

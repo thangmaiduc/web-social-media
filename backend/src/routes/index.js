@@ -73,8 +73,8 @@ router.use(
 router.use(
   '/conversations',
   conversationRouter
-  // #swagger.tags = ['Group']
-  // #swagger.description = 'Endpoint for Group.'
+  // #swagger.tags = ['conversation']
+  // #swagger.description = 'Endpoint for conversation.'
   /* #swagger.security = [{
         "Bearer": []
     }]  #swagger.responses[500] = {

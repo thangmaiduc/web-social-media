@@ -8,7 +8,7 @@ const doc = {
     title: 'Social Media API',
     description: 'API for app </b>Social Media</b>',
   },
-  host: process.env.VIRTUAL_HOST || 'localhost:8080',
+  host: process.env.SERVER_HOST || 'localhost:8080',
   basePath: '/',
   schemes: ['http'],
   consumes: ['application/json'],
