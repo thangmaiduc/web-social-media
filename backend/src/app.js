@@ -38,6 +38,18 @@ app.use((req, res, next) => {
   req.redis = redisClient;
   next();
 });
+const forwardedPrefixSwagger = async (req, res, next) => {
+  req.originalUrl = (req.headers['x-forwarded-prefix'] || '') + req.url;
+  next();
+};
+app.use(
+  '/api/doc',
+  forwardedPrefixSwagger,
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerFile, {
+    swaggerOptions: { persistAuthorization: true },
+  })
+);
 app.use(
   '/api',
   indexRouter
@@ -47,18 +59,6 @@ app.use(
     }] */
 );
 
-const forwardedPrefixSwagger = async (req, res, next) => {
-  req.originalUrl = (req.headers['x-forwarded-prefix'] || '') + req.url;
-  next();
-};
-app.use(
-  '/doc',
-  forwardedPrefixSwagger,
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerFile, {
-    swaggerOptions: { persistAuthorization: true },
-  })
-);
 app.use(function (req, res, next) {
   try {
     let err = new Error('Không tìm thấy trang');
