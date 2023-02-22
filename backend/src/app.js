@@ -26,7 +26,7 @@ app.use(cookieSession({ name: 'session', keys: ['thangmd'], maxAge: 24 * 60 * 60
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors())
+app.use(cors());
 // app.use(
 //   cors({
 //     origin: [`http://${SERVER_HOST}:3000`, `http://${SERVER_HOST}:3005`, `http://${SERVER_HOST}:80`, '*'],
@@ -47,8 +47,13 @@ app.use(
     }] */
 );
 
+const forwardedPrefixSwagger = async (req, res, next) => {
+  req.originalUrl = (req.headers['x-forwarded-prefix'] || '') + req.url;
+  next();
+};
 app.use(
   '/doc',
+  forwardedPrefixSwagger,
   swaggerUi.serve,
   swaggerUi.setup(swaggerFile, {
     swaggerOptions: { persistAuthorization: true },
