@@ -4,8 +4,7 @@ const api400Error = require('../utils/errors/api400Error');
 const CommentPost = require('../models').CommentPost;
 const Post = require('../models').Post;
 const User = require('../models/').User;
-const sequelize = require('../models').sequelize;
-const { QueryTypes } = require('sequelize');
+
 const _ = require('lodash');
 const alertInteraction = require('../utils/alertInteraction');
 require('moment-duration-format');

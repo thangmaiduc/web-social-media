@@ -1,6 +1,7 @@
 const moment = require('moment');
 const MomentTimezone = require('moment-timezone');
 const redis = require('../utils/redis');
+const settings = require('../controller/settings');
 
 module.exports = async ({ userId }) => {
   try {
@@ -24,7 +25,7 @@ module.exports = async ({ userId }) => {
           ((await redis.get(`NUM_LIMIT_IS_EXCEEDED_IN_MONTH_BY_USER_ID:${userId}`)) || 0) + 1;
         console.log(durationMonth);
         await redis.set(`NUM_LIMIT_IS_EXCEEDED_IN_MONTH_BY_USER_ID:${userId}`, numBlockedOfUserAMonth, durationMonth);
-        const settingTimeBlock = await redis.get(`SETTING_TIMES_BY_NUM_OF_VIOLATIONS`);
+        const settingTimeBlock = await settings.get(`SETTING_TIMES_BY_NUM_OF_VIOLATIONS`);
         if (numBlockedOfUserAMonth <= 3)
           redis.set(
             `BLOCK_INTERACTION_USER_ID_${userId}`,

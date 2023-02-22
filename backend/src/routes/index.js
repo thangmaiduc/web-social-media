@@ -24,6 +24,7 @@ const adminRouter = require('./admin');
 const conversationRouter = require('./conversations');
 const groupsRouter = require('./groups');
 const messageRouter = require('./messages');
+const settingRouter = require('./settings');
 
 router.use(
   '/users',
@@ -92,6 +93,23 @@ router.use(
   groupsRouter
   // #swagger.tags = ['Group']
   // #swagger.description = 'Endpoint for Group.'
+  /* #swagger.security = [{
+        "Bearer": []
+    }]  #swagger.responses[500] = {
+            description: "Error Internal Server"
+    } 
+     #swagger.responses[404] = {
+            description: "Not found "
+    } 
+     #swagger.responses[400] = {
+            description: "Data invalid "
+    } */
+);
+router.use(
+  '/settings',
+  settingRouter
+  // #swagger.tags = ['Settings']
+  // #swagger.description = 'Endpoint for Settings.'
   /* #swagger.security = [{
         "Bearer": []
     }]  #swagger.responses[500] = {

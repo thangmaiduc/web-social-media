@@ -50,6 +50,7 @@ After working at the company, I have applied some more technologies to the proje
 - Manage group members, invite others to join the group, change group status.
 - Group admin approve members joining, approve posts is posted in the group.
 - Receive notifications when others comment or like their posts in real time.
+- Automatically block when reach limit iterations( comment, like), first in month: 3 hours, second in month: 6 hours, rest: 9 hours,... can configure the number of limit iterations, time be blocked,..
 
 #### Updating:
 
