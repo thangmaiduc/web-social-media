@@ -27,7 +27,9 @@ exports.addMembers = async (req, res, next) => {
     if (!group) {
       throw new Api404Error('Không tìm thấy nhóm');
     }
-    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    const checkRole = await GroupMember.findOne({
+      where: { userId, groupId: group.id, state: GeneralConstants.STATE_MEMBER.APPROVED },
+    });
     if (!checkRole) throw new Api404Error('Chưa gia nhập nhóm');
     // * check lọc ra các thành viên chưa gia nhập
     const userJoined = await GroupMember.findAll({ where: { groupId } });
@@ -41,7 +43,7 @@ exports.addMembers = async (req, res, next) => {
       },
       attributes: ['id'],
     });
-    // * tạo ra mảng các thành viên chuẩn bị gia nhập
+    // * tạo ra mảng các thành viên chuẩn bị gia nhập, neu la admin moi auto duyet thanh cong
     const members = users.map((user) => {
       let member = {
         userId: user.id,
@@ -102,6 +104,7 @@ exports.approve = async (req, res, next) => {
           [Op.in]: userJoinIds,
         },
         groupId: group.id,
+        isAdmin: false,
         state: {
           [Op.ne]: GeneralConstants.STATE_MEMBER.APPROVED,
         },
@@ -145,6 +148,7 @@ exports.reject = async (req, res, next) => {
           [Op.in]: userJoinIds,
         },
         groupId: group.id,
+        isAdmin: false,
         state: GeneralConstants.STATE_MEMBER.PENDING,
       },
     });
@@ -162,6 +166,85 @@ exports.reject = async (req, res, next) => {
     );
 
     res.status(200).json({ message: 'Từ chối thành viên thành công' });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.banMember = async (req, res, next) => {
+  try {
+    console.log(req.params, req.body);
+    let userId = req.user.id;
+    const { groupId, userJoinIds } = req.body;
+
+    const group = await Group.findOne({
+      where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
+    });
+    if (!group) throw new Api404Error('Không tìm thấy nhóm');
+    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
+    if (!checkRole.isAdmin) throw new api400Error('Không có quyền duyệt thành viên');
+
+    const unapprovedMembers = await GroupMember.findAll({
+      where: {
+        id: {
+          [Op.in]: userJoinIds,
+        },
+        groupId: group.id,
+        isAdmin: false,
+      },
+    });
+    if (unapprovedMembers.length <= 0) throw new Api404Error('Không tìm thấy thành viên');
+    const unapprovedMemberIds = unapprovedMembers.map((unapprovedMember) => unapprovedMember.id);
+    await GroupMember.update(
+      { state: GeneralConstants.STATE_MEMBER.REJECTED },
+      {
+        where: {
+          id: {
+            [Op.in]: unapprovedMemberIds,
+          },
+        },
+      }
+    );
+
+    res.status(200).json({ message: 'Cấm thành viên thành công' });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.deleteMember = async (req, res, next) => {
+  try {
+    console.log(req.params, req.body);
+    let userId = req.user.id;
+    const { groupId, userJoinIds } = req.body;
+
+    const group = await Group.findOne({
+      where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
+    });
+    if (!group) throw new Api404Error('Không tìm thấy nhóm');
+    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
+    if (!checkRole.isAdmin) throw new api400Error('Không có quyền duyệt thành viên');
+
+    const approvedMembers = await GroupMember.findAll({
+      where: {
+        id: {
+          [Op.in]: userJoinIds,
+        },
+        groupId: group.id,
+        isAdmin: false,
+      },
+    });
+    if (approvedMembers.length <= 0) throw new Api404Error('Không tìm thấy thành viên');
+    const approvedMemberIds = approvedMembers.map((approvedMember) => approvedMember.id);
+    await GroupMember.destroyMany({
+      where: {
+        id: {
+          [Op.in]: approvedMemberIds,
+        },
+      },
+    });
+
+    res.status(200).json({ message: 'Xoá thành viên thành công' });
   } catch (error) {
     next(error);
   }

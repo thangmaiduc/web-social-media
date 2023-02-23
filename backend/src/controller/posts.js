@@ -5,6 +5,7 @@ const redis = require('../utils/redis');
 const User = require('../models/').User;
 const Post = require('../models/').Post;
 const Group = require('../models/').Group;
+const GroupMember = require('../models/').GroupMember;
 const LikePost = require('../models/').LikePost;
 const ReportPost = require('../models/').ReportPost;
 const CommentPost = require('../models/').CommentPost;
@@ -23,8 +24,9 @@ require('moment-duration-format');
 exports.create = async (req, res, next) => {
   try {
     const { description, img, groupId = null } = req.body;
-    let statePost =  GeneralConstants.STATE_POST.PENDING;
-
+    let statePost = GeneralConstants.STATE_POST.PENDING;
+    const userId = req.user.id;
+    const createPost = { ...req.body, userId, state: statePost };
     if (groupId !== null) {
       const checkGroup = await Group.findOne({
         where: {
@@ -37,11 +39,23 @@ exports.create = async (req, res, next) => {
         throw new api400Error('Group does not exist or is not activated');
       }
 
+      const checkMember = await GroupMember.findOne({
+        where: {
+          groupId,
+          userId,
+          state: GeneralConstants.STATE_MEMBER.APPROVED,
+        },
+      });
+      if (!checkMember) {
+        throw new api400Error('You are not a member of this group');
+      }
+
       if (checkGroup.type === GeneralConstants.TYPE_GROUP.FREE) {
         statePost = GeneralConstants.STATE_POST.APPROVED;
       }
+      createPost.groupId = checkGroup.groupId;
     }
-    const post = await Post.create({ ...req.body, userId: req.user.id, groupId, state: statePost });
+    const post = await Post.create(createPost);
     // await post.save();
     res.status(201).json(post);
   } catch (error) {
@@ -353,7 +367,7 @@ exports.queryTimeLine = async (req, res, next) => {
     const page = parseInt(_.get(req, 'query.page', 0));
 
     console.log(page);
-    let limit = +req.query.limit || 2;
+    let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
     console.log('offset', offset);
     // const sort = req.query.sort || SORT.REPORT;
@@ -365,14 +379,27 @@ exports.queryTimeLine = async (req, res, next) => {
       }
     );
 
+    const groupUserJoined = await GroupMember.findAll({
+      where: {
+        userId,
+        state: GeneralConstants.STATE_MEMBER.APPROVED,
+      },
+    });
+
+    const groupIds = groupUserJoined.map((item) => item.groupId);
     const friendIds = friends.map((friend) => friend.followedId);
     friendIds.push(userId);
 
     const posts = await Post.findAll({
       subQuery: false,
       where: {
-        userId: {
-          [Op.in]: friendIds,
+        [Op.or]: {
+          userId: {
+            [Op.in]: friendIds,
+          },
+          groupId: {
+            [Op.in]: groupIds,
+          },
         },
         isBlock: false,
       },
@@ -396,7 +423,7 @@ exports.queryTimeLine = async (req, res, next) => {
           attributes: ['fullName', 'id', 'username', 'profilePicture'],
         },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['id', 'DESC']],
       group: 'id',
       limit,
       offset,
