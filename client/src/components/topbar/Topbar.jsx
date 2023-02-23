@@ -5,13 +5,61 @@ import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link, useHistory } from 'react-router-dom';
 import { ToastContainer } from '../../utility/toast';
 import { Button, Divider, Popover, Typography } from '@material-ui/core';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
+import postApi from '../../api/postApi';
+
 export default function Topbar() {
   const user = useSelector(userSelector);
   const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
   const history = useHistory()
+  const [newNotification, setNewNotification] = useState({})
+  const [notifications, setNotifications] = useState([])
+
   const [anchorEl, setAnchorEl] = useState(null);
+  const socketRef = useRef();
+  const [notificationArrive, setNotificationArrive] = useState(null);
+
+  useEffect(() => {
+    socketRef.current = io('ws://localhost:8900');
+    socketRef.current.on('getNotification', (data) => {
+      setNewNotification({
+        postId: data.postId,
+        text: data.text,
+        userId: data.userId,
+      });
+      // console.log(data);
+      // setNotifications([...notifications, data]);
+
+    });
+  }, []);
+  useEffect(() => {
+    console.log(newNotification);
+    setNotifications([newNotification, ...notifications]);
+
+  }, [newNotification])
+
+  useEffect(() => {
+    const getNotification = async () => {
+      try {
+        const res = await postApi.viewNotify(
+
+        );
+        setNotifications([...res]);
+      } catch (err) {
+        console.log(err);
+      }
+
+
+    };
+    getNotification();
+
+  }, [])
+
+  useEffect(() => {
+    socketRef.current.emit('addUser', user.id);
+  }, [user]);
 
   const logout = () => {
     // localStorage.clear();
@@ -28,6 +76,7 @@ export default function Topbar() {
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
+
   };
   const handleClose = () => {
     setAnchorEl(null);
@@ -65,6 +114,7 @@ export default function Topbar() {
             <span className='topbarIconBadge'>1</span>
           </div>
           <div className='topbarIconItem'>
+
             <Link to='/messenger' style={{ textDecoration: 'none' }}>
 
               <Chat className='logoIcon' />
@@ -84,17 +134,18 @@ export default function Topbar() {
               horizontal: 'left',
             }}
           >
-            <Link to='/messenger' style={{ color: 'black' }}>
-              <Typography className='notificationDiv' >
-                fareio;tgjlk.fn
-              </Typography>
-              <Divider />
-              <Typography className='notificationDiv' >
-                fareio;tgjlk.fn
-              </Typography>
-              <Divider />
-              <Divider />
-            </Link>
+            {notifications.map((n) => (
+              <Link key={n.id} to={`/post/${n.postId}`} style={{ color: 'black' }}>
+                <Typography className='notificationDiv' >
+                  {n.text}
+                </Typography>
+                <Divider />
+
+              </Link>
+            ))}
+
+
+
 
           </Popover>
           <div className='topbarIconItem'>

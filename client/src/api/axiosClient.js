@@ -2,7 +2,7 @@
 import axios from 'axios';
 import queryString from 'query-string';
 import { notify } from '../utility/toast';
-let host = window.location.host + '/api';
+let host = '/api';
 if (process.env.REACT_APP_API_URL) host = process.env.REACT_APP_API_URL;
 
 const axiosClient = axios.create({
@@ -48,6 +48,10 @@ axiosClient.interceptors.response.use(
     }
     if (status === 400) {
       notify(response.data.message);
+    }
+    if (status === 417) {
+      localStorage.clear();
+      window.location.reload();
     }
 
     throw error;

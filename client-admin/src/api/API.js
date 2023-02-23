@@ -1,31 +1,30 @@
-let host = window.location.host+'/api';
+let host = window.location.host + '/api';
 if (process.env.REACT_APP_API_URL) host = process.env.REACT_APP_API_URL;
 
-
 const api = {
-  GET_POST_TIMELINE: baseURL + '/posts/timeline/',
-  GET_POST_PROFILE: baseURL + '/posts/profile/',
-  CREATE_POST: baseURL + '/posts/',
+  GET_POST_TIMELINE: '/posts/timeline/',
+  GET_POST_PROFILE: '/posts/profile/',
+  CREATE_POST: '/posts/',
 
-  GET_FRIENDS: baseURL + '/users/friends/',
-  GET_USER: baseURL + '/users/',
-  GET_ME: baseURL + '/users/me',
+  GET_FRIENDS: '/users/friends/',
+  GET_USER: '/users/',
+  GET_ME: '/users/me',
 
-  UPLOAD: baseURL + '/cloudinary-upload',
+  UPLOAD: '/cloudinary-upload',
 
-  GET_CONVERSATIONS: baseURL + '/conversations/',
-  ADD_MEMBER: baseURL + '/conversations/members/',
+  GET_CONVERSATIONS: '/conversations/',
+  ADD_MEMBER: '/conversations/members/',
 
-  GET_MESSAGES: baseURL + '/messages/',
+  GET_MESSAGES: '/messages/',
 
-  CREATE_MESSAGE: baseURL + '/messages/',
+  CREATE_MESSAGE: '/messages/',
 
-  GET_POST_ADMIN: baseURL + '/admin/posts/',
-  GET_DASHBOARD_ADMIN: baseURL + '/admin/dashboard/',
+  GET_POST_ADMIN: '/admin/posts/',
+  GET_DASHBOARD_ADMIN: '/admin/dashboard/',
 
-  GET_USER_ADMIN: baseURL + '/admin/users/',
+  GET_USER_ADMIN: '/admin/users/',
 
-  BLOCK_USER: baseURL + '/admin/block-user/',
-  BLOCK_POST: baseURL + '/admin/block-posts/',
+  BLOCK_USER: '/admin/block-user/',
+  BLOCK_POST: '/admin/block-posts/',
 };
 export default api;

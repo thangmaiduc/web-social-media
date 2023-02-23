@@ -1,7 +1,7 @@
 import "./post.css";
 import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit, Report } from "@material-ui/icons";
 import { Users } from "../../dummyData";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Comment from '../comment/Comment'
 import { PostModal } from './PostModal'
 import postApi from '../../api/postApi';
@@ -13,6 +13,7 @@ import { format } from 'timeago.js';
 import { notify } from '../../utility/toast';
 import { Link } from 'react-router-dom';
 import { forwardRef } from 'react';
+import { io } from 'socket.io-client';
 
 const Post = forwardRef(({ post }, ref) => {
   const user = useSelector(userSelector)
@@ -31,9 +32,15 @@ const Post = forwardRef(({ post }, ref) => {
   const [limit, setLimit] = useState(5)
   const [length, setLength] = useState(0)
   const [editText, setEditText] = useState(post?.description)
+  const socketRef = useRef();
 
+  useEffect(() => {
+    socketRef.current = io('ws://localhost:8900');
+  }, []);
 
+  useEffect(() => {
 
+  }, []);
 
   useEffect(() => {
     const getComments = async () => {
@@ -67,6 +74,8 @@ const Post = forwardRef(({ post }, ref) => {
     try {
       await postApi.likePost(post.id)
       await postApi.getLikePost(post.id)
+      if (!isLiked)
+        socketRef.current.emit('pushNotification', { userId: post.userId, postId: post.id, text: `${user.fullName} đã like bài viết của bạn: ${post.description.substring(0,30)}` });
 
     } catch (error) {
 
@@ -75,6 +84,7 @@ const Post = forwardRef(({ post }, ref) => {
     setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
   }
+
 
   const handleComment = () => {
     setIsComment(b => !b)
@@ -168,15 +178,15 @@ const Post = forwardRef(({ post }, ref) => {
           <div className="postTopLeft">
             <Link to={`/profile/${post.user.username}`} className="postTopLeft">
 
-           
-            <img
-              className="postProfileImg"
-              src={post.user.profilePicture}
-              alt=""
-            />
-            <span className="postUsername">
-              {post.user.fullName}
-            </span>
+
+              <img
+                className="postProfileImg"
+                src={post.user.profilePicture}
+                alt=""
+              />
+              <span className="postUsername">
+                {post.user.fullName}
+              </span>
             </Link>
             <span className="postDate">{format(post.createdAt)}</span>
           </div>

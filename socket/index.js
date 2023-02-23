@@ -30,15 +30,29 @@ io.on('connection', (socket) => {
       console.log('users::::::::::: ', users);
     });
 
+    socket.on('pushNotification', ({ userId, postId, text }) => {
+      console.log('[Event pushNotification]: ', JSON.stringify({ userId, postId, text }));
+      const user = getUser(userId);
+      if (user) {
+
+        io.to(user.socketId).emit('getNotification', {
+          userId,
+          postId,
+          text,
+        });
+        console.log('[getNotification] đã send thông báo');
+      }
+    });
+
     socket.on('sendMessage', ({ senderId, receiverId, text, fileUrl }) => {
       const user = getUser(receiverId);
       console.log('[Event sendMessage]: ', JSON.stringify({ senderId, receiverId, text, fileUrl }));
-      if(user)
-      io.to(user.socketId).emit('getMessage', {
-        senderId,
-        text,
-        fileUrl,
-      });
+      if (user)
+        io.to(user.socketId).emit('getMessage', {
+          senderId,
+          text,
+          fileUrl,
+        });
     });
 
     socket.on('disconnect', () => {

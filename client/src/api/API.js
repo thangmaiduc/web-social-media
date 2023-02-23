@@ -1,30 +1,29 @@
 let host = window.location.host + '/api';
 if (process.env.REACT_APP_API_URL) host = process.env.REACT_APP_API_URL;
-const baseURL = host;
 const api = {
-  GET_POST_TIMELINE: baseURL + '/posts/timeline/',
-  GET_POST_PROFILE: baseURL + '/posts/profile/',
-  CREATE_POST: baseURL + '/posts/',
-  QUERY_POSTS: baseURL + '/posts/query/',
+  GET_POST_TIMELINE: '/posts/timeline/',
+  GET_POST_PROFILE: '/posts/profile/',
+  CREATE_POST: '/posts/',
+  QUERY_POSTS: '/posts/query/',
 
-  CREATE_COMMENT: baseURL + '/comments/',
-  DELETE_COMMENT: baseURL + '/comments/',
-  EDIT_COMMENT: baseURL + '/comments/',
-  GET_COMMENTS: baseURL + '/comments/posts/',
+  CREATE_COMMENT: '/comments/',
+  DELETE_COMMENT: '/comments/',
+  EDIT_COMMENT: '/comments/',
+  GET_COMMENTS: '/comments/posts/',
 
-  GET_FRIENDS: baseURL + '/users/friends/',
-  GET_USER: baseURL + '/users/',
-  CHANGE_PASSWORD: baseURL + '/users/change-password/',
-  QUERY_USERS: baseURL + '/users/query/',
-  GET_ME: baseURL + '/users/me',
+  GET_FRIENDS: '/users/friends/',
+  GET_USER: '/users/',
+  CHANGE_PASSWORD: '/users/change-password/',
+  QUERY_USERS: '/users/query/',
+  GET_ME: '/users/me',
 
-  UPLOAD: baseURL + '/cloudinary-upload',
+  UPLOAD: '/cloudinary-upload',
 
-  GET_CONVERSATIONS: baseURL + '/conversations/',
-  ADD_MEMBER: baseURL + '/conversations/members/',
+  GET_CONVERSATIONS: '/conversations/',
+  ADD_MEMBER: '/conversations/members/',
 
-  GET_MESSAGES: baseURL + '/messages/',
+  GET_MESSAGES: '/messages/',
 
-  CREATE_MESSAGE: baseURL + '/messages/',
+  CREATE_MESSAGE: '/messages/',
 };
 export default api;
