@@ -14,19 +14,23 @@ exports.changePassword = async (req, res, next) => {
   const updates = Object.keys(req.body);
   const allowsUpdate = ['password', 'oldPassword'];
 
-  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
+  const isValidUpdate = updates.every((update) =>
+    allowsUpdate.includes(update)
+  );
   const oldPassword = req.body.oldPassword;
-  if (!isValidUpdate && !oldPassword) throw new api400Error('Chỉnh sửa không hợp lệ');
+  if (!isValidUpdate && !oldPassword)
+    throw new api400Error('Chỉnh sửa không hợp lệ');
   try {
     let isMatch = await bcrypt.compare(oldPassword, req.user.password);
     console.log(isMatch);
     if (isMatch === false) {
       throw new api400Error('Mật khẩu cũ không chính xác');
     }
+    const user = await User.findByPk(req.user.id);
     const salt = await bcrypt.genSalt(10);
     hashedPassword = await bcrypt.hash(req.body['password'], salt);
-    req.user['password'] = hashedPassword;
-    await req.user.save();
+    user['password'] = hashedPassword;
+    await user.save();
     res.json({ message: 'Đổi mật khẩu thành công' });
   } catch (error) {
     next(error);
@@ -36,15 +40,25 @@ exports.changePassword = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
-  const allowsUpdate = ['fullName', 'profilePicture', 'coverPicture', 'description', 'city', 'country'];
+  const allowsUpdate = [
+    'fullName',
+    'profilePicture',
+    'coverPicture',
+    'description',
+    'city',
+    'country',
+  ];
 
-  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
+  const isValidUpdate = updates.every((update) =>
+    allowsUpdate.includes(update)
+  );
 
   if (!isValidUpdate) throw new api400Error('Chỉnh sửa không hợp lệ');
 
   try {
-    updates.forEach((update) => (req.user[update] = req.body[update]));
-    await req.user.save();
+    const user = await User.findByPk(req.user.id);
+    updates.forEach((update) => (user[update] = req.body[update]));
+    await user.save();
     res.json({ data: req.user, message: 'Chỉnh sửa thành công' });
   } catch (error) {
     next(error);
@@ -66,9 +80,28 @@ exports.get = async (req, res, next) => {
       where: { username },
     });
     if (!user) throw new api404Error('Không thấy user');
-    const { id, profilePicture, coverPicture, fullName, city, country, email, description } = user;
+    const {
+      id,
+      profilePicture,
+      coverPicture,
+      fullName,
+      city,
+      country,
+      email,
+      description,
+    } = user;
     res.json({
-      data: { id, profilePicture, coverPicture, fullName, city, country, email, username, description },
+      data: {
+        id,
+        profilePicture,
+        coverPicture,
+        fullName,
+        city,
+        country,
+        email,
+        username,
+        description,
+      },
     });
   } catch (error) {
     next(error);
