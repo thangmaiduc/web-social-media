@@ -9,7 +9,6 @@ const userApi = {
   register: async (payload) => {
     const url = '/auth/register';
     const response =await axiosClient.post(url, payload);
-    console.log('response', response);
     return response;
   },
   forgotPassword: async (payload) => {

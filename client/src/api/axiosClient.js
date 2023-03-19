@@ -35,8 +35,6 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     const { response } = error;
-    console.log(error.response);
-    console.log(process.env.REACT_APP_API_URL);
     if (!response) {
       notify('Server đã xảy ra sự cố, vui lòng báo admin,');
       throw error;
