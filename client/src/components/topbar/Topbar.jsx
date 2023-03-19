@@ -14,40 +14,11 @@ export default function Topbar() {
   const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
   const history = useHistory()
-  const [newNotification, setNewNotification] = useState({})
   const [notifications, setNotifications] = useState([])
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const socketRef = useRef();
-  const [notificationArrive, setNotificationArrive] = useState(null);
 
 
-  useEffect(() => {
-    console.log(newNotification);
-    setNotifications([newNotification, ...notifications]);
-
-  }, [newNotification])
-
-  useEffect(() => {
-    const getNotification = async () => {
-      try {
-        const res = await postApi.viewNotify(
-
-        );
-        setNotifications([...res]);
-      } catch (err) {
-        console.log(err);
-      }
-
-
-    };
-    getNotification();
-
-  }, [])
-
-  useEffect(() => {
-    socketRef.current.emit('addUser', user.id);
-  }, [user]);
 
   const logout = () => {
     // localStorage.clear();
@@ -122,7 +93,7 @@ export default function Topbar() {
               horizontal: 'left',
             }}
           >
-            {notifications.map((n) => (
+            {/* {notifications.map((n) => (
               <Link key={n.id} to={`/post/${n.postId}`} style={{ color: 'black' }}>
                 <Typography className='notificationDiv' >
                   {n.text}
@@ -130,7 +101,7 @@ export default function Topbar() {
                 <Divider />
 
               </Link>
-            ))}
+            ))} */}
 
 
 

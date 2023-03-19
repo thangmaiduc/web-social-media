@@ -50,7 +50,6 @@ export default function Post() {
                     sort: orderBy,
                     direction: order
                 });
-                console.log('postApi', res);
                 setPosts(res.data);
                 setLength(res.length);
             } catch (err) {
@@ -72,7 +71,6 @@ export default function Post() {
            let res = await postApi.blockPost({postId});
             notify(res.message);
         } catch (error) {
-            console.log(error)
         }
     }
     const handleInfo = (post) => {

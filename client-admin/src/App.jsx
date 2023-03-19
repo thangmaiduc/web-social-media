@@ -18,7 +18,7 @@ function App() {
   // let user =null;
   const user = useSelector(userSlice.userSelector);
   const fetch = useSelector(userSlice.fetchSelector);
- 
+
   // console.log('fetch', fetch);
   // const user = {
   //   id: 1,
@@ -26,8 +26,6 @@ function App() {
   //   username: 'Safak Kocaoglu',
   // };
   useEffect(() => {
-    console.log(1);
-    console.log(_.get(user, 'username', null));
     if (_.get(user, 'username', null) !== null)
       dispatch(userSlice.getFriends(user.username));
   }, [user]);
@@ -35,24 +33,24 @@ function App() {
     <Router>
       <Switch>
         <Route exact path="/admin/dashboard">
-          {user ? <Dashboard />: <Login />}
+          {user ? <Dashboard /> : <Login />}
         </Route>
         <Route exact path="/">
-          {user ? <Dashboard />: <Login />}
+          {user ? <Dashboard /> : <Login />}
         </Route>
         <Route path="/login">{user ? <Redirect to="/admin/dashboard" /> : <Login />}</Route>
 
         <Route path="/admin/users">
-          {user ? <User/> : <Login />}
-          
+          {user ? <User /> : <Login />}
+
         </Route>
         {/* <Route path="/admin/table">
           <EnhancedTable/>
         </Route> */}
         <Route path="/admin/posts">
-        {user ? <Post/> : <Login />}
+          {user ? <Post /> : <Login />}
         </Route>
-        
+
       </Switch>
     </Router>
   );
