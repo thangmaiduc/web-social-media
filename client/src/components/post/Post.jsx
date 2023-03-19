@@ -35,7 +35,7 @@ const Post = forwardRef(({ post }, ref) => {
   const socketRef = useRef();
 
   useEffect(() => {
-    socketRef.current = io('ws://localhost:8900');
+    socketRef.current = io(`ws://${process.env.REACT_APP_SOCKET_URL}/`);
   }, []);
 
   useEffect(() => {

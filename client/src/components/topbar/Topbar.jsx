@@ -22,7 +22,7 @@ export default function Topbar() {
   const [notificationArrive, setNotificationArrive] = useState(null);
 
   useEffect(() => {
-    socketRef.current = io('ws://localhost:8900');
+    socketRef.current = io(`ws://${process.env.REACT_APP_SOCKET_URL}/`);
     socketRef.current.on('getNotification', (data) => {
       setNewNotification({
         postId: data.postId,
