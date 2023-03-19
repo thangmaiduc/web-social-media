@@ -34,9 +34,7 @@ const Post = forwardRef(({ post }, ref) => {
   const [editText, setEditText] = useState(post?.description)
   const socketRef = useRef();
 
-  useEffect(() => {
-    socketRef.current = io('ws://localhost:8900');
-  }, []);
+
 
   useEffect(() => {
 

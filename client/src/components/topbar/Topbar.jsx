@@ -21,19 +21,7 @@ export default function Topbar() {
   const socketRef = useRef();
   const [notificationArrive, setNotificationArrive] = useState(null);
 
-  useEffect(() => {
-    socketRef.current = io('ws://localhost:8900');
-    socketRef.current.on('getNotification', (data) => {
-      setNewNotification({
-        postId: data.postId,
-        text: data.text,
-        userId: data.userId,
-      });
-      // console.log(data);
-      // setNotifications([...notifications, data]);
 
-    });
-  }, []);
   useEffect(() => {
     console.log(newNotification);
     setNotifications([newNotification, ...notifications]);
