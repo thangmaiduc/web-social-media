@@ -51,7 +51,7 @@ axiosClient.interceptors.response.use(
     }
     if (status === 417) {
       localStorage.clear();
-      window.location.reload();
+      // window.location.reload();
     }
 
     throw error;
