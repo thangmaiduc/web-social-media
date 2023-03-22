@@ -3,9 +3,9 @@ import Topbar from '../../components/topbar/Topbar';
 import Conversation from '../../components/conversations/Conversation';
 import Message from '../../components/message/Message';
 import ChatOnline from '../../components/chatOnline/ChatOnline';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useContext } from 'react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import { SocketContext } from '../../utility/socket';
 import { useSelector } from 'react-redux';
 import { userSelector, friendSelector } from '../../redux/slices/userSlice';
 import useTyping from '../../hooks/useTyping';
@@ -29,7 +29,6 @@ export default function Messenger() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [file, setFile] = useState();
   const [fileUrl, setFileUrl] = useState('');
-  const socketRef = useRef();
   const user = useSelector(userSelector);
   const friends = useSelector(friendSelector);
   const scrollRef = useRef();
@@ -43,9 +42,10 @@ export default function Messenger() {
   const [lengthMes, setLengthMes] = useState(0)
   const [pageMessage, setPageMessage] = useState(0)
   const [isEdited, setIsEdited] = useState(false)
+  const socket = useContext(SocketContext);
 
   const sendMessage = async () => {
-    if (!socketRef.current) return;
+    if (!socket) return;
     let messageObject = {
       senderId: user.id,
       conversationId: currentChat.conversationId,
@@ -68,7 +68,7 @@ export default function Messenger() {
       setNewMessage('');
       setFile();
     }
-    socketRef.current.emit('sendMessage', objMesSocket);
+    socket.emit('sendMessage', objMesSocket);
     const message = await conversationApi.newMessage(messageObject)
     setMessages(m => [...m, message])
   };
@@ -79,8 +79,8 @@ export default function Messenger() {
   };
 
   useEffect(() => {
-    socketRef.current = io('ws://localhost:8080');
-    socketRef.current.on('getMessage', (data) => {
+    if (!socket) return;
+    socket.on('getMessage', (data) => {
       setArrivalMessage({
         sender: data.senderId,
         text: data.text,
@@ -111,7 +111,8 @@ export default function Messenger() {
   }, [arrivalMessage, currentChat]);
 
   useEffect(() => {
-    socketRef.current.emit('addUser', user.id);
+    if (!socket) return;
+    socket.emit('addUser', user.id);
   }, [user]);
 
   useEffect(() => {
@@ -143,17 +144,17 @@ export default function Messenger() {
   }, [currentChat]);
 
   const startTypingMessage = () => {
-    if (!socketRef.current) return;
-    socketRef.current.emit('start typing message', {
-      senderId: socketRef.current.id,
+    if (!socket) return;
+    socket.emit('start typing message', {
+      senderId: socket.id,
       user,
     });
   };
 
   const stopTypingMessage = () => {
-    if (!socketRef.current) return;
-    socketRef.current.emit('stop typing message', {
-      senderId: socketRef.current.id,
+    if (!socket) return;
+    socket.emit('stop typing message', {
+      senderId: socket.id,
       user,
     });
   };
