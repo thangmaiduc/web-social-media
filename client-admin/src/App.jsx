@@ -25,10 +25,10 @@ function App() {
   //   profilePicture: 'assets/person/1.jpeg',
   //   username: 'Safak Kocaoglu',
   // };
-  useEffect(() => {
-    if (_.get(user, 'username', null) !== null)
-      dispatch(userSlice.getFriends(user.username));
-  }, [user]);
+  // useEffect(() => {
+  //   if (_.get(user, 'username', null) !== null)
+  //     dispatch(userSlice.getFriends(user.username));
+  // }, [user]);
   return (
     <Router>
       <Switch>

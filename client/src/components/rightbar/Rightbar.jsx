@@ -14,7 +14,7 @@ export default function Rightbar({ user }) {
   const [followed, setFollowed] = useState(false);
   const [friends, setFriends] = useState(false);
   const handleClick = async () => {
-  try {
+    try {
       if (followed) {
         await userApi.unfollow(user.id)
       } else {
@@ -30,13 +30,13 @@ export default function Rightbar({ user }) {
   }, [user])
   useEffect(() => {
     const getFriends = async () => {
-      try{
-    
+      try {
+        if (user && !user.username) return;
         const res = await userApi.getFriends(user.username);
         setFriends(res.data);
-       }
-       catch (err) {
-       }
+      }
+      catch (err) {
+      }
     }
     getFriends()
   }, [user])
@@ -46,11 +46,11 @@ export default function Rightbar({ user }) {
         <div className="birthdayContainer">
           <img className="birthdayImg" src="https://res.cloudinary.com/dzens2tsj/image/upload/v1662131052/gift_ylzqt4.png" alt="" />
           <span className="birthdayText">
-          <b>Pola Foster</b> and <b>3 other friends</b> have a birhday today.
+            <b>Pola Foster</b> and <b>3 other friends</b> have a birhday today.
           </span>
         </div>
         <img className="rightbarAd" src="https://res.cloudinary.com/dzens2tsj/image/upload/v1662131032/ad_i4lplt.png" alt="" />
-        
+
         <h4 className="rightbarTitle">Online Friends</h4>
         <ul className="rightbarFriendList">
           {friendsCur.map((u) => (
@@ -65,7 +65,7 @@ export default function Rightbar({ user }) {
     return (
       <>
         {user.id !== currentUser.id && (
-          <button className="rightbarFollowButton" onClick={handleClick}>
+          <button className="rightbarFollowButton rightbarFollow" onClick={handleClick}>
             {followed ? "Unfollow" : "Follow"}
             {followed ? <Remove /> : <Add />}
           </button>
@@ -84,7 +84,7 @@ export default function Rightbar({ user }) {
         </div>
         <h4 className="rightbarTitle">User friends</h4>
         <div className="rightbarFollowings">
-          {friends&&friends.map((friend) => (
+          {friends && friends.map((friend) => (
             <Link
               to={"/profile/" + friend.username}
               style={{ textDecoration: "none" }}

@@ -8,7 +8,7 @@ export default function Message({ message, own }) {
   return (
     <div className={own ? 'message own' : 'message'}>
       <div className='messageTop'>
-        <Tooltip title={message?.User?.fullName }>
+        <Tooltip title={message.User.fullName || ''}>
 
           <img className='messageImg' src={message?.User?.img || message.profilePicture} alt='' />
         </Tooltip>

@@ -22,7 +22,13 @@ app.use(morgan('common'));
 
 app.use(express.json());
 
-app.use(cookieSession({ name: 'session', keys: ['thangmd'], maxAge: 24 * 60 * 60 * 100 }));
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['thangmd'],
+    maxAge: 24 * 60 * 60 * 100,
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -70,7 +76,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use((error, req, res) => {
+app.use((error, req, res, next) => {
   // console.error(error);
   const status = error.statusCode || 500;
   const message = error.message;
@@ -85,6 +91,9 @@ app.use((error, req, res) => {
     });
     res.status(status).json({ message: message });
     return;
+  }
+  if (status !== 417) {
+    console.error(error);
   }
   res.status(status).json({ message: message });
 });
@@ -102,3 +111,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('app listening on port ' + PORT);
 });
+
+// module.exports = app;

@@ -10,16 +10,16 @@ export const ProfileModal = ({
   setCurUser,
   editUser
 }) => {
-  const [fullName, setFullName] = useState(user.fullName)
-  const [description, setDescription] = useState(user.description)
-  const [city, setCity] = useState(user.city)
-  const [country, setCountry] = useState(user.country)
+  const [fullName, setFullName] = useState(user.fullName || '')
+  const [description, setDescription] = useState(user.description || '')
+  const [city, setCity] = useState(user.city || '')
+  const [country, setCountry] = useState(user.country || '')
   const [oldPass, setOldPass] = useState('')
   const [newPass, setNewPass] = useState('')
   // const [editText,setEditText] = useState(postObj.description)
   return (
     <Modal>
-      <form class="form-profile">
+      <form className="form-profile">
         <Stack spacing={2}>
           <TextField id="outlined-read-only-input" label="Email" variant="standard" value={user.email} InputProps={{
             readOnly: true,
@@ -45,9 +45,11 @@ export const ProfileModal = ({
             autoComplete="current-password"
             value={newPass} onChange={(e) => setNewPass(e.target.value)}
           /> */}
-          <button className="editModal" onClick={(e) => { e.preventDefault(); editUser(
-            fullName, description, city,country,
-          )  }}> Lưu thông tin
+          <button className="editModal" onClick={(e) => {
+            e.preventDefault(); editUser(
+              fullName, description, city, country,
+            )
+          }}> Lưu thông tin
           </button>
         </Stack>
 
