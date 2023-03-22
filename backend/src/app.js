@@ -8,13 +8,19 @@ const swaggerFile = require('../swagger_output.json');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
 const redisClient = require('./utils/redis');
+
 // const session = require('express-session');
 require('./passport-config');
 const express = require('express');
-
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server, {
+  cors: {
+    origin: '*',
+  },
+});
 const SERVER_HOST = process.env.SERVER_HOST;
 
-const app = express();
 // const redisClient = redis.createClient(6379);
 // dotenv.config();
 app.use(helmet());
@@ -107,9 +113,79 @@ db.sync({ force: false, alter: false })
     console.log('Syncing database was fail');
   });
 
+// * SOCKET
+
+let users = [];
+
+const addUser = (userId, socketId) => {
+  !users.some((user) => user.userId === userId) &&
+    users.push({ userId, socketId });
+};
+
+const removeUser = (socketId) => {
+  users = users.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (userId) => {
+  return users.find((user) => user.userId === userId);
+};
+
+io.on('connection', (socket) => {
+  try {
+    //when ceonnect
+    console.log('a user connected.');
+
+    socket.on('addUser', (userId) => {
+      console.log('[Event addUser]: ', JSON.stringify(userId));
+      addUser(userId, socket.id);
+      io.emit('getUsers', users);
+      console.log('users::::::::::: ', users);
+    });
+
+    socket.on('pushNotification', ({ userId, postId, text }) => {
+      console.log(
+        '[Event pushNotification]: ',
+        JSON.stringify({ userId, postId, text })
+      );
+      const user = getUser(userId);
+      if (user) {
+        io.to(user.socketId).emit('getNotification', {
+          userId,
+          postId,
+          text,
+        });
+        console.log('[getNotification] đã send thông báo');
+      }
+    });
+
+    socket.on('sendMessage', ({ senderId, receiverId, text, fileUrl }) => {
+      const user = getUser(receiverId);
+      console.log(
+        '[Event sendMessage]: ',
+        JSON.stringify({ senderId, receiverId, text, fileUrl })
+      );
+      if (user)
+        io.to(user.socketId).emit('getMessage', {
+          senderId,
+          text,
+          fileUrl,
+        });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('a user disconnected!');
+      removeUser(socket.id);
+      io.emit('getUsers', users);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+//* ########==========#######
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log('app listening on port ' + PORT);
 });
 
-// module.exports = app;
+module.exports = io;

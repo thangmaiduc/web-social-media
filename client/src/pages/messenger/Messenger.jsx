@@ -79,7 +79,7 @@ export default function Messenger() {
   };
 
   useEffect(() => {
-    socketRef.current = io('ws://localhost:8900');
+    socketRef.current = io('ws://localhost:8080');
     socketRef.current.on('getMessage', (data) => {
       setArrivalMessage({
         sender: data.senderId,
