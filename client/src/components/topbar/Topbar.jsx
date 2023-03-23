@@ -21,9 +21,8 @@ export default function Topbar() {
 
 
   const logout = () => {
-    // localStorage.clear();
     dispatch(userSlice.actions.logout())
-    window.open("http://localhost:8080/api/auth/logout", "_self");
+    // window.open("http://localhost:8080/api/auth/logout", "_self");
 
   }
   const handleSearch = (e) => {
