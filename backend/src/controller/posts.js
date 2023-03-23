@@ -90,7 +90,10 @@ exports.viewed = async (req, res, next) => {
       limit,
       offset,
     });
-    Notification.update({ isView: true }, { where: { userId: req.user.id, isView: false } });
+    Notification.update(
+      { isView: true },
+      { where: { userId: req.user.id, isView: false } }
+    );
     res.status(200).json({ data: notification });
   } catch (error) {
     next(error);
@@ -98,7 +101,10 @@ exports.viewed = async (req, res, next) => {
 };
 exports.numNotifications = async (req, res, next) => {
   try {
-    const numNotifications = await Notification.count({ userId: req.user.id, isView: false });
+    const numNotifications = await Notification.count({
+      userId: req.user.id,
+      isView: false,
+    });
 
     res.status(200).json({ data: numNotifications });
   } catch (error) {
@@ -158,14 +164,17 @@ exports.update = async (req, res, next) => {
   const updates = Object.keys(req.body);
   const allowsUpdate = ['description'];
   description = req.body.description;
-  const isValidUpdate = updates.every((update) => allowsUpdate.includes(update));
+  const isValidUpdate = updates.every((update) =>
+    allowsUpdate.includes(update)
+  );
   try {
     if (!isValidUpdate) {
       throw new api400Error('Thay đổi không hợp lệ"');
     }
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id) {
       updates.forEach((update) => (post[update] = req.body[update]));
       await post.save();
@@ -182,7 +191,8 @@ exports.delete = async (req, res, next) => {
   try {
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     if (post.userId === req.user.id || req.user.isAdmin === true) {
       await CommentPost.destroy({
         where: {
@@ -203,7 +213,8 @@ exports.get = async (req, res, next) => {
   try {
     let id = req.params.id;
     const post = await Post.findByPk(id);
-    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     res.status(200).json({ data: { post } });
   } catch (error) {
     next(error);
@@ -213,7 +224,8 @@ exports.getLikePost = async (req, res, next) => {
   try {
     let postId = req.params.id;
     const post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     const likesPost = await LikePost.findAll({
       where: { postId },
     });
@@ -229,11 +241,14 @@ exports.like = async (req, res, next) => {
     const postId = req.params.id;
     let UserId = req.user.id;
     if (req.user.isBlockInteration) {
-      const ttl = await redis.getTTL(`BLOCK_INTERACTION_USER_ID_${req.user.id}`);
+      const ttl = await redis.getTTL(
+        `BLOCK_INTERACTION_USER_ID_${req.user.id}`
+      );
       throw new api401Error(`Bạn bị cấm tương tác trong ${format(ttl)}`);
     }
     let post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     let likedPost = await LikePost.findAll({
       where: {
         postId,
@@ -258,7 +273,8 @@ exports.report = async (req, res, next) => {
     const postId = req.params.id;
     let userId = req.user.id;
     let post = await Post.findByPk(postId);
-    if (!post || _.get(post, 'isBlock', false) === true) throw new api404Error('Không thấy bài viết nào');
+    if (!post || _.get(post, 'isBlock', false) === true)
+      throw new api404Error('Không thấy bài viết nào');
     let reportPost = await ReportPost.findAll({
       where: {
         postId,
@@ -299,67 +315,67 @@ exports.countLike = async (req, res, next) => {
   }
 };
 // get posts timeline
-exports.getTimeLine = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const userPost = await Post.findAll({ where: { userId, isBlock: false }, raw: true });
-    // console.log(userPost);
-    const friends = await sequelize.query(
-      `select followedId, fullName, profilePicture from Followers fw
-      join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
-    // console.log(friends);
-    const friendPosts = await Promise.all(
-      friends.map(async (friend) => {
-        return Post.findAll({
-          where: { userId: friend.followedId, isBlock: false },
-          raw: true,
-        });
-      })
-    );
+// exports.getTimeLine = async (req, res, next) => {
+//   try {
+//     const userId = req.user.id;
+//     const userPost = await Post.findAll({ where: { userId, isBlock: false }, raw: true });
+//     // console.log(userPost);
+//     const friends = await sequelize.query(
+//       `select followedId, fullName, profilePicture from Followers fw
+//       join Users  u on fw.followedId = u.id WHERE isBlock = false  and fw.followingId = ${userId}`,
+//       {
+//         type: QueryTypes.SELECT,
+//       }
+//     );
+//     // console.log(friends);
+//     const friendPosts = await Promise.all(
+//       friends.map(async (friend) => {
+//         return Post.findAll({
+//           where: { userId: friend.followedId, isBlock: false },
+//           raw: true,
+//         });
+//       })
+//     );
 
-    // console.log(friendPosts);
-    let data = userPost.concat(...friendPosts);
-    _.forEach(data, (item) => {
-      const friend = _.find(friends, { followedId: item.userId });
-      if (friend) {
-        // _.set(item, 'profilePicture', friend.profilePicture);
-        // _.set(item, 'fullName', friend.fullName);
-        item.profilePicture = _.get(friend, 'profilePicture', '');
-        item.fullName = _.get(friend, 'fullName', '');
-      } else {
-        item.profilePicture = _.get(req.user, 'profilePicture', '');
-        item.fullName = _.get(req.user, 'fullName', '');
-      }
-      console.log(item);
-    });
-    data = await Promise.all(
-      data.map(async (p) => {
-        numLike = await LikePost.count({
-          where: {
-            postId: p.id,
-          },
-        });
-        numComment = await CommentPost.count({
-          where: {
-            postId: p.id,
-          },
-        });
-        return { ...p, numLike, numComment };
-      })
-    );
-    data.sort((p1, p2) => {
-      return new Date(p2.createdAt) - new Date(p1.createdAt);
-    });
+//     // console.log(friendPosts);
+//     let data = userPost.concat(...friendPosts);
+//     _.forEach(data, (item) => {
+//       const friend = _.find(friends, { followedId: item.userId });
+//       if (friend) {
+//         // _.set(item, 'profilePicture', friend.profilePicture);
+//         // _.set(item, 'fullName', friend.fullName);
+//         item.profilePicture = _.get(friend, 'profilePicture', '');
+//         item.fullName = _.get(friend, 'fullName', '');
+//       } else {
+//         item.profilePicture = _.get(req.user, 'profilePicture', '');
+//         item.fullName = _.get(req.user, 'fullName', '');
+//       }
+//       console.log(item);
+//     });
+//     data = await Promise.all(
+//       data.map(async (p) => {
+//         numLike = await LikePost.count({
+//           where: {
+//             postId: p.id,
+//           },
+//         });
+//         numComment = await CommentPost.count({
+//           where: {
+//             postId: p.id,
+//           },
+//         });
+//         return { ...p, numLike, numComment };
+//       })
+//     );
+//     data.sort((p1, p2) => {
+//       return new Date(p2.createdAt) - new Date(p1.createdAt);
+//     });
 
-    res.status(200).json({ data });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json({ data });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 exports.queryTimeLine = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -427,9 +443,33 @@ exports.queryTimeLine = async (req, res, next) => {
       group: 'id',
       limit,
       offset,
+      raw: true,
+      nest: true,
     });
 
-    res.status(200).json({ data: posts });
+    const postIds = posts.map((post) => post.id);
+
+    const userLikePosts = await LikePost.findAll({
+      where: {
+        postId: {
+          [Op.in]: postIds,
+        },
+        UserId: userId,
+      },
+      attributes: ['postId'],
+    });
+
+    const userLikePostIds = userLikePosts.map((item) => item.postId);
+    const postsAddIsLiked = posts.map((post) => {
+      let isLiked = false;
+      if (userLikePostIds.includes(post.id)) isLiked = true;
+      return {
+        ...post,
+        isLiked,
+      };
+    });
+
+    res.status(200).json({ data: postsAddIsLiked });
   } catch (error) {
     next(error);
   }

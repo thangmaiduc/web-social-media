@@ -43,9 +43,9 @@ export default function Feed({ username }) {
         {(!username || username === user.username) && <Share />}
         {data.map((p, index) => {
           if (data.length === index + 1) {
-            return <Post ref={lastBookElementRef} key={index} post={p} />
+            return <Post ref={lastBookElementRef} key={index} post={p} username={username}/>
           } else {
-            return <Post key={index} post={p} />
+            return <Post key={index} post={p} username={username}/>
           }
         })}
 

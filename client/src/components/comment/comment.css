@@ -13,8 +13,10 @@
   margin-right: 15px;
 }
 .commentTop,
-.commentCenter {
+.body {
   display: flex;
+}
+.commentCenter {
   padding: 10px;
 }
 .commentInput {
@@ -24,14 +26,26 @@
   border-radius: 30px;
   display: flex;
   align-items: center;
+  outline: none;
 }
-/* .commentCenterBottom{
-  background-color: rgb(38, 86, 189);
-} */
+.commentCenterBottom {
+  background-color: #f0f2f5;
+  position: relative;
+  padding: 10px;
+  border-radius: 10px;
+  width: fit-content;
+}
+.commentCenterBottomWrapper{
+  width: 100%;
+}
+.commentBottom {
+  margin-left: 42px;
+}
 .commentImg,
 .commentOwner,
 .seeMoreComment,
-.commentOwnerImg,.commentOption {
+.commentOwnerImg,
+.commentOption {
   cursor: pointer;
 }
 .showMoreBtn:hover,
@@ -46,19 +60,26 @@
 .commentHr {
   margin: 10px 0;
 }
-.commentWrapper{
+.commentWrapper {
   padding: 15px;
 }
-.commentOption{
+.commentOption {
   display: none;
+  position: absolute;
+  right: -5px;
+  transform: translateX(100%);
+  /* width: 24px; */
 }
-.commentCenterBottomRight{
+.commentCenterBottomRight {
   display: flex;
 }
-.commentCenterBottomRight:hover .commentOption{
+.commentCenterBottomWrapper:hover .commentOption {
   display: flex;
-  margin-left: 30px;
+  /* margin-left: 30px; */
+  animation: ease-in 1s;
 }
 
-
-
+/* .btn{
+  width: 20px;
+  height: 15px;
+} */

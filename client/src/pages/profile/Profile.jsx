@@ -37,7 +37,6 @@ export default function Profile() {
   useEffect(() => {
     const fetchUser = async () => {
       const res = await userApi.getUser(username);
-      console.log('user', res);
       setUser(res);
     };
     fetchUser();
@@ -45,8 +44,8 @@ export default function Profile() {
 
   const handleUploadProfilePicture = async () => {
     try {
-      
-      
+
+
       console.log('urlFile', urlFile);
       let obj = {};
       if (isCover && urlFile !== '') obj.coverPicture = urlFile;

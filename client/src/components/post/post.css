@@ -14,14 +14,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
 }
 
 .postTopLeft {
   display: flex;
   align-items: center;
 }
-
+.followPost {
+  margin: 0 !important;
+}
 .postProfileImg {
   width: 32px;
   height: 32px;
@@ -63,9 +64,8 @@
 }
 
 .likeIcon {
-  width: 24px;
-  height: 24px;
-  margin-right: 5px;
+  /* width: 24px;
+  height: 24px; */
   cursor: pointer;
 }
 
@@ -79,23 +79,20 @@
   font-size: 15px;
 }
 .postTopRight {
-  display: none;
-  
+  display: flex;
 }
 .postWrapper:hover .postTopRight {
   display: flex;
- 
 }
-.editButton, .removeButton{
+.editButton,
+.removeButton {
   cursor: pointer;
   align-self: end;
- 
 }
-.optionButton{
+.optionButton {
   display: flex;
+  height: 30px;
 }
-.reportButton{
-  margin-top: 30px;
-    margin-bottom: 10px;
-    margin-right: 20px;
+.reportButton {
+  margin-right: 20px;
 }

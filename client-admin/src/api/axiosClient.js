@@ -18,7 +18,6 @@ axiosClient.interceptors.request.use(async (config) => {
   const customHeaders = {};
 
   const accessToken = localStorage.getItem('token');
-  console.log({ accessToken });
   if (accessToken) {
     customHeaders.Authorization = accessToken;
   }

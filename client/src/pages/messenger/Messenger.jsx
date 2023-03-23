@@ -3,9 +3,9 @@ import Topbar from '../../components/topbar/Topbar';
 import Conversation from '../../components/conversations/Conversation';
 import Message from '../../components/message/Message';
 import ChatOnline from '../../components/chatOnline/ChatOnline';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useContext } from 'react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import { SocketContext } from '../../utility/socket';
 import { useSelector } from 'react-redux';
 import { userSelector, friendSelector } from '../../redux/slices/userSlice';
 import useTyping from '../../hooks/useTyping';
@@ -29,7 +29,6 @@ export default function Messenger() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [file, setFile] = useState();
   const [fileUrl, setFileUrl] = useState('');
-  const socketRef = useRef();
   const user = useSelector(userSelector);
   const friends = useSelector(friendSelector);
   const scrollRef = useRef();
@@ -43,8 +42,10 @@ export default function Messenger() {
   const [lengthMes, setLengthMes] = useState(0)
   const [pageMessage, setPageMessage] = useState(0)
   const [isEdited, setIsEdited] = useState(false)
+  const socket = useContext(SocketContext);
+
   const sendMessage = async () => {
-    if (!socketRef.current) return;
+    if (!socket) return;
     let messageObject = {
       senderId: user.id,
       conversationId: currentChat.conversationId,
@@ -67,7 +68,7 @@ export default function Messenger() {
       setNewMessage('');
       setFile();
     }
-    socketRef.current.emit('sendMessage', objMesSocket);
+    socket.emit('sendMessage', objMesSocket);
     const message = await conversationApi.newMessage(messageObject)
     setMessages(m => [...m, message])
   };
@@ -78,14 +79,16 @@ export default function Messenger() {
   };
 
   useEffect(() => {
-    socketRef.current = io(`ws://${process.env.REACT_APP_SOCKET_URL}/`);
-    socketRef.current.on('getMessage', (data) => {
+    if (!socket) return;
+    socket.on('getMessage', (data) => {
       setArrivalMessage({
         sender: data.senderId,
         text: data.text,
         fileUrl: data.fileUrl
       });
     });
+    if (conversations.length > 0) setCurrentChat(conversations[0]);
+
   }, []);
 
   useEffect(() => {
@@ -108,7 +111,8 @@ export default function Messenger() {
   }, [arrivalMessage, currentChat]);
 
   useEffect(() => {
-    socketRef.current.emit('addUser', user.id);
+    if (!socket) return;
+    socket.emit('addUser', user.id);
   }, [user]);
 
   useEffect(() => {
@@ -123,6 +127,8 @@ export default function Messenger() {
   useEffect(() => {
     const getMessages = async () => {
       try {
+        if (!currentChat) return;
+        if (currentChat && !currentChat.conversationId) return;
         const res = await conversationApi.getMessage(
           currentChat?.conversationId
         );
@@ -138,17 +144,17 @@ export default function Messenger() {
   }, [currentChat]);
 
   const startTypingMessage = () => {
-    if (!socketRef.current) return;
-    socketRef.current.emit('start typing message', {
-      senderId: socketRef.current.id,
+    if (!socket) return;
+    socket.emit('start typing message', {
+      senderId: socket.id,
       user,
     });
   };
 
   const stopTypingMessage = () => {
-    if (!socketRef.current) return;
-    socketRef.current.emit('stop typing message', {
-      senderId: socketRef.current.id,
+    if (!socket) return;
+    socket.emit('stop typing message', {
+      senderId: socket.id,
       user,
     });
   };
@@ -188,7 +194,7 @@ export default function Messenger() {
         let memberIds = value.map(member => member.followedId)
         let res = await conversationApi.newConversation({ users: memberIds });
         notify(res.message);
-        setConversations(pre => [,...pre, res.data])
+        setConversations(pre => [...pre, res.data])
         setCurrentChat(res.data)
       } else {
         let memberIds = value.map(member => member.followedId)
@@ -230,6 +236,7 @@ export default function Messenger() {
   useEffect(() => {
     const getMessages = async () => {
       try {
+        if (pageMessage === 0) return;
         const res = await conversationApi.getMessage(
           currentChat?.conversationId, {
           params: {
@@ -252,21 +259,20 @@ export default function Messenger() {
     }
   }
 
-  const handleRename =async () => {
+  const handleRename = async () => {
     setIsEdited(false);
     try {
-      const res = await conversationApi.editConversation(currentChat.conversationId, {title});
+      const res = await conversationApi.editConversation(currentChat.conversationId, { title });
       notify(res.message);
-      conversations.forEach(c=>{
-        if( c.conversationId === res.data.id)
-        {
+      conversations.forEach(c => {
+        if (c.conversationId === res.data.id) {
           c.title = res.data.title;
           setCurrentChat(c);
         }
       })
       setConversations(conversations)
     } catch (error) {
-      
+
     }
   }
 
@@ -295,7 +301,7 @@ export default function Messenger() {
             </div>
             {conversations.length > 0 &&
               conversations.map((c, i) => (
-                <div ref={lastBookElementRef} key={i} onClick={() => { setIsAdd(false); setCurrentChat(c) ; setIsEdited(false) }}>
+                <div ref={lastBookElementRef} key={i} onClick={() => { setIsAdd(false); setCurrentChat(c); setIsEdited(false) }}>
                   <Conversation conversation={c} currentUser={user} />
                 </div>
               ))}
@@ -340,7 +346,7 @@ export default function Messenger() {
               <>
                 {currentChat.type === 'private' ?
                   <div className="chatTitle">
-                    <img className="sidebarFriendImg" src={currentChat?.User?.profilePicture|| currentChat?.img} alt="" />
+                    <img className="sidebarFriendImg" src={currentChat?.User?.profilePicture || currentChat?.img} alt="" />
                     <span className="sidebarFriendName">{currentChat?.User?.fullName || currentChat?.title}</span>
                   </div> :
                   <div className="chatTitle">
@@ -348,8 +354,8 @@ export default function Messenger() {
                     {!isEdited ? <span className="sidebarFriendName">{currentChat?.title}</span> :
                       <div>
 
-                        <TextField id="outlined-search"  value={title} onChange={(e)=>setTitle(e.target.value)}/>
-                       
+                        <TextField id="outlined-search" value={title} onChange={(e) => setTitle(e.target.value)} />
+
                         < Button size='small' variant="contained"
                           color='primary'
                           onClick={
@@ -360,13 +366,13 @@ export default function Messenger() {
                       </div>
                     }
                     <div className="chatTitleRight">
-                    {(currentChat?.Conversation?.creatorId === user?.id|| currentChat?.creatorId === user?.id)&&
-                      <div className="editButton" onClick={() => setIsEdited(true)} >
-                        <Tooltip title="Sửa tên nhóm">
+                      {(currentChat?.Conversation?.creatorId === user?.id || currentChat?.creatorId === user?.id) &&
+                        <div className="editButton" onClick={() => setIsEdited(true)} >
+                          <Tooltip title="Sửa tên nhóm">
 
-                          <Edit />
-                        </Tooltip>
-                      </div>}
+                            <Edit />
+                          </Tooltip>
+                        </div>}
                       <div className="removeButton" >
                         <Tooltip title="Thêm thành viên" onClick={handleAddMember}>
                           <PersonAdd />

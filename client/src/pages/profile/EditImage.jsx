@@ -27,8 +27,8 @@ export const EditImage = ({
     }
     return (
         <Modal>
-            <form class="form-profile">
-                {!file && < Button size='small' color='success' variant="contained"
+            <form className="form-profile">
+                {!file && < Button size='small' color='primary' variant="contained"
                 >
                     <label htmlFor='file1'  >
                         Upload

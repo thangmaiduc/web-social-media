@@ -1,5 +1,5 @@
 import "./post.css";
-import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit, Report } from "@material-ui/icons";
+import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit, Report, ThumbUpOutlined, ThumbUp } from "@material-ui/icons";
 import { Users } from "../../dummyData";
 import { useEffect, useRef, useState } from "react";
 import Comment from '../comment/Comment'
@@ -14,15 +14,16 @@ import { notify } from '../../utility/toast';
 import { Link } from 'react-router-dom';
 import { forwardRef } from 'react';
 import { io } from 'socket.io-client';
+import { Button } from '@material-ui/core';
 
-const Post = forwardRef(({ post }, ref) => {
+const Post = forwardRef(({ post, username }, ref) => {
   const user = useSelector(userSelector)
   const friends = useSelector(friendSelector)
   const [like, setLike] = useState(post.numLike || 0)
   const [comments, setComments] = useState([])
   const [isComment, setIsComment] = useState(false)
   const [option, setOption] = useState(false)
-  const [isLiked, setIsLiked] = useState(false)
+  const [isLiked, setIsLiked] = useState(post.isLiked)
   const [currentPost, setCurrentPost] = useState(null);
   const [postObj, setPostObj] = useState(null);
   const [deleted, setDeleted] = useState(false)
@@ -34,9 +35,7 @@ const Post = forwardRef(({ post }, ref) => {
   const [editText, setEditText] = useState(post?.description)
   const socketRef = useRef();
 
-  useEffect(() => {
-    socketRef.current = io(`ws://${process.env.REACT_APP_SOCKET_URL}/`);
-  }, []);
+
 
   useEffect(() => {
 
@@ -59,30 +58,31 @@ const Post = forwardRef(({ post }, ref) => {
       getComments();
   }, [currentPost, page,]);
 
-  useEffect(() => {
-    const fetchLike = async () => {
-      let res = await postApi.getLikePost(post.id);
-      let usersLikeId = res.data.map(f => f.UserId)
-      let check = usersLikeId.includes(user?.id)
-      setIsLiked(check)
-    }
-    fetchLike()
-  }, [user?.id, post?.id])
+  // useEffect(() => {
+  //   const fetchLike = async () => {
+  //     let res = await postApi.getLikePost(post.id);
+  //     let usersLikeId = res.data.map(f => f.UserId)
+  //     let check = usersLikeId.includes(user?.id)
+  //     setIsLiked(check)
+  //   }
+  //   fetchLike()
+  // }, [user?.id, post?.id])
 
 
   const likeHandler = async () => {
     try {
-      await postApi.likePost(post.id)
-      await postApi.getLikePost(post.id)
-      if (!isLiked)
-        socketRef.current.emit('pushNotification', { userId: post.userId, postId: post.id, text: `${user.fullName} đã like bài viết của bạn: ${post.description.substring(0,30)}` });
+      await postApi.likePost(post.id);
+      // await postApi.getLikePost(post.id)
+      // if (!isLiked)
+      //   socketRef.current.emit('pushNotification', { userId: post.userId, postId: post.id, text: `${user.fullName} đã like bài viết của bạn: ${post.description.substring(0, 30)}` });
 
     } catch (error) {
 
     }
-
     setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
+
+
   }
 
 
@@ -196,13 +196,15 @@ const Post = forwardRef(({ post }, ref) => {
                 <div className="optionButton">
                   <div className="reportButton" onClick={handleReportPost}>
                     <Tooltip title="Báo cáo bài viết">
-                      <Report />
+                      <Report fontSize='small' />
                     </Tooltip>
                   </div>
-                  <button className="rightbarFollowButton" onClick={handleUnfollow}>
-                    {followed ? "Unfollow" : "Follow"}
-                    {followed ? <Remove fontSize='small' /> : <Add fontSize='small' />}
-                  </button>
+                  {!!!username ?
+                    <button className="rightbarFollowButton followPost" onClick={handleUnfollow}>
+                      {followed ? "Unfollow" : "Follow"}
+                      {followed ? <Remove fontSize='small' /> : <Add fontSize='small' />}
+                    </button> : null
+                  }
                 </div> :
                 <div className="optionButton">
                   <div className="removeButton" onClick={handleDeletePost}>
@@ -230,12 +232,12 @@ const Post = forwardRef(({ post }, ref) => {
         </div>
         <div className="postBottom">
           <div className="postBottomLeft">
-            <img
+
+            <Button
               className="likeIcon"
-              src="https://res.cloudinary.com/dzens2tsj/image/upload/v1660559011/like_jbx2ph.png"
-              onClick={likeHandler}
-              alt=""
-            />
+            >{!isLiked ? <ThumbUpOutlined fontSize='small' color='primary' onClick={likeHandler} /> : <ThumbUp fontSize='small' color='primary' onClick={likeHandler} />}
+
+            </Button>
 
             <span className="postLikeCounter">{like} people like it</span>
           </div>

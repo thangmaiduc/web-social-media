@@ -15,7 +15,6 @@ export default function Topbar() {
   const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
   const history = useHistory()
-  const [newNotification, setNewNotification] = useState({})
   const [notifications, setNotifications] = useState([])
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -53,19 +52,10 @@ export default function Topbar() {
       }
 
 
-    };
-    getNotification();
-
-  }, [])
-
-  useEffect(() => {
-    socketRef.current.emit('addUser', user.id);
-  }, [user]);
 
   const logout = () => {
-    // localStorage.clear();
     dispatch(userSlice.actions.logout())
-    window.open("http://localhost:8080/api/auth/logout", "_self");
+    // window.open("http://localhost:8080/api/auth/logout", "_self");
 
   }
   const handleSearch = (e) => {

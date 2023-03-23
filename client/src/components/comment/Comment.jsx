@@ -14,11 +14,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
   const [isShow, setIsShow] = useState(false);
   const [comment, setComment] = useState({})
   const [newComment, setNewComment] = useState('')
-  // useEffect(() => {
-  //   const getFriends = async () => {
-  //     const res = await axios.get("/users/friends/" + currentId);
-  //     setFriends(res.data);
-  //   };
+
   const editComment = async (commentId, text) => {
 
     try {
@@ -42,48 +38,51 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
   }
 
   const detailComment = (
-    comments?.length > 0 && comments.map(c => (
+    comments?.length > 0 ? comments.map(c => (
       <div key={c.id} className="commentCenter">
 
-        <img className='commentOwnerImg' src={c?.user?.profilePicture} alt="" />
+        <div className='body'>
+          <img className='commentOwnerImg' src={c?.user?.profilePicture} alt="" />
 
 
-        <div className="commentCenterBottom">
-          <h4 className='commentOwner'>{c?.user?.fullName}</h4>
-          <div className="commentCenterBottomRight">
-            <p className='crop'>{comment.id !== c.id ? c?.text : comment.text}</p>
-           
-            {user?.id === c?.userId &&
-              <div className="commentOption">
+          <div className='commentCenterBottomWrapper'>
+            <div className="commentCenterBottom">
+              <h4 className='commentOwner'>{c?.user?.fullName}</h4>
+              <div className="commentCenterBottomRight">
+                <p className='crop'>{comment.id !== c.id ? c?.text : comment.text}</p>
 
-                <div className="editButton" onClick={() => { setIsShow(true); setComment(c) }} >
+                {user?.id === c?.userId &&
+                  <div div className="commentOption">
+
+                    <div className="btn" onClick={() => { setIsShow(true); setComment(c) }} >
 
 
-                  <Tooltip title="Sửa bình luận">
+                      <Tooltip title="Sửa bình luận">
 
-                    <Edit fontSize='small' />
-                  </Tooltip>
-                </div>
-                <div className="removeButton" onClick={() => handleRemoveComment(c.id)} >
-                  <Tooltip title="Xóa bình luận">
-                    <Close fontSize='small' />
-                  </Tooltip>
-                </div>
+                        <Edit fontSize='small' />
+                      </Tooltip>
+                    </div>
+                    <div className="btn" onClick={() => handleRemoveComment(c.id)} >
+                      <Tooltip title="Xóa bình luận">
+                        <Close fontSize='small' />
+                      </Tooltip>
+                    </div>
 
+                  </div>
+
+                }
               </div>
-
-            }
+            </div>
           </div>
-          <div className='messageBottom'>{format(c?.createdAt)}</div>
         </div>
+        <div className='messageBottom commentBottom'>{format(c?.createdAt)}</div>
 
 
 
-
-      </div>
+      </div >
 
     )
-    ))
+    ) : null)
   return (
     <div className="commentWrapper">
       <div className="commentTop">

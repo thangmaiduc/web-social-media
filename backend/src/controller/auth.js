@@ -8,29 +8,35 @@ const api401Error = require('../utils/errors/api401Error');
 const api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
 const _ = require('lodash');
-var { validationResult } = require("express-validator");
-const noAvatar = 'https://res.cloudinary.com/dzens2tsj/image/upload/v1661786461/noAvatar_xbtxv7.png';
+var { validationResult } = require('express-validator');
+const noAvatar =
+  'https://res.cloudinary.com/dzens2tsj/image/upload/v1661786461/noAvatar_xbtxv7.png';
 //login
 exports.login = async (req, res, next) => {
   try {
     const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        const error = new Error("Dữ liệu nhập vào không hợp lệ");
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-      }
+    if (!errors.isEmpty()) {
+      const error = new Error('Dữ liệu nhập vào không hợp lệ');
+      error.statusCode = 422;
+      error.data = errors.array();
+      throw error;
+    }
     let { email, password } = req.body;
     let user = await User.findOne({ where: { email } });
+   
     if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
 
     let isMatch = await bcrypt.compare(password, user.password);
     console.log(isMatch);
     if (!isMatch) throw new api400Error('Email hoặc mật khẩu không chính xác');
     // console.log(user);
-    let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
-      expiresIn: '3 days',
-    });
+    let token = await jwt.sign(
+      { userId: user.id, isAdmin: user.isAdmin },
+      process.env.JWT_KEY,
+      {
+        expiresIn: '3 days',
+      }
+    );
     res.setHeader('authToken', token);
 
     res.status(200).json({ user: _.omit(user.toJSON(), ['password']), token });
@@ -42,12 +48,12 @@ exports.login = async (req, res, next) => {
 exports.loginAdmin = async (req, res, next) => {
   try {
     const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        const error = new Error("Dữ liệu nhập vào không hợp lệ");
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-      }
+    if (!errors.isEmpty()) {
+      const error = new Error('Dữ liệu nhập vào không hợp lệ');
+      error.statusCode = 422;
+      error.data = errors.array();
+      throw error;
+    }
     let { email, password } = req.body;
     let user = await User.findOne({ where: { email } });
     if (!user) throw new api400Error('Email hoặc mật khẩu không chính xác');
@@ -60,9 +66,13 @@ exports.loginAdmin = async (req, res, next) => {
     if (!user.isAdmin) {
       throw new api400Error('Bạn không có quyền đăng nhập trang này');
     }
-    let token = await jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_KEY, {
-      expiresIn: '3 days',
-    });
+    let token = await jwt.sign(
+      { userId: user.id, isAdmin: user.isAdmin },
+      process.env.JWT_KEY,
+      {
+        expiresIn: '3 days',
+      }
+    );
     res.setHeader('authToken', token);
     res.status(200).json({ user: _.omit(user.toJSON()), token });
   } catch (error) {
@@ -74,12 +84,12 @@ exports.loginAdmin = async (req, res, next) => {
 exports.register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        const error = new Error("Dữ liệu nhập vào không hợp lệ");
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-      }
+    if (!errors.isEmpty()) {
+      const error = new Error('Dữ liệu nhập vào không hợp lệ');
+      error.statusCode = 422;
+      error.data = errors.array();
+      throw error;
+    }
     let { email, password, username, fullName } = req.body;
     let userNameCheck = await User.findOne({ where: { username } });
     // console.log(userNameCheck);
@@ -101,7 +111,10 @@ exports.register = async (req, res, next) => {
     };
     let user = await User.create(newUser);
     await user.save();
-    res.status(201).json({ user: _.omit(user.toJSON()), message: 'Đăng kí tài khoản thành công' });
+    res.status(201).json({
+      user: _.omit(user.toJSON()),
+      message: 'Đăng kí tài khoản thành công',
+    });
   } catch (error) {
     next(error);
   }
@@ -174,7 +187,7 @@ exports.forgotPassword = async (req, res, next) => {
           next(error);
         }
       });
-      const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(10);
     hashPass = await bcrypt.hash(OTP, salt);
     await User.update({ password: hashPass }, { where: { id: user.id } });
 
