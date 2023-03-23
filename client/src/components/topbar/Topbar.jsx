@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link, useHistory } from 'react-router-dom';
 import { ToastContainer } from '../../utility/toast';
-import { Button, Divider, Popover, Typography } from '@material-ui/core';
+import { Button, Divider, Popper, Typography } from '@material-ui/core';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import postApi from '../../api/postApi';
+import WrapperPopper from '../popper/WrapperPopper';
 
 export default function Topbar() {
   const user = useSelector(userSelector);
@@ -121,7 +122,7 @@ export default function Topbar() {
             </Link>
             <span className='topbarIconBadge'>2</span>
           </div>
-          <Popover
+          <Popper
             open={open}
             anchorEl={anchorEl}
             onClose={handleClose}
@@ -134,7 +135,35 @@ export default function Topbar() {
               horizontal: 'left',
             }}
           >
-            {notifications.map((n) => (
+            <WrapperPopper >
+              <div className='wrapperNotification'>
+                <span className='titleNotification'>Thông báo</span>
+
+                {/* items.map */}
+                <div className="bodyNotification">
+                  <img src="https://images2.thanhnien.vn/uploaded/voba/2021_06_15/6_NPFA.jpg?width=500" alt="ss" className='imageNotification' />
+                  <div className="containerContentNotification">
+                    <p className='contentNotification'> <strong>Thắng Mai </strong> đã thích bài viết của bạn</p>
+                    <span className='timeNotification'>Khoảng 1 giờ trước</span>
+                  </div>
+                </div>
+                <div className="bodyNotification">
+                  <img src="https://images2.thanhnien.vn/uploaded/voba/2021_06_15/6_NPFA.jpg?width=500" alt="ss" className='imageNotification' />
+                  <div className="containerContentNotification">
+                    <p className='contentNotification'> <strong>Thắng Mai </strong> đã thích bài viết của bạn</p>
+                    <span className='timeNotification'>Khoảng 1 giờ trước</span>
+                  </div>
+                </div>
+                <div className="bodyNotification">
+                  <img src="https://images2.thanhnien.vn/uploaded/voba/2021_06_15/6_NPFA.jpg?width=500" alt="ss" className='imageNotification' />
+                  <div className="containerContentNotification">
+                    <p className='contentNotification'> <strong>Thắng Mai </strong> đã thích bài viết của bạn</p>
+                    <span className='timeNotification'>Khoảng 1 giờ trước</span>
+                  </div>
+                </div>
+              </div>
+            </WrapperPopper>
+            {/* {notifications.map((n) => (
               <Link key={n.id} to={`/post/${n.postId}`} style={{ color: 'black' }}>
                 <Typography className='notificationDiv' >
                   {n.text}
@@ -142,12 +171,12 @@ export default function Topbar() {
                 <Divider />
 
               </Link>
-            ))}
+            ))} */}
 
 
 
 
-          </Popover>
+          </Popper>
           <div className='topbarIconItem'>
             <Notifications className='logoIcon'
               id="basic-button"
