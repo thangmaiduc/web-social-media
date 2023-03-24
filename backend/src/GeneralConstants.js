@@ -31,4 +31,12 @@ module.exports = {
     APPROVED: 'APPROVED',
     FREE: 'FREE',
   },
+  CONTENT_NOTIFY: {
+    LIKE: 'đã thích bài viết của bạn',
+    COMMENT: 'đã bình luận trong bài viết của bạn',
+  },
+  TYPE_NOTIFY: {
+    LIKE: 'LIKE',
+    COMMENT: 'COMMENT',
+  },
 };

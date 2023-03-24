@@ -62,39 +62,160 @@ exports.create = async (req, res, next) => {
     next(error);
   }
 };
+const createNotification = async ({ userId, postId, text, type }) => {
+  try {
+    const checkUser = await User.findByPk(userId);
+    if (!checkUser) throw new api404Error('User not found');
+    const checkPost = await Post.findByPk(postId);
+    if (!checkPost) throw new api404Error('Post not found');
+    const checkNotification = await Notification.findOne({
+      where: {
+        postId,
+        type,
+        userId,
+      },
+      attributes: ['id'],
+    });
+    const onceReceiveTypes = [GeneralConstants.TYPE_NOTIFY.LIKE];
+    if (checkNotification && onceReceiveTypes.includes(type))
+      throw new api400Error('Notification was existed');
+    let notification;
+    // switch (type) {
+    //   case GeneralConstants.TYPE_NOTIFY.LIKE:
+    // }
+
+    notification = await Notification.create({
+      userId,
+      postId,
+      text,
+      type,
+      receiverId: checkPost.userId,
+    });
+
+    const totalCount = await Notification.count({
+      where: {
+        postId,
+        type,
+      },
+      distinct: true,
+      col: 'userId',
+    });
+
+    // return notification;
+    let content = `${
+      GeneralConstants.CONTENT_NOTIFY[notification.type]
+    } : ${text}`; // van a va {so ng} nguoi khac thich bai viet cua ban
+    if (totalCount > 1) content = ` và ${totalCount - 1} người khác ${content}`;
+    return {
+      content,
+      postId,
+      type,
+      receiverId: checkPost.userId,
+      id: notification.id,
+      total: totalCount,
+      userId: userId,
+      img: checkUser.profilePicture,
+      username: checkUser.username,
+      fullName: checkUser.fullName,
+      createdAt: notification.createdAt,
+      isView: notification.isView,
+    };
+  } catch (error) {
+    console.log(error.message);
+    return error;
+  }
+};
+exports.createNotification = createNotification;
 exports.notify = async (req, res, next) => {
   try {
-    const { userId, postId, text } = req.body;
-    const checkUser = await User.findByPk(userId);
-    if (!checkUser) throw new api400Error('User not found');
-    const checkPost = await Post.findByPk(postId);
-    if (!checkPost) throw new api400Error('Post not found');
-
-    const notification = await Notification.create({ userId, postId, text });
+    const notification = await this.createNotification(req.body);
     res.status(201).json({ data: notification });
   } catch (error) {
     next(error);
   }
 };
-exports.viewed = async (req, res, next) => {
+exports.getNotifications = async (req, res, next) => {
   try {
     const page = parseInt(_.get(req, 'query.page', 0));
     console.log(page);
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
-    let notification = await Notification.findAll({
+    const notifications = await Notification.findAll({
       where: {
-        userId: req.user.id,
+        receiverId: req.user.id,
       },
-      order: [['id', 'DESC']],
+      include: [
+        {
+          association: 'post',
+          attributes: ['description'],
+        },
+      ],
+      attributes: {
+        include: [
+          [
+            sequelize.literal('COUNT(DISTINCT(Notification.userId))'),
+            'totalCount',
+          ],
+          [sequelize.fn('MAX', sequelize.col('Notification.id')), 'id'],
+          // [
+          //   sequelize.fn('MAX', sequelize.col('Notification.createdAt')),
+          //   'createdAt',
+          // ],
+        ],
+        // exclude: [ 'createdAt']
+      },
+      group: ['postId', 'type'],
+      order: [[sequelize.fn('MAX', sequelize.col('Notification.id')), 'DESC']],
       limit,
       offset,
+      raw: true,
+      nest: true,
     });
-    Notification.update(
-      { isView: true },
-      { where: { userId: req.user.id, isView: false } }
+
+    const responseData = await Promise.all(
+      notifications.map(async (notification) => {
+        const lastest = await Notification.findOne({
+          where: { id: notification.id },
+          include: [
+            {
+              association: 'user',
+              attributes: ['fullName', 'username', 'profilePicture', 'id'],
+            },
+          ],
+        });
+        let content = `${
+          GeneralConstants.CONTENT_NOTIFY[notification.type]
+        } : ${lastest.text}`; // van a va {so ng} nguoi khac thich bai viet cua ban
+        if (notification.totalCount > 1)
+          content = ` và ${notification.totalCount - 1} người khác ${content}`;
+        return {
+          content,
+          postId: notification.postId,
+          type: notification.type,
+          id: lastest.id,
+          total: notification.totalCount,
+          userId: lastest.user.userId,
+          img: lastest.user.profilePicture,
+          username: lastest.user.username,
+          fullName: lastest.user.fullName,
+          createdAt: lastest.createdAt,
+          isView: lastest.isView,
+        };
+      })
     );
-    res.status(200).json({ data: notification });
+
+    res.status(200).json({ data: responseData });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.view = async (req, res, next) => {
+  try {
+    await Notification.update(
+      { isView: true },
+      { where: { receiverId: req.user.id, isView: false } }
+    );
+    res.status(204).json();
   } catch (error) {
     next(error);
   }
@@ -591,7 +712,7 @@ exports.getProfilePost = async (req, res, next) => {
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
     const user = await User.findOne({ where: { username } });
-    const userPost = await Post.findAll({
+    const posts = await Post.findAll({
       subQuery: false,
       attributes: {
         include: [
@@ -618,14 +739,33 @@ exports.getProfilePost = async (req, res, next) => {
       ],
       order: [['createdAt', 'DESC']],
       group: 'id',
-      // raw: true,
+      raw: true,
+      nest: true,
     });
-    // _.forEach(userPost, (item) => {
-    //   item.profilePicture = user.profilePicture;
-    //   item.fullName = user.fullName;
-    // });
 
-    res.status(200).json({ data: userPost });
+    const postIds = posts.map((post) => post.id);
+
+    const userLikePosts = await LikePost.findAll({
+      where: {
+        postId: {
+          [Op.in]: postIds,
+        },
+        UserId: req.user.id,
+      },
+      attributes: ['postId'],
+    });
+
+    const userLikePostIds = userLikePosts.map((item) => item.postId);
+    const postsAddIsLiked = posts.map((post) => {
+      let isLiked = false;
+      if (userLikePostIds.includes(post.id)) isLiked = true;
+      return {
+        ...post,
+        isLiked,
+      };
+    });
+
+    res.status(200).json({ data: postsAddIsLiked });
   } catch (error) {
     next(error);
   }

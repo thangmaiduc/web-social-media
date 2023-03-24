@@ -110,10 +110,7 @@ export default function Messenger() {
     getMessage()
   }, [arrivalMessage, currentChat]);
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.emit('addUser', user.id);
-  }, [user]);
+ 
 
   useEffect(() => {
     const getConversations = async () => {

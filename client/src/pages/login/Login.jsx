@@ -8,6 +8,7 @@ import {
   signIn,
 
 } from '../../redux/slices/userSlice';
+import { notificationSelector, getNotification } from '../../redux/slices/notificationSlice';
 import { useEffect } from 'react';
 import userApi from '../../api/userApi';
 import { notify, ToastContainer } from '../../utility/toast';
@@ -26,7 +27,9 @@ export default function Login() {
         email: email.current.value,
         password: password.current.value,
       })
+
     );
+    await dispatch(getNotification())
   };
 
   const google = () => {
@@ -35,7 +38,7 @@ export default function Login() {
 
   return (
     <div className="login">
-    <ToastContainer/>
+      <ToastContainer />
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Social Media</h3>

@@ -12,6 +12,7 @@ const redisClient = require('./utils/redis');
 // const session = require('express-session');
 require('./passport-config');
 const express = require('express');
+const { createNotification } = require('./controller/posts');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
@@ -142,19 +143,27 @@ io.on('connection', (socket) => {
       console.log('users::::::::::: ', users);
     });
 
-    socket.on('pushNotification', ({ userId, postId, text }) => {
-      console.log(
-        '[Event pushNotification]: ',
-        JSON.stringify({ userId, postId, text })
-      );
-      const user = getUser(userId);
-      if (user) {
-        io.to(user.socketId).emit('getNotification', {
+    socket.on('pushNotification', async ({ userId, postId, text, type }) => {
+      try {
+        console.log(
+          '[Event pushNotification]: ',
+          JSON.stringify({ userId, postId, text, type })
+        );
+        const notification = await createNotification({
           userId,
           postId,
           text,
+          type,
         });
-        console.log('[getNotification] đã send thông báo');
+        if (notification.receiverId === userId) return;
+        const user = getUser(notification.receiverId);
+        if (user) {
+          delete notification.receiverId;
+          io.to(user.socketId).emit('sendNotification', notification);
+          console.log('[sendNotification] đã gui thông báo');
+        }
+      } catch (error) {
+        console.log(error);
       }
     });
 

@@ -37,8 +37,13 @@ const postApi = {
     const response = await axiosClient.post(url, payload);
     return response.data;
   },
+  getNotify: async (payload) => {
+    const url = `posts/getNotification`;
+    const response = await axiosClient.post(url);
+    return response.data;
+  },
   viewNotify: async (payload) => {
-    const url = `posts/viewNotification`;
+    const url = `posts/view`;
     const response = await axiosClient.post(url);
     return response.data;
   },

@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
 import userSlice from './slices/userSlice';
-import postSlice from './slices/postSlice';
+import notificationSlice from './slices/notificationSlice';
 import {
   persistStore,
   persistReducer,
@@ -15,6 +15,7 @@ import {
 } from 'redux-persist';
 const reducers = combineReducers({
   user: userSlice.reducer,
+  notification: notificationSlice.reducer,
 });
 const rootReducer = (state, action) => {
   if (action.type === 'user/logout') {

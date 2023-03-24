@@ -8,7 +8,8 @@ router.get("/", (req, res) => {
 //create
 router.post("/", postController.create);
 router.post("/notify", postController.notify);
-router.post("/viewNotification", postController.viewed);
+router.post("/getNotification", postController.getNotifications);
+router.post("/view", postController.view);
 //query
 router.get("/query", postController.query);
 //update

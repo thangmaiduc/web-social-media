@@ -7,10 +7,18 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'user',
       });
+      Notification.belongsTo(models.User, {
+        foreignKey: 'receiverId',
+        as: 'receiver',
+      });
       Notification.belongsTo(models.Post, {
         foreignKey: 'postId',
         as: 'post',
       });
+      // Notification.hasMany(models.ReceiverNotification, {
+      //   foreignKey: 'notificationId',
+      //   as: 'notifications',
+      // });
     }
   }
   Notification.init(
@@ -24,13 +32,21 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      type: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
       userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      receiverId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
       text: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       isView: {
         type: DataTypes.BOOLEAN,

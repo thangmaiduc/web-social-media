@@ -1,57 +1,50 @@
-import './topbar.css';
+
 import { Search, Person, Chat, Notifications, ExitToApp } from '@material-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import { Link, useHistory } from 'react-router-dom';
+import { Button, Popover } from '@material-ui/core';
+import { useContext, useEffect, useState } from 'react';
+import { format } from 'timeago.js';
+
 import { ToastContainer } from '../../utility/toast';
-import { Button, Divider, Popper, Typography } from '@material-ui/core';
-import { useEffect, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
-import postApi from '../../api/postApi';
 import WrapperPopper from '../popper/WrapperPopper';
+import userSlice, { userSelector } from '../../redux/slices/userSlice';
+import notificationSlice, { notificationSelector, amountNotificationSelector, view } from '../../redux/slices/notificationSlice';
+import './topbar.css';
+import { SocketContext } from '../../utility/socket';
 
 export default function Topbar() {
   const user = useSelector(userSelector);
+  // const notifications
   const [textSearch, setTextSearch] = useState('')
   const dispatch = useDispatch()
   const history = useHistory()
-  const [notifications, setNotifications] = useState([])
-
+  const notifications = useSelector(notificationSelector);
+  const amountNotification = useSelector(amountNotificationSelector)
+  const socket = useContext(SocketContext);
+  // const [notifications, setNotifications] = useState(noti)
   const [anchorEl, setAnchorEl] = useState(null);
-  const socketRef = useRef();
   const [notificationArrive, setNotificationArrive] = useState(null);
 
   useEffect(() => {
-    socketRef.current = io(`ws://${process.env.REACT_APP_SOCKET_URL}/`);
-    socketRef.current.on('getNotification', (data) => {
-      setNewNotification({
-        postId: data.postId,
-        text: data.text,
-        userId: data.userId,
-      });
-      // console.log(data);
-      // setNotifications([...notifications, data]);
+    socket.on('sendNotification', (data) => {
+      dispatch(notificationSlice.actions.receiveNotification(data));
+    })
+    //   // console.log(data);
+    //   // setNotifications([...notifications, data]);
 
-    });
+    // });
+    // setNotifications(useSelector(notificationSelector()))
+
   }, []);
-  useEffect(() => {
-    console.log(newNotification);
-    setNotifications([newNotification, ...notifications]);
-
-  }, [newNotification])
 
   useEffect(() => {
-    const getNotification = async () => {
-      try {
-        const res = await postApi.viewNotify(
-
-        );
-        setNotifications([...res]);
-      } catch (err) {
-        console.log(err);
-      }
-
-
+    if (!socket) return;
+    socket.emit('addUser', user.id);
+    // return () => {
+    //   socket.close();
+    // }
+  }, [user]);
 
   const logout = () => {
     dispatch(userSlice.actions.logout())
@@ -65,8 +58,9 @@ export default function Topbar() {
   const PF = process.env.REACT_APP_PUBLIC_FOLDER;
 
   const open = Boolean(anchorEl);
-  const handleClick = (event) => {
+  const handleClick = async (event) => {
     setAnchorEl(event.currentTarget);
+    await dispatch(view());
 
   };
   const handleClose = () => {
@@ -112,61 +106,40 @@ export default function Topbar() {
             </Link>
             <span className='topbarIconBadge'>2</span>
           </div>
-          <Popper
+          <Popover
             open={open}
             anchorEl={anchorEl}
             onClose={handleClose}
+            // transition
             anchorOrigin={{
               vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
               horizontal: 'left',
+            }}
+            transformorigin={{
+              vertical: 'top',
+              horizontal: 'center',
             }}
           >
             <WrapperPopper >
               <div className='wrapperNotification'>
                 <span className='titleNotification'>Thông báo</span>
+                <div className='wrapperItems'>
 
-                {/* items.map */}
-                <div className="bodyNotification">
-                  <img src="https://images2.thanhnien.vn/uploaded/voba/2021_06_15/6_NPFA.jpg?width=500" alt="ss" className='imageNotification' />
-                  <div className="containerContentNotification">
-                    <p className='contentNotification'> <strong>Thắng Mai </strong> đã thích bài viết của bạn</p>
-                    <span className='timeNotification'>Khoảng 1 giờ trước</span>
-                  </div>
+                  {notifications.map(item => (
+                    <div key={item.id} className="bodyNotification">
+                      <img src={item.img} alt="ss" className='imageNotification' />
+                      <div className="containerContentNotification">
+                        <p className='contentNotification'> <strong>{item.fullName} </strong>{item.content}</p>
+                        <span className='timeNotification'>{format(item.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="bodyNotification">
-                  <img src="https://images2.thanhnien.vn/uploaded/voba/2021_06_15/6_NPFA.jpg?width=500" alt="ss" className='imageNotification' />
-                  <div className="containerContentNotification">
-                    <p className='contentNotification'> <strong>Thắng Mai </strong> đã thích bài viết của bạn</p>
-                    <span className='timeNotification'>Khoảng 1 giờ trước</span>
-                  </div>
-                </div>
-                <div className="bodyNotification">
-                  <img src="https://images2.thanhnien.vn/uploaded/voba/2021_06_15/6_NPFA.jpg?width=500" alt="ss" className='imageNotification' />
-                  <div className="containerContentNotification">
-                    <p className='contentNotification'> <strong>Thắng Mai </strong> đã thích bài viết của bạn</p>
-                    <span className='timeNotification'>Khoảng 1 giờ trước</span>
-                  </div>
-                </div>
+
+
               </div>
             </WrapperPopper>
-            {/* {notifications.map((n) => (
-              <Link key={n.id} to={`/post/${n.postId}`} style={{ color: 'black' }}>
-                <Typography className='notificationDiv' >
-                  {n.text}
-                </Typography>
-                <Divider />
-
-              </Link>
-            ))} */}
-
-
-
-
-          </Popper>
+          </Popover>
           <div className='topbarIconItem'>
             <Notifications className='logoIcon'
               id="basic-button"
@@ -175,8 +148,7 @@ export default function Topbar() {
               aria-haspopup="true"
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick} />
-
-            <span className='topbarIconBadge'>1</span>
+            <span className='topbarIconBadge'>{amountNotification}</span>
           </div>
 
         </div>

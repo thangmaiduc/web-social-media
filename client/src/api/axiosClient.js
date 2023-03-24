@@ -36,7 +36,7 @@ axiosClient.interceptors.response.use(
   (error) => {
     const { response } = error;
     if (!response) {
-      notify('Server đã xảy ra sự cố, vui lòng báo admin,');
+      // notify('Server đã xảy ra sự cố, vui lòng báo admin,');
       throw error;
     }
     const { status } = response;

@@ -35,7 +35,7 @@
   border-radius: 10px;
   width: fit-content;
 }
-.commentCenterBottomWrapper{
+.commentCenterBottomWrapper {
   width: 100%;
 }
 .commentBottom {
@@ -62,6 +62,7 @@
 }
 .commentWrapper {
   padding: 15px;
+  border-top: dashed 1px #bebbbb;
 }
 .commentOption {
   display: none;

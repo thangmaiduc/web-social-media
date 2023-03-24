@@ -97,12 +97,49 @@
 .logoIcon {
   color: white;
 }
-.notificationDiv {
-  max-width: 300px;
-  width: 300px;
-  padding: 5px;
+/* Notification */
+.wrapperNotification {
+  width: 328px;
+  /* padding: 8px; */
 }
-.notificationDiv:hover {
-  opacity: 0.7;
+.titleNotification {
+  font-size: 26px;
+  font-weight: 700;
+  padding: 8px;
+}
+.wrapperItems {
+  /* margin-top: 30px; */
+}
+.bodyNotification {
+  display: flex;
+  padding: 0 8px;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+}
+.bodyNotification:hover {
+  background-color: rgba(22, 24, 35, 0.03);
   cursor: pointer;
+}
+.imageNotification {
+  width: 56px;
+  height: 56px;
+  border-radius: 100%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+.contentNotification strong {
+  font-weight: 600;
+}
+
+.containerContentNotification {
+}
+.contentNotification {
+  margin-top: 0;
+  word-break: break-word;
+}
+.timeNotification {
+  font-size: 13px;
+  color: hsl(214, 89%, 52%);
 }

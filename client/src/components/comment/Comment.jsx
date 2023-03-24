@@ -1,15 +1,17 @@
 import { Close, MoreVert, Edit } from '@material-ui/icons';
 import { useEffect, useState } from "react";
+import PropTypes from 'prop-types';
+import { Tooltip } from '@material-ui/core';
+import { useSelector } from 'react-redux';
+import { format } from 'timeago.js';
+
 import "./comment.css";
 import postApi from '../../api/postApi';
 import { CommentModal } from './CommentModal';
-import { Tooltip } from '@material-ui/core';
-import { useSelector } from 'react-redux';
 import { userSelector } from '../../redux/slices/userSlice';
-import { format } from 'timeago.js';
 import { notify } from '../../utility/toast';
 
-export default function Comment({ comments, setComments, handleSubmit, user, handleClickShowMore, length, setLength, }) {
+function Comment({ comments, setComments, handleSubmit, user, handleClickShowMore, length, setLength, }) {
   // const user = useSelector(userSelector);
   const [isShow, setIsShow] = useState(false);
   const [comment, setComment] = useState({})
@@ -38,7 +40,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
   }
 
   const detailComment = (
-    comments?.length > 0 ? comments.map(c => (
+    comments.map(c => (
       <div key={c.id} className="commentCenter">
 
         <div className='body'>
@@ -52,7 +54,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
                 <p className='crop'>{comment.id !== c.id ? c?.text : comment.text}</p>
 
                 {user?.id === c?.userId &&
-                  <div div className="commentOption">
+                  <div className="commentOption">
 
                     <div className="btn" onClick={() => { setIsShow(true); setComment(c) }} >
 
@@ -82,7 +84,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
       </div >
 
     )
-    ) : null)
+    ))
   return (
     <div className="commentWrapper">
       <div className="commentTop">
@@ -94,7 +96,7 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
 
       </div>
       <hr className='commentHr'></hr>
-      {comments?.length > 0 ? detailComment : detailComment}
+      {detailComment}
       <div className='showMoreBtn' onClick={handleClickShowMore}>
 
         <p>Xem thêm.</p>
@@ -108,3 +110,14 @@ export default function Comment({ comments, setComments, handleSubmit, user, han
     </div>
   );
 }
+Comment.propTypes = {
+  comments: PropTypes.array.isRequired,
+  setComments: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
+  handleClickShowMore: PropTypes.func.isRequired,
+  length: PropTypes.number.isRequired,
+  setLength: PropTypes.func.isRequired
+}
+
+export default Comment;

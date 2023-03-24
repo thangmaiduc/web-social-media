@@ -1,20 +1,22 @@
 import "./post.css";
-import { MoreVert, PersonAddDisabled, Close, Remove, Add, Edit, Report, ThumbUpOutlined, ThumbUp } from "@material-ui/icons";
-import { Users } from "../../dummyData";
-import { useEffect, useRef, useState } from "react";
-import Comment from '../comment/Comment'
-import { PostModal } from './PostModal'
-import postApi from '../../api/postApi';
-import userSlice, { friendSelector, userSelector } from '../../redux/slices/userSlice';
+import { Close, Remove, Add, Edit, Report, ThumbUpOutlined, ThumbUp } from "@material-ui/icons";
+import { useContext, useEffect, useState } from "react";
 import { useSelector } from 'react-redux';
-import userApi from '../../api/userApi';
 import Tooltip from '@mui/material/Tooltip';
 import { format } from 'timeago.js';
-import { notify } from '../../utility/toast';
 import { Link } from 'react-router-dom';
 import { forwardRef } from 'react';
-import { io } from 'socket.io-client';
 import { Button } from '@material-ui/core';
+
+
+import Comment from '../comment/Comment'
+import { notify } from '../../utility/toast';
+import { PostModal } from './PostModal'
+import postApi from '../../api/postApi';
+import { friendSelector, userSelector } from '../../redux/slices/userSlice';
+import userApi from '../../api/userApi';
+import { SocketContext } from '../../utility/socket';
+import GENERAL_CONSTANTS from '../../GeneralConstants';
 
 const Post = forwardRef(({ post, username }, ref) => {
   const user = useSelector(userSelector)
@@ -33,7 +35,7 @@ const Post = forwardRef(({ post, username }, ref) => {
   const [limit, setLimit] = useState(5)
   const [length, setLength] = useState(0)
   const [editText, setEditText] = useState(post?.description)
-  const socketRef = useRef();
+  const socket = useContext(SocketContext);
 
 
 
@@ -73,8 +75,14 @@ const Post = forwardRef(({ post, username }, ref) => {
     try {
       await postApi.likePost(post.id);
       // await postApi.getLikePost(post.id)
-      // if (!isLiked)
-      //   socketRef.current.emit('pushNotification', { userId: post.userId, postId: post.id, text: `${user.fullName} đã like bài viết của bạn: ${post.description.substring(0, 30)}` });
+      if (!isLiked)
+        socket.emit('pushNotification', {
+          userId: user.id,
+          receiverId: post.userId,
+          postId: post.id,
+          type: GENERAL_CONSTANTS.TYPE_NOTIFICATION.LIKE,
+          text: `${post.description.substring(0, 30)}`
+        });
 
     } catch (error) {
 
@@ -128,9 +136,19 @@ const Post = forwardRef(({ post, username }, ref) => {
         text: newComment,
         postId: post.id
       })
+      console.log('user.id !== post.userId', user.id !== post.userId);
+      if (user.id !== post.userId) {
+        socket.emit('pushNotification', {
+          userId: user.id,
+          receiverId: post.userId,
+          postId: post.id,
+          type: GENERAL_CONSTANTS.TYPE_NOTIFICATION.COMMENT,
+          text: `${newComment.substring(0, 15)}`
+        });
+      }
       setComments(c => [newCommentObj, ...c])
     } catch (error) {
-
+      notify(error);
     }
 
   }

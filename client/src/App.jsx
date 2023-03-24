@@ -12,18 +12,32 @@ import {
 } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as userSlice from './redux/slices/userSlice';
+import { notificationSelector, getNotification } from './redux/slices/notificationSlice';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import Search from './pages/search/Search';
 import ForgotPassword from './pages/forgotPassword/ForgotPassword';
 import './App.css'
+import Group from './pages/group/Group';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(userSlice.userSelector);
   const fetch = useSelector(userSlice.fetchSelector);
+  
   useEffect(() => {
-    if (_.get(user, 'username', null) !== null)
+    if (_.get(user, 'username', null) !== null) {
+
       dispatch(userSlice.getFriends(user.username));
+
+    }
+    const getNotifications = async () => {
+      try {
+        await dispatch(getNotification());
+      } catch (error) {
+
+      }
+    }
+    getNotifications();
   }, [user]);
   useEffect(() => {
     const getUser = async () => {
@@ -56,9 +70,13 @@ function App() {
 
           {!user ? <Redirect to="/" /> : <Profile />}
         </Route>
+        <Route path="/groups/">
+
+          {!user ? <Redirect to="/" /> : <Group />}
+        </Route>
         <Route path="/search/:searchText">
 
-          {!user ? <Redirect to="/" /> : <Search /> }
+          {!user ? <Redirect to="/" /> : <Search />}
         </Route>
       </Switch>
     </Router>
