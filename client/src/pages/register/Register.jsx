@@ -92,7 +92,7 @@ export default function Register() {
             >
               <button className="loginRegisterbtn">Log into Account</button>
             </Link>
-            <ToastContainer />
+            <ToastContainer autoClose={2000} pauseOnFocusLoss={false}/>
           </form>
         </div>
       </div>

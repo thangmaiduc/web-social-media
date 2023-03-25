@@ -7,14 +7,18 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'user',
       });
-      Notification.belongsTo(models.User, {
-        foreignKey: 'receiverId',
-        as: 'receiver',
-      });
-      Notification.belongsTo(models.Post, {
-        foreignKey: 'postId',
-        as: 'post',
-      });
+      // Notification.belongsTo(models.User, {
+      //   foreignKey: 'receiverId',
+      //   as: 'receiver',
+      // });
+      // Notification.belongsTo(models.Post, {
+      //   foreignKey: 'subjectId',
+      //   as: 'post',
+      // });
+      // Notification.belongsTo(models.Group, {
+      //   foreignKey: 'subjectId',
+      //   as: 'group',
+      // });
       // Notification.hasMany(models.ReceiverNotification, {
       //   foreignKey: 'notificationId',
       //   as: 'notifications',
@@ -28,27 +32,36 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      postId: {
+      // postId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: true,
+      // },
+      subjectId: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
       type: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING(20),
         allowNull: false,
       },
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      receiverId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       text: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING(40),
         allowNull: true,
       },
+      // receiverId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: false,
+      // },
+
       isView: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isClicked: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },

@@ -41,9 +41,9 @@ export default function Topbar() {
   useEffect(() => {
     if (!socket) return;
     socket.emit('addUser', user.id);
-    // return () => {
-    //   socket.close();
-    // }
+    return () => {
+      socket.close();
+    }
   }, [user]);
 
   const logout = () => {
@@ -68,7 +68,7 @@ export default function Topbar() {
   };
   return (
     <div className='topbarContainer'>
-      <ToastContainer />
+      <ToastContainer autoClose={2000} pauseOnFocusLoss={false}/>
       <div className='topbarLeft'>
         <Link to='/' style={{ textDecoration: 'none' }}>
           <span className='logo'>Social Media</span>

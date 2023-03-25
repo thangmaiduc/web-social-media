@@ -27,16 +27,22 @@ module.exports = {
     ACTIVATED: 'ACTIVATED',
     INACTIVATED: 'INACTIVATED',
   },
+  STATE_NOTIFY: {
+    ACTIVATED: 'ACTIVATED',
+    INACTIVATED: 'INACTIVATED',
+  },
   TYPE_GROUP: {
     APPROVED: 'APPROVED',
     FREE: 'FREE',
   },
   CONTENT_NOTIFY: {
-    LIKE: 'đã thích bài viết của bạn',
-    COMMENT: 'đã bình luận trong bài viết của bạn',
+    LIKE: `đã thích bài viết của`,
+    COMMENT: 'đã bình luận trong bài viết của',
+    JOIN_GROUP: 'đã xin gia nhập nhóm',
   },
   TYPE_NOTIFY: {
     LIKE: 'LIKE',
     COMMENT: 'COMMENT',
+    JOIN_GROUP: 'JOIN_GROUP',
   },
 };

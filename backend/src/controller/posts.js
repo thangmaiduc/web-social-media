@@ -10,6 +10,7 @@ const LikePost = require('../models/').LikePost;
 const ReportPost = require('../models/').ReportPost;
 const CommentPost = require('../models/').CommentPost;
 const Notification = require('../models/').Notification;
+const ReceiverNotification = require('../models/').ReceiverNotification;
 const sequelize = require('../models/').sequelize;
 const alertInteraction = require('../utils/alertInteraction');
 const { QueryTypes, Op } = require('sequelize');
@@ -18,6 +19,7 @@ const client = require('../../config/es');
 const moment = require('moment');
 const { format } = require('../utils/time');
 const GeneralConstants = require('../GeneralConstants');
+const receiverNotification = require('../models/receiverNotification');
 require('moment-duration-format');
 //create
 
@@ -54,70 +56,107 @@ exports.create = async (req, res, next) => {
         statePost = GeneralConstants.STATE_POST.APPROVED;
       }
       createPost.groupId = checkGroup.groupId;
+    } else {
+      statePost = GeneralConstants.STATE_POST.APPROVED;
     }
     const post = await Post.create(createPost);
+    await ReceiverNotification.create({
+      subjectId: post.id,
+      receiverId: userId,
+      type: GeneralConstants.TYPE_NOTIFY.COMMENT,
+    });
+    await ReceiverNotification.create({
+      receiverId: userId,
+      subjectId: post.id,
+      type: GeneralConstants.TYPE_NOTIFY.LIKE,
+    });
     // await post.save();
     res.status(201).json(post);
   } catch (error) {
     next(error);
   }
 };
-const createNotification = async ({ userId, postId, text, type }) => {
+const createNotification = async ({ userId, subjectId, text, type }) => {
   try {
     const checkUser = await User.findByPk(userId);
     if (!checkUser) throw new api404Error('User not found');
-    const checkPost = await Post.findByPk(postId);
+    const checkPost = await Post.findByPk(subjectId);
     if (!checkPost) throw new api404Error('Post not found');
-    const checkNotification = await Notification.findOne({
+    const ownerSubject = await User.findByPk(checkPost.userId);
+    let notification = await Notification.findOne({
       where: {
-        postId,
+        subjectId,
         type,
-        userId,
+        // userId,
       },
-      attributes: ['id'],
+      // attributes: ['id'],
     });
-    const onceReceiveTypes = [GeneralConstants.TYPE_NOTIFY.LIKE];
-    if (checkNotification && onceReceiveTypes.includes(type))
-      throw new api400Error('Notification was existed');
-    let notification;
+    // const onceReceiveTypes = [GeneralConstants.TYPE_NOTIFY.LIKE];
+    // if (checkNotification && onceReceiveTypes.includes(type))
+    //   throw new api400Error('Notification was existed');
     // switch (type) {
     //   case GeneralConstants.TYPE_NOTIFY.LIKE:
     // }
-
-    notification = await Notification.create({
-      userId,
-      postId,
-      text,
-      type,
-      receiverId: checkPost.userId,
-    });
-
-    const totalCount = await Notification.count({
-      where: {
-        postId,
+    let totalCount = 1;
+    if (notification) {
+      notification.text = text;
+      notification.isView = false;
+      notification.userId = userId;
+      notification = await notification.save();
+      switch (type) {
+        case GeneralConstants.TYPE_NOTIFY.LIKE: {
+          totalCount = await LikePost.count({ where: { postId: subjectId } });
+          break;
+        }
+        case GeneralConstants.TYPE_NOTIFY.COMMENT: {
+          totalCount = await CommentPost.count({
+            where: { postId: subjectId },
+            distinct: true,
+            col: 'userId',
+          });
+          const [receiver, created] = await ReceiverNotification.findOrCreate({
+            where: { subjectId, receiverId: userId, type },
+          });
+          break;
+        }
+        default:
+          break;
+      }
+    } else {
+      notification = await Notification.create({
+        userId,
+        subjectId,
+        text,
         type,
+      });
+    }
+
+    const receiverList = await ReceiverNotification.findAll({
+      where: {
+        subjectId,
+        type,
+        state: GeneralConstants.STATE_NOTIFY.ACTIVATED,
       },
-      distinct: true,
-      col: 'userId',
     });
+    const receiverIds = receiverList.map((receiver) => receiver.receiverId);
 
     // return notification;
-    let content = `${
-      GeneralConstants.CONTENT_NOTIFY[notification.type]
-    } : ${text}`; // van a va {so ng} nguoi khac thich bai viet cua ban
-    if (totalCount > 1) content = ` và ${totalCount - 1} người khác ${content}`;
+    let content = `${GeneralConstants.CONTENT_NOTIFY[type]}`;
+    // van a va {so ng} nguoi khac thich bai viet cua ban
     return {
-      content,
-      postId,
-      type,
-      receiverId: checkPost.userId,
+      userId: notification.userId,
       id: notification.id,
+      subjectId,
+      subjectOwnerId: ownerSubject.id,
+      ownerFullName: ownerSubject.fullName,
+      receiverIds,
+      type,
       total: totalCount,
-      userId: userId,
+      content,
+      createdAt: notification.updatedAt,
       img: checkUser.profilePicture,
       username: checkUser.username,
       fullName: checkUser.fullName,
-      createdAt: notification.createdAt,
       isView: notification.isView,
     };
   } catch (error) {
@@ -128,7 +167,32 @@ const createNotification = async ({ userId, postId, text, type }) => {
 exports.createNotification = createNotification;
 exports.notify = async (req, res, next) => {
   try {
-    const notification = await this.createNotification(req.body);
+    const { subjectId, text, type } = req.body;
+    const userId = req.body.userId || req.user.id;
+    switch (type) {
+      case GeneralConstants.TYPE_NOTIFY.LIKE: {
+        await LikePost.findOrCreate({
+          where: {
+            postId: subjectId,
+            UserId: userId,
+          },
+        });
+
+        break;
+      }
+      case GeneralConstants.TYPE_NOTIFY.COMMENT: {
+        await CommentPost.create({
+          postId: subjectId,
+          text,
+          userId,
+        });
+        break;
+      }
+      default:
+        break;
+    }
+
+    const notification = await this.createNotification({ ...req.body, userId });
     res.status(201).json({ data: notification });
   } catch (error) {
     next(error);
@@ -137,69 +201,122 @@ exports.notify = async (req, res, next) => {
 exports.getNotifications = async (req, res, next) => {
   try {
     const page = parseInt(_.get(req, 'query.page', 0));
-    console.log(page);
     let limit = +req.query.limit || 10;
     let offset = 0 + page * limit;
+    const userId = req.user.id;
+    const subjects = await ReceiverNotification.findAll({
+      where: {
+        receiverId: userId,
+        state: GeneralConstants.STATE_NOTIFY.ACTIVATED,
+      },
+    });
+    const subjectFilter = {
+      COMMENT: [],
+      LIKE: [],
+    };
+    subjects.forEach((subject) => {
+      subjectFilter[subject.type].push(subject.subjectId);
+    });
+
     const notifications = await Notification.findAll({
       where: {
-        receiverId: req.user.id,
+        [Op.or]: [
+          {
+            subjectId: {
+              [Op.in]: subjectFilter[GeneralConstants.TYPE_NOTIFY.COMMENT],
+            },
+            type: GeneralConstants.TYPE_NOTIFY.COMMENT,
+          },
+          {
+            subjectId: {
+              [Op.in]: subjectFilter[GeneralConstants.TYPE_NOTIFY.LIKE],
+            },
+            type: GeneralConstants.TYPE_NOTIFY.LIKE,
+          },
+        ],
       },
       include: [
         {
-          association: 'post',
-          attributes: ['description'],
+          association: 'user',
+          attributes: ['fullName', 'username', 'profilePicture', 'id'],
         },
       ],
-      attributes: {
-        include: [
-          [
-            sequelize.literal('COUNT(DISTINCT(Notification.userId))'),
-            'totalCount',
-          ],
-          [sequelize.fn('MAX', sequelize.col('Notification.id')), 'id'],
-          // [
-          //   sequelize.fn('MAX', sequelize.col('Notification.createdAt')),
-          //   'createdAt',
-          // ],
-        ],
-        // exclude: [ 'createdAt']
-      },
-      group: ['postId', 'type'],
-      order: [[sequelize.fn('MAX', sequelize.col('Notification.id')), 'DESC']],
+      order: [['updatedAt', 'DESC']],
       limit,
       offset,
-      raw: true,
-      nest: true,
+      // raw: true,
+      // nest: true,
     });
 
     const responseData = await Promise.all(
       notifications.map(async (notification) => {
-        const lastest = await Notification.findOne({
-          where: { id: notification.id },
-          include: [
-            {
-              association: 'user',
-              attributes: ['fullName', 'username', 'profilePicture', 'id'],
-            },
-          ],
+        let Subject = null;
+        let totalCount = 1;
+        let includes = [
+          {
+            association: 'user',
+            attributes: ['id', 'fullName'],
+          },
+        ];
+        switch (notification.type) {
+          case GeneralConstants.TYPE_NOTIFY.COMMENT: {
+            totalCount = await CommentPost.count({
+              where: { postId: notification.subjectId },
+              distinct: true,
+              col: 'userId',
+            });
+            Subject = Post;
+            break;
+          }
+          case GeneralConstants.TYPE_NOTIFY.LIKE: {
+            totalCount = await LikePost.count({
+              where: { postId: notification.subjectId },
+              distinct: true,
+              col: 'userId',
+            });
+            Subject = Post;
+            break;
+          }
+          case GeneralConstants.TYPE_NOTIFY.JOIN_GROUP: {
+            totalCount = await GroupMember.count({
+              where: {
+                groupId: notification.subjectId,
+                state: GeneralConstants.STATE_MEMBER.PENDING,
+              },
+              distinct: true,
+              col: 'userId',
+            });
+            Subject = Group;
+            includes = [];
+            break;
+          }
+        }
+        const subject = await Subject.findOne({
+          where: { id: notification.subjectId },
+          include: includes,
         });
-        let content = `${
-          GeneralConstants.CONTENT_NOTIFY[notification.type]
-        } : ${lastest.text}`; // van a va {so ng} nguoi khac thich bai viet cua ban
-        if (notification.totalCount > 1)
-          content = ` và ${notification.totalCount - 1} người khác ${content}`;
+        let contentObject =
+          userId === subject.userId
+            ? 'bạn'
+            : _.get(subject, 'user.fullName', null) || subject.title;
+        let content = `${GeneralConstants.CONTENT_NOTIFY[notification.type]}`;
+        let countStr = '';
+        // van a va {so ng} nguoi khac thich bai viet cua ban
+        // van a va {so ng} nguoi khac yeu cau gia nhap nhom {ten nhom}
+        if (totalCount > 1) countStr = `và ${totalCount - 1} người khác`;
+        content = ` ${countStr} ${content} ${contentObject}: ${notification.text}`;
         return {
+          userId: notification.user.userId,
+          id: notification.id,
           content,
-          postId: notification.postId,
+          subjectId: notification.subjectId,
           type: notification.type,
-          id: lastest.id,
-          total: notification.totalCount,
-          userId: lastest.user.userId,
-          img: lastest.user.profilePicture,
-          username: lastest.user.username,
-          fullName: lastest.user.fullName,
-          createdAt: lastest.createdAt,
-          isView: lastest.isView,
+          total: totalCount,
+          img: notification.user.profilePicture,
+          username: notification.user.username,
+          fullName: notification.user.fullName,
+          createdAt: notification.updatedAt,
+          isView: notification.isView,
         };
       })
     );
@@ -211,9 +328,40 @@ exports.getNotifications = async (req, res, next) => {
 };
 exports.view = async (req, res, next) => {
   try {
+    const subjects = await ReceiverNotification.findAll({
+      where: {
+        receiverId: req.user.id,
+      },
+    });
+    const subjectFilter = {
+      COMMENT: [],
+      LIKE: [],
+    };
+    subjects.forEach((subject) => {
+      subjectFilter[subject.type].push(subject.subjectId);
+    });
+
     await Notification.update(
       { isView: true },
-      { where: { receiverId: req.user.id, isView: false } }
+      {
+        where: {
+          [Op.or]: [
+            {
+              subjectId: {
+                [Op.in]: subjectFilter[GeneralConstants.TYPE_NOTIFY.COMMENT],
+              },
+              type: GeneralConstants.TYPE_NOTIFY.COMMENT,
+            },
+            {
+              subjectId: {
+                [Op.in]: subjectFilter[GeneralConstants.TYPE_NOTIFY.LIKE],
+              },
+              type: GeneralConstants.TYPE_NOTIFY.LIKE,
+            },
+          ],
+          isView: false,
+        },
+      }
     );
     res.status(204).json();
   } catch (error) {

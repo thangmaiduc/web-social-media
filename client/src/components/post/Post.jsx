@@ -73,22 +73,24 @@ const Post = forwardRef(({ post, username }, ref) => {
 
   const likeHandler = async () => {
     try {
+
       await postApi.likePost(post.id);
-      // await postApi.getLikePost(post.id)
-      if (!isLiked)
+      if (!isLiked && user.id !== post.userId)
         socket.emit('pushNotification', {
           userId: user.id,
-          receiverId: post.userId,
-          postId: post.id,
+          subjectId: post.id,
           type: GENERAL_CONSTANTS.TYPE_NOTIFICATION.LIKE,
           text: `${post.description.substring(0, 30)}`
         });
+      // await postApi.getLikePost(post.id)
 
     } catch (error) {
-
+      // setLike(isLiked ? like - 1 : like + 1)
+      // setIsLiked(!isLiked)
     }
     setLike(isLiked ? like - 1 : like + 1)
     setIsLiked(!isLiked)
+
 
 
   }
@@ -136,16 +138,12 @@ const Post = forwardRef(({ post, username }, ref) => {
         text: newComment,
         postId: post.id
       })
-      console.log('user.id !== post.userId', user.id !== post.userId);
-      if (user.id !== post.userId) {
-        socket.emit('pushNotification', {
-          userId: user.id,
-          receiverId: post.userId,
-          postId: post.id,
-          type: GENERAL_CONSTANTS.TYPE_NOTIFICATION.COMMENT,
-          text: `${newComment.substring(0, 15)}`
-        });
-      }
+      socket.emit('pushNotification', {
+        userId: user.id,
+        subjectId: post.id,
+        type: GENERAL_CONSTANTS.TYPE_NOTIFICATION.COMMENT,
+        text: `${newComment.substring(0, 15)}`
+      });
       setComments(c => [newCommentObj, ...c])
     } catch (error) {
       notify(error);

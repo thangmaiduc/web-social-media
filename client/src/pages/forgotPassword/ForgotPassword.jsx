@@ -28,7 +28,7 @@ export default function ForgotPassword() {
   }
   return (
     <div className="login">
-    <ToastContainer />
+    <ToastContainer autoClose={2000} pauseOnFocusLoss={false}/>
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Social Media</h3>

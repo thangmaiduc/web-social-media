@@ -143,25 +143,39 @@ io.on('connection', (socket) => {
       console.log('users::::::::::: ', users);
     });
 
-    socket.on('pushNotification', async ({ userId, postId, text, type }) => {
+    socket.on('pushNotification', async ({ userId, subjectId, text, type }) => {
       try {
         console.log(
           '[Event pushNotification]: ',
-          JSON.stringify({ userId, postId, text, type })
+          JSON.stringify({ userId, subjectId, text, type })
         );
         const notification = await createNotification({
           userId,
-          postId,
+          subjectId,
           text,
           type,
         });
-        if (notification.receiverId === userId) return;
-        const user = getUser(notification.receiverId);
-        if (user) {
-          delete notification.receiverId;
-          io.to(user.socketId).emit('sendNotification', notification);
-          console.log('[sendNotification] đã gui thông báo');
-        }
+        // if (notification.receiverId === userId) return;
+        notification.receiverIds.forEach((receiverId) => {
+          const receiver = getUser(receiverId);
+
+          if (receiver && userId !== receiverId) {
+            let contentObject =
+              receiverId === notification.subjectOwnerId
+                ? 'bạn'
+                : notification.ownerFullName;
+            let countStr = '';
+            // notification.content += ` ${contentObject}: ${notification.text}`;
+            if (notification.total > 1)
+              countStr = `và ${notification.total - 1} người khác`;
+            notification.content = ` ${countStr} ${notification.content} ${contentObject}: ${text}`;
+            delete notification.receiverIds;
+            delete notification.ownerFullName;
+            delete notification.subjectOwnerId;
+            io.to(receiver.socketId).emit('sendNotification', notification);
+            console.log('[sendNotification] đã gui thông báo');
+          }
+        });
       } catch (error) {
         console.log(error);
       }

@@ -30,7 +30,7 @@ const notificationSlice = createSlice({
       const index = state.items.findIndex(
         (item) =>
           item.type === action.payload.type &&
-          item.postId === action.payload.postId
+          item.subjectId === action.payload.subjectId
       );
       if (index >= 0) state.items.splice(index, 1);
       state.items = [action.payload, ...state.items];
@@ -63,11 +63,9 @@ const notificationSlice = createSlice({
 export const notificationSelector = (state) => state?.notification?.items;
 export const amountNotificationSelector = (state) =>
   state.notification.items.reduce((acc, item) => {
-    if (item.isView === false) return acc + 1;
+    if (!item.isView) return acc + 1;
     return acc;
   }, 0);
 export const fetchSelector = (state) => state.notification.isFetching;
 
 export default notificationSlice;
-
-
