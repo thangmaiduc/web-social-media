@@ -158,7 +158,12 @@ io.on('connection', (socket) => {
         // if (notification.receiverId === userId) return;
         notification.receiverIds.forEach((receiverId) => {
           const receiver = getUser(receiverId);
-
+          console.log(
+            'receiver && userId !== receiverId',
+            receiver && userId !== receiverId
+          );
+          console.log('receiver', receiverId);
+          console.log('userId', userId);
           if (receiver && userId !== receiverId) {
             let contentObject =
               receiverId === notification.subjectOwnerId

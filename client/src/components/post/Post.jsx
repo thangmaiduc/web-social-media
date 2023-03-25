@@ -251,7 +251,8 @@ const Post = forwardRef(({ post, username }, ref) => {
 
             <Button
               className="likeIcon"
-            >{!isLiked ? <ThumbUpOutlined fontSize='small' color='primary' onClick={likeHandler} /> : <ThumbUp fontSize='small' color='primary' onClick={likeHandler} />}
+              onClick={likeHandler}
+            >{!isLiked ? <ThumbUpOutlined fontSize='small' color='primary' /> : <ThumbUp fontSize='small' color='primary' />}
 
             </Button>
 

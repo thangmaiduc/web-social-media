@@ -59,6 +59,7 @@ exports.create = async (req, res, next) => {
     } else {
       statePost = GeneralConstants.STATE_POST.APPROVED;
     }
+    createPost.state = statePost;
     const post = await Post.create(createPost);
     await ReceiverNotification.create({
       subjectId: post.id,
