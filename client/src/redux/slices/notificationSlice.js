@@ -8,7 +8,7 @@ export const getNotification = createAsyncThunk(
     return response;
   }
 );
-export const view = createAsyncThunk(
+export const viewNotification = createAsyncThunk(
   'notification/view',
   async (params, thunkAPI) => {
     const response = await postApi.viewNotify();
@@ -47,7 +47,7 @@ const notificationSlice = createSlice({
       state.items = action.payload;
       state.isFetching = false;
     },
-    [view.fulfilled]: (state, action) => {
+    [viewNotification.fulfilled]: (state, action) => {
       state.items = state.items.map((item) => {
         return {
           ...item,

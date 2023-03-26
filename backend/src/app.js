@@ -1,5 +1,6 @@
 const morgan = require('morgan');
 const cors = require('cors');
+const _ = require('lodash');
 // const dotenv = require("dotenv");
 const indexRouter = require('./routes/index');
 const helmet = require('helmet');
@@ -170,15 +171,19 @@ io.on('connection', (socket) => {
                 ? 'bạn'
                 : notification.ownerFullName;
             let countStr = '';
-            // notification.content += ` ${contentObject}: ${notification.text}`;
             if (notification.total > 1)
               countStr = `và ${notification.total - 1} người khác`;
-            notification.content = ` ${countStr} ${notification.content} ${contentObject}: ${text}`;
-            delete notification.receiverIds;
-            delete notification.ownerFullName;
-            delete notification.subjectOwnerId;
-            io.to(receiver.socketId).emit('sendNotification', notification);
-            console.log('[sendNotification] đã gui thông báo');
+            let content = ` ${countStr} ${notification.content} ${contentObject}: ${text}`;
+            const dataResponse = _.omit(notification, [
+              'receiverIds',
+              'ownerFullName',
+              'subjectOwnerId',
+            ]);
+            io.to(receiver.socketId).emit('sendNotification', {
+              ...dataResponse,
+              content,
+            });
+            console.log('[sendNotification] đã gui thông báo cho userId: ', receiverId);
           }
         });
       } catch (error) {

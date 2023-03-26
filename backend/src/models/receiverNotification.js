@@ -35,6 +35,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM(Object.values(GeneralConstants.STATE_NOTIFY)),
         defaultValue: 'ACTIVATED',
       },
+      isView: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isClicked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

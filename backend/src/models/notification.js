@@ -57,14 +57,7 @@ module.exports = (sequelize, DataTypes) => {
       //   allowNull: false,
       // },
 
-      isView: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      isClicked: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
+     
     },
     {
       sequelize,

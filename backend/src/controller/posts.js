@@ -88,9 +88,7 @@ const createNotification = async ({ userId, subjectId, text, type }) => {
       where: {
         subjectId,
         type,
-        // userId,
       },
-      // attributes: ['id'],
     });
     // const onceReceiveTypes = [GeneralConstants.TYPE_NOTIFY.LIKE];
     // if (checkNotification && onceReceiveTypes.includes(type))
@@ -101,7 +99,7 @@ const createNotification = async ({ userId, subjectId, text, type }) => {
     let totalCount = 1;
     if (notification) {
       notification.text = text;
-      notification.isView = false;
+      // notification.isView = false;
       notification.userId = userId;
       notification = await notification.save();
       switch (type) {
@@ -118,6 +116,8 @@ const createNotification = async ({ userId, subjectId, text, type }) => {
           const [receiver, created] = await ReceiverNotification.findOrCreate({
             where: { subjectId, receiverId: userId, type },
           });
+          console.log('created', created);
+          console.log('receiver', !!receiver);
           break;
         }
         default:
@@ -131,6 +131,12 @@ const createNotification = async ({ userId, subjectId, text, type }) => {
         type,
       });
     }
+    await ReceiverNotification.update(
+      { isView: false },
+      {
+        where: { subjectId, type },
+      }
+    );
 
     const receiverList = await ReceiverNotification.findAll({
       where: {
@@ -158,7 +164,7 @@ const createNotification = async ({ userId, subjectId, text, type }) => {
       img: checkUser.profilePicture,
       username: checkUser.username,
       fullName: checkUser.fullName,
-      isView: notification.isView,
+      isView: false,
     };
   } catch (error) {
     console.log(error.message);
@@ -296,6 +302,7 @@ exports.getNotifications = async (req, res, next) => {
           where: { id: notification.subjectId },
           include: includes,
         });
+
         let contentObject =
           userId === subject.userId
             ? 'bạn'
@@ -306,6 +313,11 @@ exports.getNotifications = async (req, res, next) => {
         // van a va {so ng} nguoi khac yeu cau gia nhap nhom {ten nhom}
         if (totalCount > 1) countStr = `và ${totalCount - 1} người khác`;
         content = ` ${countStr} ${content} ${contentObject}: ${notification.text}`;
+        let isView = subjects.find(
+          (ele) =>
+            ele.subjectId === notification.subjectId &&
+            ele.type === notification.type
+        ).isView;
         return {
           userId: notification.user.userId,
           id: notification.id,
@@ -317,7 +329,7 @@ exports.getNotifications = async (req, res, next) => {
           username: notification.user.username,
           fullName: notification.user.fullName,
           createdAt: notification.updatedAt,
-          isView: notification.isView,
+          isView,
         };
       })
     );
@@ -329,37 +341,11 @@ exports.getNotifications = async (req, res, next) => {
 };
 exports.view = async (req, res, next) => {
   try {
-    const subjects = await ReceiverNotification.findAll({
-      where: {
-        receiverId: req.user.id,
-      },
-    });
-    const subjectFilter = {
-      COMMENT: [],
-      LIKE: [],
-    };
-    subjects.forEach((subject) => {
-      subjectFilter[subject.type].push(subject.subjectId);
-    });
-
-    await Notification.update(
+    await ReceiverNotification.update(
       { isView: true },
       {
         where: {
-          [Op.or]: [
-            {
-              subjectId: {
-                [Op.in]: subjectFilter[GeneralConstants.TYPE_NOTIFY.COMMENT],
-              },
-              type: GeneralConstants.TYPE_NOTIFY.COMMENT,
-            },
-            {
-              subjectId: {
-                [Op.in]: subjectFilter[GeneralConstants.TYPE_NOTIFY.LIKE],
-              },
-              type: GeneralConstants.TYPE_NOTIFY.LIKE,
-            },
-          ],
+          receiverId: req.user.id,
           isView: false,
         },
       }
