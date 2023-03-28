@@ -5,7 +5,7 @@ const Message = require('../models/').Message;
 const Attachment = require('../models/').Attachment;
 const Conversation = require('../models/').Conversation;
 const sequelize = require('../models/').sequelize;
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const Api404Error = require('../utils/errors/api404Error');
 const api400Error = require('../utils/errors/api400Error');
 const { first } = require('lodash');
@@ -39,7 +39,7 @@ exports.getMessageOfConversation = async (req, res, next) => {
       where,
       include: [
         {
-          model: User,
+          association: 'user',
           required: true,
           attributes: [['profilePicture', 'img'], 'fullName', 'id', 'username'],
         },
@@ -69,7 +69,11 @@ exports.create = async (req, res, next) => {
       where: { conversationId, userId: senderId },
     });
     if (!participant) throw new Api404Error('Không tìm thấy cuộc trò chuyện');
-    const messageCreated = await Message.create({ senderId, text, conversationId });
+    const messageCreated = await Message.create({
+      senderId,
+      text,
+      conversationId,
+    });
     if (!_.isNil(fileUrl)) {
       await Attachment.create({ messageId: messageCreated.id, fileUrl });
     }
@@ -79,7 +83,7 @@ exports.create = async (req, res, next) => {
         where: { id: messageCreated.id },
         include: [
           {
-            model: User,
+            association: 'user',
             required: true,
             attributes: [['profilePicture', 'img']],
           },
@@ -88,6 +92,8 @@ exports.create = async (req, res, next) => {
           },
         ],
       });
+      participant.isView = false;
+      await participant.save();
     }
 
     res.status(201).json({ data: message });

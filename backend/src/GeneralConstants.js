@@ -35,6 +35,10 @@ module.exports = {
     APPROVED: 'APPROVED',
     FREE: 'FREE',
   },
+  TYPE_CONVERSATION: {
+    PRIVATE: 'private',
+    PUBLIC: 'public',
+  },
   CONTENT_NOTIFY: {
     LIKE: `đã thích bài viết của`,
     COMMENT: 'đã bình luận trong bài viết của',

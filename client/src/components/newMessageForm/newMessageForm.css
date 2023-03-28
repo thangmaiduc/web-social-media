@@ -1,6 +1,6 @@
 .form {
   display: flex;
-  border-top: 2px solid #D3D3D3;
+  border-top: 2px solid #d3d3d3;
 }
 
 .input {
@@ -19,7 +19,9 @@
   font-size: 1.2em;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   outline: none;
 }
 
@@ -28,18 +30,15 @@ input:focus, textarea:focus, select:focus {
   color: #fff !important;
   text-transform: uppercase;
   text-decoration: none;
-  background: #4e01a3;
+  background: var(--primary);
   padding: 5px;
   display: inline-block;
   border-width: 4px;
-  border-color: mediumslateblue;
+  border-color: var(--primary);
   width: 15%;
 }
 
-.sendButton:hover {
-  background: #5e2899;
-}
-
+.sendButton:hover,
 .uploadButton:hover {
   background: #5e2899;
 }
@@ -49,16 +48,16 @@ input:focus, textarea:focus, select:focus {
   color: #fff !important;
   text-transform: uppercase;
   text-decoration: none;
-  background: #4e01a3;
-  padding: 15px 14px 14px 14px;
+  background: var(--primary);
+  padding: 10px;
   display: inline-block;
-  border: 5px outset mediumslateblue;
+  border: 5px outset var(--primary);
 }
 
 .uploadImage {
-  width: 40px;
+  width: 32px;
 }
-.shareImgMessage{
-  height: 10vh;
+.shareImgMessage {
+  height: 5vh;
   object-fit: cover;
 }

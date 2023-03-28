@@ -12,7 +12,8 @@ import {
 } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as userSlice from './redux/slices/userSlice';
-import { notificationSelector, getNotification } from './redux/slices/notificationSlice';
+import { getNotification } from './redux/slices/notificationSlice';
+import { getConversations } from './redux/slices/messengerSlice';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import Search from './pages/search/Search';
@@ -23,21 +24,22 @@ function App() {
   const dispatch = useDispatch();
   const user = useSelector(userSlice.userSelector);
   const fetch = useSelector(userSlice.fetchSelector);
-  
+
   useEffect(() => {
     if (_.get(user, 'username', null) !== null) {
 
       dispatch(userSlice.getFriends(user.username));
 
     }
-    const getNotifications = async () => {
+    const getInformation = async () => {
       try {
         await dispatch(getNotification());
+        await dispatch(getConversations());
       } catch (error) {
 
       }
     }
-    getNotifications();
+    getInformation();
   }, [user]);
   useEffect(() => {
     const getUser = async () => {
@@ -63,7 +65,7 @@ function App() {
         <Route path="/forgot-password">
           {user ? <Redirect to="/" /> : <ForgotPassword />}
         </Route>
-        <Route path="/messenger">
+        <Route path="/messenger/:conversationId">
           {!user ? <Redirect to="/" /> : <Messenger />}
         </Route>
         <Route path="/profile/:username">

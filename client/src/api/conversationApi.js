@@ -3,33 +3,38 @@ import api from './API';
 const conversationApi = {
   getOfUser: async (payload) => {
     const url = api.GET_CONVERSATIONS;
-    const response = await axiosClient.get(url,payload );
+    const response = await axiosClient.get(url, payload);
+    return response.data;
+  },
+  viewMessenger: async (payload) => {
+    const url = api.VIEW_CONVERSATIONS;
+    const response = await axiosClient.post(url, payload);
     return response.data;
   },
   newConversation: async (payload) => {
     const url = api.GET_CONVERSATIONS;
-    const response = await axiosClient.post(url,payload);
+    const response = await axiosClient.post(url, payload);
     return response;
   },
-  editConversation: async (conversationId,payload) => {
-    const url = api.GET_CONVERSATIONS+conversationId;
-    const response = await axiosClient.put(url,payload);
+  editConversation: async (conversationId, payload) => {
+    const url = api.GET_CONVERSATIONS + conversationId;
+    const response = await axiosClient.put(url, payload);
     return response;
   },
   addMember: async (conversationId, payload) => {
-    const url = api.ADD_MEMBER+conversationId;
-    const response = await axiosClient.post(url,payload);
+    const url = api.ADD_MEMBER + conversationId;
+    const response = await axiosClient.post(url, payload);
     return response;
   },
-  getMessage: async (conversationId,payload) => {
+  getMessage: async (conversationId, payload) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    const url = api.GET_MESSAGES+conversationId;
+    const url = api.GET_MESSAGES + conversationId;
     const response = await axiosClient.get(url, payload);
     return response;
   },
   getMember: async (conversationId) => {
     // Cái đường dẫn API này tuỳ thuộc vào BE của bạn cho cái nào thì dùng cái đó
-    const url = api.ADD_MEMBER+conversationId;
+    const url = api.ADD_MEMBER + conversationId;
     const response = await axiosClient.get(url);
     return response.data;
   },
@@ -38,7 +43,6 @@ const conversationApi = {
     const response = await axiosClient.post(url, payload);
     return response.data;
   },
-  
 };
 
 export default conversationApi;

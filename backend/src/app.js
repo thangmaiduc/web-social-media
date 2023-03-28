@@ -183,7 +183,10 @@ io.on('connection', (socket) => {
               ...dataResponse,
               content,
             });
-            console.log('[sendNotification] đã gui thông báo cho userId: ', receiverId);
+            console.log(
+              '[sendNotification] đã gui thông báo cho userId: ',
+              receiverId
+            );
           }
         });
       } catch (error) {
@@ -191,12 +194,13 @@ io.on('connection', (socket) => {
       }
     });
 
-    socket.on('sendMessage', ({ senderId, receiverId, text, fileUrl }) => {
-      const user = getUser(receiverId);
+    socket.on('sendMessage', ({ senderId, conversationId, text, fileUrl }) => {
       console.log(
         '[Event sendMessage]: ',
-        JSON.stringify({ senderId, receiverId, text, fileUrl })
+        JSON.stringify({ senderId, conversationId, text, fileUrl })
       );
+      const participants = awa
+      const user = getUser(receiverId);
       if (user)
         io.to(user.socketId).emit('getMessage', {
           senderId,

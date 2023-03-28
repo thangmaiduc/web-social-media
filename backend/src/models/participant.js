@@ -10,20 +10,22 @@ module.exports = (sequelize, DataTypes) => {
       //   foreignKey: 'userId',
       // });
       Participant.belongsTo(models.Conversation, {
-        foreignKey: "conversationId",
+        foreignKey: 'conversationId',
+        as: 'conversation',
       });
       Participant.belongsTo(models.User, {
-        foreignKey: "userId",
+        foreignKey: 'userId',
+        as: 'user',
       });
     }
   }
   Participant.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
+      // id: {
+      //   type: DataTypes.INTEGER,
+      //   autoIncrement: true,
+      //   primaryKey: true,
+      // },
       conversationId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -32,8 +34,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      type: {
-        type: DataTypes.ENUM('public', 'private'),
+      isAdmin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isView: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isClick: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
     {

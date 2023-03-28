@@ -20,6 +20,7 @@ const api = {
   UPLOAD: '/cloudinary-upload',
 
   GET_CONVERSATIONS: '/conversations/',
+  VIEW_CONVERSATIONS: '/conversations/view',
   ADD_MEMBER: '/conversations/members/',
 
   GET_MESSAGES: '/messages/',

@@ -20,204 +20,139 @@ import useQuery from '../../hooks/useQuery';
 import useQuerySearch from '../../hooks/useQuerySearch';
 import api from '../../api/API';
 import userApi from '../../api/userApi';
+import { useParams } from 'react-router-dom';
+import { messengerSelector } from '../../redux/slices/messengerSlice';
+import useDebounce from '../../hooks/useDebounce';
 export default function Messenger() {
-  const [conversations, setConversations] = useState([]);
-  const [currentChat, setCurrentChat] = useState(null);
+  // const [conversations, setConversations] = useState([]);
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [file, setFile] = useState();
-  const [fileUrl, setFileUrl] = useState('');
+
   const user = useSelector(userSelector);
   const friends = useSelector(friendSelector);
-  const scrollRef = useRef();
-  const { isTyping, startTyping, stopTyping, cancelTyping } = useTyping();
+
+  // const { isTyping, startTyping, stopTyping, cancelTyping } = useTyping();
   const [isAdd, setIsAdd] = useState(false)
   const [value, setValue] = useState([]);
   const fixedOptions = []
-  const [textSearch, setTextSearch] = useState('')
+
   const [title, setTitle] = useState('')
   const [page, setPage] = useState(0)
-  const [lengthMes, setLengthMes] = useState(0)
-  const [pageMessage, setPageMessage] = useState(0)
+
   const [isEdited, setIsEdited] = useState(false)
+
   const socket = useContext(SocketContext);
 
-  const sendMessage = async () => {
-    if (!socket) return;
-    let messageObject = {
-      senderId: user.id,
-      conversationId: currentChat.conversationId,
-      text: newMessage,
-    };
-    let objMesSocket = {
-      senderId: user.id,
-      receiverId: currentChat.userId,
-      text: newMessage,
-    }
-    if (file) {
-      messageObject = {
-        ...messageObject,
-        fileUrl
-      };
-      objMesSocket = {
-        ...objMesSocket,
-        fileUrl
-      };
-      setNewMessage('');
-      setFile();
-    }
-    socket.emit('sendMessage', objMesSocket);
-    const message = await conversationApi.newMessage(messageObject)
-    setMessages(m => [...m, message])
-  };
-  const handleSendMessage = (event) => {
-    event.preventDefault();
-    sendMessage(newMessage);
-    setNewMessage('');
-  };
+  const conversations = useSelector(messengerSelector);
+  const { conversationId } = useParams();
+  const [currentChat, setCurrentChat] = useState();
+  const [textSearch, setTextSearch] = useState('')
+  const debouncedValue = useDebounce(textSearch, 500);
+  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, 0, debouncedValue);
+  let messengers = debouncedValue != '' ? data : conversations;
 
   useEffect(() => {
-    if (!socket) return;
-    socket.on('getMessage', (data) => {
-      setArrivalMessage({
-        sender: data.senderId,
-        text: data.text,
-        fileUrl: data.fileUrl
-      });
-    });
-    if (conversations.length > 0) setCurrentChat(conversations[0]);
+    setCurrentChat(messengers.find(item => item.id === Number(conversationId)));
+  }, [conversationId])
 
-  }, []);
 
-  useEffect(() => {
-    const getMessage = async () => {
-      console.log('currentChat', currentChat);
-      console.log('arrivalMessage', arrivalMessage);
-      if (arrivalMessage &&
-        currentChat.userId === arrivalMessage.sender) {
-        const sender = await userApi.getUserById(arrivalMessage.sender)
-        let obj = {
-          ...arrivalMessage,
-          createdAt: Date.now(),
-        }
-        obj.profilePicture = sender.profilePicture;
-        console.log('obj', obj);
-        setMessages((prev) => [...prev, obj]);
-      }
-    }
-    getMessage()
-  }, [arrivalMessage, currentChat]);
 
- 
 
-  useEffect(() => {
-    const getConversations = async () => {
-      try {
-        const res = await conversationApi.getOfUser();
-        setConversations(res);
-      } catch (err) { }
-    };
-    getConversations();
-  }, [user.id]);
-  useEffect(() => {
-    const getMessages = async () => {
-      try {
-        if (!currentChat) return;
-        if (currentChat && !currentChat.conversationId) return;
-        const res = await conversationApi.getMessage(
-          currentChat?.conversationId
-        );
-        setMessages(res.data);
-        setLengthMes(res.length);
-        setTitle(currentChat?.title)
+  // useEffect(() => {
+  //   if (!socket) return;
+  //   socket.on('getMessage', (data) => {
+  //     setArrivalMessage({
+  //       sender: data.senderId,
+  //       text: data.text,
+  //       fileUrl: data.fileUrl
+  //     });
+  //   });
+  //   if (conversations.length > 0) setCurrentChat(conversations[0]);
 
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    getMessages();
-  }, [currentChat]);
+  // }, []);
 
-  const startTypingMessage = () => {
-    if (!socket) return;
-    socket.emit('start typing message', {
-      senderId: socket.id,
-      user,
-    });
-  };
+  // useEffect(() => {
+  //   const getMessage = async () => {
+  //     console.log('currentChat', currentChat);
+  //     console.log('arrivalMessage', arrivalMessage);
+  //     if (arrivalMessage &&
+  //       currentChat.userId === arrivalMessage.sender) {
+  //       const sender = await userApi.getUserById(arrivalMessage.sender)
+  //       let obj = {
+  //         ...arrivalMessage,
+  //         createdAt: Date.now(),
+  //       }
+  //       obj.profilePicture = sender.profilePicture;
+  //       console.log('obj', obj);
+  //       setMessages((prev) => [...prev, obj]);
+  //     }
+  //   }
+  //   getMessage()
+  // }, [arrivalMessage, currentChat]);
 
-  const stopTypingMessage = () => {
-    if (!socket) return;
-    socket.emit('stop typing message', {
-      senderId: socket.id,
-      user,
-    });
-  };
 
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
-  async function selectFile(e) {
-    if (typeof e.target.files[0] !== 'undefined') {
-      const uploadData = new FormData();
-      uploadData.append('file', e.target.files[0], 'file');
-      setFile(e.target.files[0]);
-      const res = await commonApi.cloudinaryUpload(uploadData);
-      setFileUrl(res.secure_url);
-    } else {
-      return null;
-    }
-  }
+  // useEffect(() => {
+  //   const getConversations = async () => {
+  //     try {
+  //       const res = await conversationApi.getOfUser();
+  //       setConversations(res);
+  //     } catch (err) { }
+  //   };
+  //   getConversations();
+  // }, [user.id]);
 
-  useEffect(() => {
-    if (isTyping) startTypingMessage();
-    else {
-      stopTypingMessage();
-    }
-  }, [isTyping]);
+
+
+  // useEffect(() => {
+  //   scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // }, [messages]);
+
+
+
 
   const handleAdd = () => {
     setIsAdd(true);
     setCurrentChat(false)
   }
 
-  const handleSubmit = async () => {
-    setIsAdd(false);
-    try {
-      if (!currentChat) {
-        let memberIds = value.map(member => member.followedId)
-        let res = await conversationApi.newConversation({ users: memberIds });
-        notify(res.message);
-        setConversations(pre => [...pre, res.data])
-        setCurrentChat(res.data)
-      } else {
-        let memberIds = value.map(member => member.followedId)
-        let res = await conversationApi.addMember(currentChat.conversationId, { users: memberIds });
-        notify(res.message);
-      }
-    } catch (error) {
+  // const handleSubmit = async () => {
+  //   setIsAdd(false);
+  //   try {
+  //     if (!currentChat) {
+  //       let memberIds = value.map(member => member.followedId)
+  //       let res = await conversationApi.newConversation({ users: memberIds });
+  //       notify(res.message);
+  //       setConversations(pre => [...pre, res.data])
+  //       setCurrentChat(res.data)
+  //     } else {
+  //       let memberIds = value.map(member => member.followedId)
+  //       let res = await conversationApi.addMember(currentChat.conversationId, { users: memberIds });
+  //       notify(res.message);
+  //     }
+  //   } catch (error) {
 
-    }
-  }
+  //   }
+  // }
 
-  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, page,);
-  useEffect(() => {
-    setConversations(data)
-  }, [data]);
-  useEffect(() => {
-    const getConversations = async () => {
-      try {
-        const res = await conversationApi.getOfUser({ params: { textSearch } })
-        setConversations(res);
-      } catch (error) {
 
-      }
-    }
-    getConversations()
-  }, [textSearch]);
+  // useEffect(() => {
+  //   setConversations(data)
+  // }, [data]);
+  // useEffect(() => {
+  //   const getConversations = async () => {
+  //     try {
+  //       const res = await conversationApi.getOfUser({ params: { textSearch } })
+  //       setConversations(res);
+  //     } catch (error) {
+
+  //     }
+  //   }
+  //   getConversations()
+  // }, [textSearch]);
   const observer = useRef()
 
   const lastBookElementRef = useCallback(node => {
@@ -230,48 +165,43 @@ export default function Messenger() {
     })
     if (node) observer.current.observe(node)
   }, [loading, hasMore])
-  useEffect(() => {
-    const getMessages = async () => {
-      try {
-        if (pageMessage === 0) return;
-        const res = await conversationApi.getMessage(
-          currentChat?.conversationId, {
-          params: {
-            page: pageMessage
-          }
-        }
-        );
-        setMessages([...res.data, ...messages]);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    getMessages();
-  }, [pageMessage])
+  // useEffect(() => {
+  //   const getMessages = async () => {
+  //     try {
+  //       if (pageMessage === 0) return;
+  //       const res = await conversationApi.getMessage(
+  //         currentChat?.conversationId, {
+  //         params: {
+  //           page: pageMessage
+  //         }
+  //       }
+  //       );
+  //       setMessages([...res.data, ...messages]);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+  //   getMessages();
+  // }, [pageMessage])
 
-  const handleShowMore = () => {
-    if ((pageMessage + 1) * 10 > lengthMes) return
-    if ((pageMessage + 1) * 10 < lengthMes) {
-      setPageMessage(p => p + 1)
-    }
-  }
 
-  const handleRename = async () => {
-    setIsEdited(false);
-    try {
-      const res = await conversationApi.editConversation(currentChat.conversationId, { title });
-      notify(res.message);
-      conversations.forEach(c => {
-        if (c.conversationId === res.data.id) {
-          c.title = res.data.title;
-          setCurrentChat(c);
-        }
-      })
-      setConversations(conversations)
-    } catch (error) {
 
-    }
-  }
+  // const handleRename = async () => {
+  //   setIsEdited(false);
+  //   try {
+  //     const res = await conversationApi.editConversation(currentChat.conversationId, { title });
+  //     notify(res.message);
+  //     conversations.forEach(c => {
+  //       if (c.conversationId === res.data.id) {
+  //         c.title = res.data.title;
+  //         setCurrentChat(c);
+  //       }
+  //     })
+  //     setConversations(conversations)
+  //   } catch (error) {
+
+  //   }
+  // }
 
   const handleAddMember = async () => {
     setIsAdd(true);
@@ -296,12 +226,11 @@ export default function Messenger() {
                 Thêm cuộc trò chuyện
               </Button>
             </div>
-            {conversations.length > 0 &&
-              conversations.map((c, i) => (
-                <div ref={lastBookElementRef} key={i} onClick={() => { setIsAdd(false); setCurrentChat(c); setIsEdited(false) }}>
-                  <Conversation conversation={c} currentUser={user} />
-                </div>
-              ))}
+            {messengers.map((c, i) => (
+              <div ref={lastBookElementRef} key={i} onClick={() => { setIsAdd(false); setCurrentChat(c); setIsEdited(false) }}>
+                <Conversation conversation={c} currentUser={user} />
+              </div>
+            ))}
           </div>
         </div>
         <div className='chatBox'>
@@ -331,7 +260,7 @@ export default function Messenger() {
               < Button size='small' variant="contained"
                 color='primary'
                 startIcon={<Add />} onClick={
-                  handleSubmit
+                  {/* handleSubmit */ }
                 }>
                 Thêm
               </Button>
@@ -341,64 +270,33 @@ export default function Messenger() {
           <div className='chatBoxWrapper'>
             {currentChat ? (
               <>
-                {currentChat.type === 'private' ?
-                  <div className="chatTitle">
-                    <img className="sidebarFriendImg" src={currentChat?.User?.profilePicture || currentChat?.img} alt="" />
-                    <span className="sidebarFriendName">{currentChat?.User?.fullName || currentChat?.title}</span>
-                  </div> :
-                  <div className="chatTitle">
-                    <img className="sidebarFriendImg" src={currentChat?.img} alt="" />
-                    {!isEdited ? <span className="sidebarFriendName">{currentChat?.title}</span> :
-                      <div>
-
-                        <TextField id="outlined-search" value={title} onChange={(e) => setTitle(e.target.value)} />
-
-                        < Button size='small' variant="contained"
-                          color='primary'
-                          onClick={
-                            handleRename
-                          }>
-                          Sửa tên
-                        </Button>
-                      </div>
-                    }
-                    <div className="chatTitleRight">
-                      {(currentChat?.Conversation?.creatorId === user?.id || currentChat?.creatorId === user?.id) &&
-                        <div className="editButton" onClick={() => setIsEdited(true)} >
-                          <Tooltip title="Sửa tên nhóm">
-
-                            <Edit />
-                          </Tooltip>
-                        </div>}
-                      <div className="removeButton" >
-                        <Tooltip title="Thêm thành viên" onClick={handleAddMember}>
-                          <PersonAdd />
-                        </Tooltip>
-                      </div>
-
-                    </div>
-                  </div>
-                }
-
-
-                <div className='chatBoxTop'>
-                  <button onClick={handleShowMore}>Load thêm tin nhắn</button>
-                  {messages.map((m) => (
+                <div className="chatTitle">
+                  {currentChat.img.length > 1 ? (
+                    <div className='sidebarFriendImg'>
+                      <img src={currentChat.img[0]} alt="ss" className='imageNotification2 image-1' />
+                      <img src={currentChat.img[1]} alt="ss" className='imageNotification2 image-2' />
+                    </div>) :
+                    (<div className='sidebarFriendImg'>
+                      <img src={currentChat.img[0]} alt="ss" className='imageMessenger' />
+                    </div>)}
+                  <span className="sidebarFriendName">{currentChat?.title}</span>
+                </div>
+                
+                  <Message conversationId={conversationId} />
+                  {/* {messages.map((m) => (
                     <div key={m.id} ref={scrollRef}>
                       <Message message={m} own={m.senderId === user.id} />
                     </div>
-                  ))}
-                </div>
-                <NewMessageForm
+                  ))} */}
+                
+                {/* <NewMessageForm
                   selectFile={selectFile}
                   file={file}
                   setFile={setFile}
                   newMessage={newMessage}
                   setNewMessage={setNewMessage}
-                  handleStartTyping={startTyping}
-                  handleStopTyping={stopTyping}
                   handleSubmit={handleSendMessage}
-                />
+                /> */}
               </>
             ) : (
               <span className='noConversationText'>

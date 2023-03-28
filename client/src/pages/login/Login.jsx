@@ -9,6 +9,7 @@ import {
 
 } from '../../redux/slices/userSlice';
 import { notificationSelector, getNotification } from '../../redux/slices/notificationSlice';
+import { getConversations } from '../../redux/slices/messengerSlice';
 import { useEffect } from 'react';
 import userApi from '../../api/userApi';
 import { notify, ToastContainer } from '../../utility/toast';
@@ -30,6 +31,7 @@ export default function Login() {
 
     );
     await dispatch(getNotification())
+    await dispatch(getConversations())
   };
 
   const google = () => {
@@ -38,7 +40,7 @@ export default function Login() {
 
   return (
     <div className="login">
-      <ToastContainer autoClose={2000} pauseOnFocusLoss={false}/>
+      <ToastContainer autoClose={2000} pauseOnFocusLoss={false} />
       <div className="loginWrapper">
         <div className="loginLeft">
           <h3 className="loginLogo">Social Media</h3>

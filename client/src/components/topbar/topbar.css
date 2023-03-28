@@ -107,8 +107,26 @@
   font-weight: 700;
   padding: 8px;
 }
+.searchMessengerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: solid 1px grey;
+  border-radius: 10px;
+  padding: 4px 12px;
+  background-color: #f0f2f5;
+  margin: 15px;
+}
+.searchInput {
+  flex: 1;
+  background-color: #f0f2f5;
+}
+.logoSearch {
+  text-align: center;
+  margin: auto 0;
+  padding-top: 3px;
+}
 .wrapperItems {
-  /* margin-top: 30px; */
 }
 .bodyNotification {
   display: flex;
@@ -117,29 +135,50 @@
   align-items: center;
   width: 100%;
   padding: 10px;
+  position: relative;
 }
 .bodyNotification:hover {
   background-color: rgba(22, 24, 35, 0.03);
   cursor: pointer;
+}
+.wrapperImageMessage {
+  width: 56px;
+  height: 56px;
+  position: relative;
+  margin-right: 8px;
 }
 .imageNotification {
   width: 56px;
   height: 56px;
   border-radius: 100%;
   object-fit: cover;
-  margin-right: 8px;
 }
+
 .contentNotification strong {
   font-weight: 600;
 }
 
 .containerContentNotification {
+  font-weight: 600;
+
 }
 .contentNotification {
   margin-top: 0;
   word-break: break-word;
+  font-weight: 400;
 }
+
 .timeNotification {
   font-size: 13px;
   color: hsl(214, 89%, 52%);
+}
+
+.tickView {
+  width: 12px;
+  height: 12px;
+  background-color: var(--primary);
+  border-radius: 100%;
+  position: absolute;
+  right: 0;
+  transform: translateX(-100%);
 }

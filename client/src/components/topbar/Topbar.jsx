@@ -9,9 +9,11 @@ import { format } from 'timeago.js';
 import { ToastContainer } from '../../utility/toast';
 import WrapperPopper from '../popper/WrapperPopper';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
-import notificationSlice, { notificationSelector, amountNotificationSelector, view } from '../../redux/slices/notificationSlice';
+import notificationSlice, { notificationSelector, amountNotificationSelector, viewNotification } from '../../redux/slices/notificationSlice';
+import { amountConversationSelector, viewMessenger } from '../../redux/slices/messengerSlice';
 import './topbar.css';
 import { SocketContext } from '../../utility/socket';
+import MessagePopper from './MessagePopper';
 
 export default function Topbar() {
   const user = useSelector(userSelector);
@@ -21,9 +23,11 @@ export default function Topbar() {
   const history = useHistory()
   const notifications = useSelector(notificationSelector);
   const amountNotification = useSelector(amountNotificationSelector)
+  const amountConversation = useSelector(amountConversationSelector)
   const socket = useContext(SocketContext);
   // const [notifications, setNotifications] = useState(noti)
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorElNotification, setAnchorElNotification] = useState(null);
+  const [anchorElMessenger, setAnchorElMessenger] = useState(null);
   const [notificationArrive, setNotificationArrive] = useState(null);
 
   useEffect(() => {
@@ -57,18 +61,28 @@ export default function Topbar() {
   }
   const PF = process.env.REACT_APP_PUBLIC_FOLDER;
 
-  const open = Boolean(anchorEl);
-  const handleClick = async (event) => {
-    setAnchorEl(event.currentTarget);
-    await dispatch(view());
+  const handleClickNotification = async (event) => {
+    setAnchorElNotification(event.currentTarget);
+    await dispatch(viewNotification());
 
   };
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleClickMessenger = (event) => {
+    setAnchorElMessenger(event.currentTarget);
+
+
+  };
+  const openNotification = Boolean(anchorElNotification);
+  const handleCloseNotification = () => {
+    setAnchorElNotification(null);
+  };
+  const openMessenger = Boolean(anchorElMessenger);
+  const handleCloseMessenger = async () => {
+    setAnchorElMessenger(null);
+    await dispatch(viewMessenger());
   };
   return (
     <div className='topbarContainer'>
-      <ToastContainer autoClose={2000} pauseOnFocusLoss={false}/>
+      <ToastContainer autoClose={2000} pauseOnFocusLoss={false} />
       <div className='topbarLeft'>
         <Link to='/' style={{ textDecoration: 'none' }}>
           <span className='logo'>Social Media</span>
@@ -100,16 +114,30 @@ export default function Topbar() {
           </div>
           <div className='topbarIconItem'>
 
-            <Link to='/messenger' style={{ textDecoration: 'none' }}>
+            {/* <Link to='/messenger' style={{ textDecoration: 'none' }}> */}
 
-              <Chat className='logoIcon' />
-            </Link>
-            <span className='topbarIconBadge'>2</span>
+
+            <Chat className='logoIcon'
+              id="basic-button"
+              size='small' variant="contained"
+              aria-controls={openMessenger ? 'basic-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={openMessenger ? 'true' : undefined}
+              onClick={handleClickMessenger}
+            />
+            {/* </Link> */}
+            <span className='topbarIconBadge'>{amountConversation}</span>
           </div>
+          <MessagePopper
+            open={openMessenger}
+            anchorEl={anchorElMessenger}
+            onClose={handleCloseMessenger}
+            notifications={notifications}
+          />
           <Popover
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
+            open={openNotification}
+            anchorEl={anchorElNotification}
+            onClose={handleCloseNotification}
             // transition
             anchorOrigin={{
               vertical: 'bottom',
@@ -144,10 +172,10 @@ export default function Topbar() {
             <Notifications className='logoIcon'
               id="basic-button"
               size='small' variant="contained"
-              aria-controls={open ? 'basic-menu' : undefined}
+              aria-controls={openNotification ? 'basic-menu' : undefined}
               aria-haspopup="true"
-              aria-expanded={open ? 'true' : undefined}
-              onClick={handleClick} />
+              aria-expanded={openNotification ? 'true' : undefined}
+              onClick={handleClickNotification} />
             <span className='topbarIconBadge'>{amountNotification}</span>
           </div>
 
