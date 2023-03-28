@@ -26,6 +26,22 @@ const messengerSlice = createSlice({
     isFetching: false,
   },
   reducers: {
+    updateLatestMessage: (state, action) => {
+      const index = state.items.findIndex(
+        (item) => item.id === action.payload.id
+      );
+      const conversation = state.items.find(
+        (item) => item.id === action.payload.id
+      );
+      if (index >= 0) state.items.splice(index, 1);
+      state.items = [
+        {
+          ...conversation,
+          ...action.payload,
+        },
+        ...state.items,
+      ];
+    },
     // receiveNotification: (state, action) => {
     //   const index = state.items.findIndex(
     //     (item) =>

@@ -10,7 +10,7 @@ import { ToastContainer } from '../../utility/toast';
 import WrapperPopper from '../popper/WrapperPopper';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import notificationSlice, { notificationSelector, amountNotificationSelector, viewNotification } from '../../redux/slices/notificationSlice';
-import { amountConversationSelector, viewMessenger } from '../../redux/slices/messengerSlice';
+import messengerSlice, { amountConversationSelector, viewMessenger } from '../../redux/slices/messengerSlice';
 import './topbar.css';
 import { SocketContext } from '../../utility/socket';
 import MessagePopper from './MessagePopper';
@@ -28,11 +28,14 @@ export default function Topbar() {
   // const [notifications, setNotifications] = useState(noti)
   const [anchorElNotification, setAnchorElNotification] = useState(null);
   const [anchorElMessenger, setAnchorElMessenger] = useState(null);
-  const [notificationArrive, setNotificationArrive] = useState(null);
 
   useEffect(() => {
     socket.on('sendNotification', (data) => {
       dispatch(notificationSlice.actions.receiveNotification(data));
+    })
+    socket.on('getMessenger', (conversation) => {
+      console.log('getMessenger>>>>>>>>', conversation);
+      dispatch(messengerSlice.actions.updateLatestMessage({ ...conversation, isView: false }));
     })
     //   // console.log(data);
     //   // setNotifications([...notifications, data]);

@@ -13,11 +13,12 @@ export default function Conversation({ conversation }) {
 
   if (!!conversation.latestMessage.senderId) {
     subject = conversation.latestMessage.senderId === user.id ? 'bạn:' : `${conversation.latestMessage.fullNameSender}:`;
+    subject = conversation.type === 'private' ? '' : subject;
     text = subject + ' ' + conversation.latestMessage.text
   }
   return (
     <Link to={`/messenger/${conversation.id}`} key={conversation.id} className="bodyNotification">
-      {conversation.img.length > 1 ? (
+      {conversation?.img?.length > 1 ? (
         <div className='wrapperImageMessage'>
           <img src={conversation.img[0]} alt="ss" className='imageNotification2 image-1' />
           <img src={conversation.img[1]} alt="ss" className='imageNotification2 image-2' />

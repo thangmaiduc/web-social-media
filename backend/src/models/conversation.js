@@ -1,5 +1,7 @@
 'use strict';
-const { Model } = require('sequelize');
+const { Model, Op } = require('sequelize');
+const _ = require('lodash');
+const GeneralConstants = require('../GeneralConstants');
 // const { gzipSync, gunzipSync } = require('zlib');
 const Participant = require('./index').Participant;
 
@@ -25,6 +27,66 @@ module.exports = (sequelize, DataTypes) => {
         as: 'messages',
       });
     }
+    async getImg(userId = null) {
+      const img = [];
+      if (_.isEmpty(this.img)) {
+        let that = await Conversation.findByPk(this.id, {
+          include: [
+            {
+              association: 'participants',
+              include: [
+                {
+                  association: 'user',
+                  attributes: ['profilePicture'],
+                },
+              ],
+              where: {
+                userId: {
+                  [Op.ne]: userId,
+                },
+              },
+            },
+          ],
+        });
+        that.participants.map(
+          (participant, idx) =>
+            idx < 2 && img.push(participant.user.profilePicture)
+        );
+      } else {
+        img.push(this.img);
+      }
+      return img;
+    }
+
+    async getDisplayName(userId) {
+      if (!_.isEmpty(this.title)) return this.title;
+      let that = await Conversation.findByPk(this.id, {
+        include: [
+          {
+            association: 'participants',
+            include: [
+              {
+                association: 'user',
+                attributes: ['fullName'],
+              },
+            ],
+          },
+        ],
+      });
+      const participants = that.participants;
+      let title = '';
+      if (this.type === GeneralConstants.TYPE_CONVERSATION.PRIVATE) {
+        title = participants.find((item) => item.userId !== userId).user
+          .fullName;
+      } else {
+        participants.forEach((item) => {
+          title += item.user.fullName + ', ';
+        });
+        title = title.substring(0, title.length - 2);
+      }
+      return title;
+    }
+    
   }
   Conversation.init(
     {
@@ -36,24 +98,8 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING(40),
         defaultValue: '',
-        // get() {
-        //   const storedValue = this.getDataValue('content');
-        //   const gzippedBuffer = Buffer.from(storedValue, 'base64');
-        //   const unzippedBuffer = gunzipSync(gzippedBuffer);
-        //   return unzippedBuffer.toString();
-        // },
-        // set(value) {
-        //   const gzippedBuffer = gzipSync(value);
-        //   this.setDataValue('content', gzippedBuffer.toString('base64'));
-        // },
       },
-      // displayName: {
-      //   type: DataTypes.VIRTUAL,
-      //   async get() {},
-      //   set(value) {
-      //     this.setDataValue('displayName', value);
-      //   },
-      // },
+
       img: {
         type: DataTypes.STRING,
         defaultValue: null,

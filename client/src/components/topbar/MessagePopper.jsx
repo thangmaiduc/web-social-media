@@ -49,7 +49,7 @@ function MessagePopper({ onClose, open, anchorEl }) {
                     {
                         messengers.map(item => {
                             let subject, text;
-                            if (!!item.latestMessage.senderId) {
+                            if (!!item?.latestMessage?.senderId) {
                                 subject = item.latestMessage.senderId === user.id ? 'bạn:' : `${item.latestMessage.fullNameSender}:`;
                                 text = subject + ' ' + item.latestMessage.text
                             }

@@ -85,15 +85,29 @@ exports.create = async (req, res, next) => {
           {
             association: 'user',
             required: true,
-            attributes: [['profilePicture', 'img']],
+            attributes: [
+              ['profilePicture', 'img'],
+              'username',
+              'fullName',
+              'id',
+            ],
           },
           {
             model: Attachment,
           },
         ],
       });
-      participant.isView = false;
-      await participant.save();
+      await Participant.update(
+        { isView: false },
+        {
+          where: {
+            conversationId,
+            userId: {
+              [Op.ne]: senderId,
+            },
+          },
+        }
+      );
     }
 
     res.status(201).json({ data: message });

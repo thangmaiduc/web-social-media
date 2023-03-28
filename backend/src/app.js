@@ -9,11 +9,15 @@ const swaggerFile = require('../swagger_output.json');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
 const redisClient = require('./utils/redis');
+const Participant = require('./models/').Participant;
+const Conversation = require('./models/').Conversation;
+const { Op, Association } = require('sequelize');
 
 // const session = require('express-session');
 require('./passport-config');
 const express = require('express');
 const { createNotification } = require('./controller/posts');
+
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
@@ -194,19 +198,55 @@ io.on('connection', (socket) => {
       }
     });
 
-    socket.on('sendMessage', ({ senderId, conversationId, text, fileUrl }) => {
-      console.log(
-        '[Event sendMessage]: ',
-        JSON.stringify({ senderId, conversationId, text, fileUrl })
-      );
-      const participants = awa
-      const user = getUser(receiverId);
-      if (user)
-        io.to(user.socketId).emit('getMessage', {
-          senderId,
-          text,
-          fileUrl,
-        });
+    socket.on('sendMessage', async ({ ...props }) => {
+      console.log('[Event sendMessage]: ', JSON.stringify(props));
+      const receiver = await Participant.findAll({
+        where: {
+          conversationId: props.conversationId,
+          userId: {
+            [Op.ne]: props.senderId,
+          },
+        },
+      });
+      const receiverIds = receiver.map((participant) => participant.userId);
+      console.log('receiverIds>>>>>>>>>', receiverIds);
+      receiverIds.forEach(async (receiverId) => {
+        const user = getUser(receiverId);
+        if (user) {
+          io.to(user.socketId).emit('getMessage', props);
+
+          let conversation = await Conversation.findByPk(props.conversationId, {
+            include: [
+              {
+                association: 'participants',
+                where: {
+                  userId: receiverId,
+                },
+              },
+            ],
+          });
+          const title = await conversation.getDisplayName();
+          const img = await conversation.getImg();
+          io.to(user.socketId).emit('getMessenger', {
+            id: conversation.id,
+            type: conversation.type,
+            title,
+            isAdmin: conversation.participants[0].isAdmin,
+            img,
+            isView: false,
+            latestMessage: {
+              text: props.text,
+              senderId: props.senderId,
+              fullNameSender: props.user.fullName,
+            },
+            updatedAt: props.updatedAt,
+          });
+          console.log(
+            '[getMessage,getMessenger ] đã gui thông báo cho userId: ',
+            receiverId
+          );
+        }
+      });
     });
 
     socket.on('disconnect', () => {
