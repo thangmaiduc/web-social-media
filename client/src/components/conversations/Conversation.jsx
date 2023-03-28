@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 import "./conversation.css";
 
-export default function Conversation({ conversation }) {
+export default function Conversation({ conversation, selected }) {
   const user = useSelector(userSelector);
   let subject, text;
 
@@ -17,7 +17,7 @@ export default function Conversation({ conversation }) {
     text = subject + ' ' + conversation.latestMessage.text
   }
   return (
-    <Link to={`/messenger/${conversation.id}`} key={conversation.id} className="bodyNotification">
+    <Link to={`/messenger/${conversation.id}`} key={conversation.id} className={`bodyNotification ${selected ? 'activeConversation' : null}`}>
       {conversation?.img?.length > 1 ? (
         <div className='wrapperImageMessage'>
           <img src={conversation.img[0]} alt="ss" className='imageNotification2 image-1' />

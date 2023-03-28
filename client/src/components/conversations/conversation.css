@@ -33,6 +33,9 @@
   font-weight: 400;
   color: rgb(168, 168, 168);
 }
+.activeConversation {
+  background-color: #eaf3ff;
+}
 .cropText {
   overflow: hidden;
   display: -webkit-box;
