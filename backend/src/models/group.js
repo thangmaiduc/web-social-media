@@ -46,6 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       Group.hasMany(models.Post, {
         foreignKey: 'groupId',
+        as: 'posts',
       });
     }
   }
@@ -59,6 +60,11 @@ module.exports = (sequelize, DataTypes) => {
       title: {
         type: DataTypes.STRING(40),
         defaultValue: '',
+      },
+      img: {
+        type: DataTypes.STRING,
+        defaultValue:
+          'https://www.facebook.com/images/groups/groups-default-cover-photo-2x.png',
       },
       creatorId: {
         type: DataTypes.INTEGER,

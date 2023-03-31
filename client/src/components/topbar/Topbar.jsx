@@ -5,6 +5,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { Button, Popover } from '@material-ui/core';
 import { useContext, useEffect, useState } from 'react';
 import { format } from 'timeago.js';
+import { HomeIcon, HomeSolidIcon, GroupUserIcon, GroupUserSolidIcon, MessengerIcon, MessengerSolidIcon } from '../icons'
 
 import { ToastContainer } from '../../utility/toast';
 import WrapperPopper from '../popper/WrapperPopper';
@@ -14,6 +15,8 @@ import messengerSlice, { amountConversationSelector, viewMessenger } from '../..
 import './topbar.css';
 import { SocketContext } from '../../utility/socket';
 import MessagePopper from './MessagePopper';
+import Menu from '../menu/Menu';
+import MenuItem from '../menu/MenuItem';
 
 export default function Topbar() {
   const user = useSelector(userSelector);
@@ -87,13 +90,9 @@ export default function Topbar() {
     <div className='topbarContainer'>
       <ToastContainer autoClose={2000} pauseOnFocusLoss={false} />
       <div className='topbarLeft'>
-        <Link to='/' style={{ textDecoration: 'none' }}>
+        <Link to='/home' style={{ textDecoration: 'none' }}>
           <span className='logo'>Social Media</span>
         </Link>
-      </div>
-      <div className='topbarCenter'>
-
-
         <form className='searchbar' type='submit' onSubmit={handleSearch}>
           <Search className='searchIcon' />
           <input
@@ -104,12 +103,18 @@ export default function Topbar() {
             onChange={(e) => setTextSearch(e.target.value)}
           />
         </form>
+      </div>
+
+      <div className='topbarCenter'>
+        <Menu>
+          <MenuItem icon={<HomeIcon />} solidIcon={<HomeSolidIcon />} to={'/home'} />
+          <MenuItem icon={<GroupUserIcon />} solidIcon={<GroupUserSolidIcon />} to={'/groups'} />
+          <MenuItem icon={<MessengerIcon />} solidIcon={<MessengerSolidIcon />} to={'/messenger'} />
+        </Menu>
 
       </div>
       <div className='topbarRight'>
-        <div className='topbarLinks'>
-          <span className='topbarLink'>Homepage</span>
-        </div>
+
         <div className='topbarIcons'>
           <div className='topbarIconItem'>
             <Person className='logoIcon' />

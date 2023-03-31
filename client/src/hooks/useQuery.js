@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import axiosClient from '../api/axiosClient';
 import _ from 'lodash';
 
-export default function useQuery(url, page, textSearch) {
+export default function useQuery(url, page, filter) {
   const [data, setData] = useState([]);
   const [length, setLength] = useState(0);
   const [error, setError] = useState();
@@ -28,12 +28,12 @@ export default function useQuery(url, page, textSearch) {
       .get(url, {
         params: {
           page,
-          textSearch,
+          ...filter,
         },
       })
       .then(handleSuccess)
       .catch(handleError);
-  }, [url, page, textSearch]);
+  }, [url, page, filter.groupId, filter.textSearch]);
   useEffect(() => {
     runQuery();
   }, [runQuery]);

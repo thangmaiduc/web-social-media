@@ -6,6 +6,8 @@ const api = {
   CREATE_POST: '/posts/',
   QUERY_POSTS: '/posts/query/',
 
+  GET_POSTS_GROUP: '/posts/group/',
+
   CREATE_COMMENT: '/comments/',
   DELETE_COMMENT: '/comments/',
   EDIT_COMMENT: '/comments/',
@@ -26,5 +28,15 @@ const api = {
   GET_MESSAGES: '/messages/',
 
   CREATE_MESSAGE: '/messages/',
+
+  GROUP: '/groups/',
+  QUERY_GROUP: '/groups/query',
+  SUGGEST_GROUP: '/groups/suggested',
+  ADD_MEMBER_GROUP: '/groups/members/',
+  GET_MEMBER_GROUP: '/groups/members/get',
+  APPROVE_MEMBER_GROUP: '/groups/members/approve',
+  REJECT_MEMBER_GROUP: '/groups/members/reject',
+  BAN_MEMBER_GROUP: '/groups/members/ban',
+  DELETE_MEMBER_GROUP: '/groups/members/delete',
 };
 export default api;

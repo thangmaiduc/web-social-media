@@ -18,7 +18,7 @@ function MessagePopper({ onClose, open, anchorEl }) {
     const conversations = useSelector(messengerSelector);
     const [textSearch, setTextSearch] = useState('')
     const debouncedValue = useDebounce(textSearch, 500);
-    let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, 0, debouncedValue);
+    let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, 0, { textSearch: debouncedValue });
     let messengers = debouncedValue != '' ? data : conversations;
 
     return (<Popover

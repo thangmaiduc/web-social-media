@@ -192,19 +192,31 @@ const Post = forwardRef(({ post, username }, ref) => {
       <div className="postWrapper">
         <div className="postTop">
           <div className="postTopLeft">
-            <Link to={`/profile/${post.user.username}`} className="postTopLeft">
 
 
-              <img
-                className="postProfileImg"
-                src={post.user.profilePicture}
-                alt=""
-              />
-              <span className="postUsername">
-                {post.user.fullName}
-              </span>
-            </Link>
-            <span className="postDate">{format(post.createdAt)}</span>
+
+            <img
+              className="postProfileImg"
+              src={post.user.profilePicture}
+              alt=""
+            />
+
+            <div className='ownerPost'>
+              {
+                !!post.groupId &&
+                <Link to={`/groups/${post.groupId}`} className="postTopLeft">
+                  <span className="postGroupName cropText">
+                    {post.group.title}
+                  </span>
+                </Link>}
+              <Link to={`/profile/${post.user.username}`} className="postTopLeft">
+                <span className="postUsername">
+                  {post.user.fullName}
+                </span>
+                <span className="postDate">{format(post.createdAt)}</span>
+              </Link>
+            </div>
+
           </div>
           <div className="postTopRight">
             {
@@ -264,7 +276,8 @@ const Post = forwardRef(({ post, username }, ref) => {
         </div>
 
       </div>
-      {isComment &&
+      {
+        isComment &&
         <Comment
           comments={comments}
           user={user}
@@ -277,16 +290,18 @@ const Post = forwardRef(({ post, username }, ref) => {
         // editComment={editComment}
         />
       }
-      {isShow && (<PostModal
-        postObj={postObj}
-        editText={editText}
-        setEditText={setEditText}
-        setPostObj={setPostObj}
-        editPost={editPost}
-        setIsShow={setIsShow}
+      {
+        isShow && (<PostModal
+          postObj={postObj}
+          editText={editText}
+          setEditText={setEditText}
+          setPostObj={setPostObj}
+          editPost={editPost}
+          setIsShow={setIsShow}
 
-      />)}
-    </div>
+        />)
+      }
+    </div >
   )
 })
 export default Post

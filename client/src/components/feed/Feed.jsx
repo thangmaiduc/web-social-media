@@ -1,17 +1,19 @@
+import { useSelector } from 'react-redux';
+import React, { useState, useRef, useCallback, useEffect } from 'react'
+import { useLocation } from 'react-router-dom';
+
 import Post from '../post/Post';
 import Share from '../share/Share';
 import './feed.css';
 import useQuery from '../../hooks/useQuery';
-import { useSelector } from 'react-redux';
 import { userSelector } from '../../redux/slices/userSlice';
 import api from '../../api/API';
-import React, { useState, useRef, useCallback, useEffect } from 'react'
-import usePostSearch from '../../hooks/usePostSearch'
 
-export default function Feed({ username }) {
-  const [query, setQuery] = useState('')
+
+export default function Feed({ username, isShare = true, groupId }) {
   const [page, setPage] = useState(0)
   const user = useSelector(userSelector);
+  const location = useLocation();
   // const {
   //   data,
   //   hasMore,
@@ -19,11 +21,23 @@ export default function Feed({ username }) {
   //   error
   // } = usePostSearch(query, page)
 
-  const url = !username
+  let url = !username
     ? api.GET_POST_TIMELINE
     : api.GET_POST_PROFILE + username;
-  let { data, loading, hasMore, error } = useQuery(url, page, query);
+  if (location.pathname.includes('group')) {
+    url = api.GET_POSTS_GROUP;
+  }
+  let { data, loading, hasMore, error } = useQuery(url, page, {
+    groupId
+  });
   const observer = useRef()
+
+  useEffect(() => {
+    setPage(0);
+    return () => {
+    }
+  }, [groupId])
+
 
   const lastBookElementRef = useCallback(node => {
     if (loading) return
@@ -40,12 +54,12 @@ export default function Feed({ username }) {
   return (
     <div className='feed'>
       <div className='feedWrapper'>
-        {(!username || username === user.username) && <Share />}
+        {((!username || username === user.username) && isShare) && <Share />}
         {data.map((p, index) => {
           if (data.length === index + 1) {
-            return <Post ref={lastBookElementRef} key={index} post={p} username={username}/>
+            return <Post ref={lastBookElementRef} key={p.id} post={p} username={username} />
           } else {
-            return <Post key={index} post={p} username={username}/>
+            return <Post key={p.id} post={p} username={username} />
           }
         })}
 

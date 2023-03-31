@@ -4,22 +4,15 @@ import Conversation from '../../components/conversations/Conversation';
 import Message from '../../components/message/Message';
 import ChatOnline from '../../components/chatOnline/ChatOnline';
 import { useCallback, useEffect, useRef, useState, useContext } from 'react';
-import axios from 'axios';
 import { SocketContext } from '../../utility/socket';
 import { useSelector } from 'react-redux';
 import { userSelector, friendSelector } from '../../redux/slices/userSlice';
-import useTyping from '../../hooks/useTyping';
 import conversationApi from '../../api/conversationApi';
-import NewMessageForm from '../../components/newMessageForm/NewMessageForm';
-import commonApi from '../../api/commonApi';
-import { Button, TextField, Tooltip } from '@material-ui/core';
-import { Add, AddOutlined, Close, Edit, PersonAdd, PersonAddDisabled } from '@material-ui/icons';
+import { Button, TextField,  } from '@material-ui/core';
+import { Add,  } from '@material-ui/icons';
 import { Autocomplete } from '@mui/material';
-import { notify } from '../../utility/toast';
 import useQuery from '../../hooks/useQuery';
-import useQuerySearch from '../../hooks/useQuerySearch';
 import api from '../../api/API';
-import userApi from '../../api/userApi';
 import { useParams } from 'react-router-dom';
 import { messengerSelector } from '../../redux/slices/messengerSlice';
 import useDebounce from '../../hooks/useDebounce';
@@ -48,7 +41,7 @@ export default function Messenger() {
   const [currentChat, setCurrentChat] = useState();
   const [textSearch, setTextSearch] = useState('')
   const debouncedValue = useDebounce(textSearch, 500);
-  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, 0, debouncedValue);
+  let { data, loading, hasMore, error } = useQuery(api.GET_CONVERSATIONS, 0, { textSearch: debouncedValue });
   let messengers = debouncedValue != '' ? data : conversations;
 
   useEffect(() => {

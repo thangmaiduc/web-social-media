@@ -23,7 +23,7 @@ export default function Message({ conversation }) {
   const [fileUrl, setFileUrl] = useState('');
   // const debouncedValue = useDebounce(textSearch, 500);
   // let messengers = debouncedValue != '' ? data : conversations;
-  let { data, loading, hasMore, error } = useQuery(`${api.GET_MESSAGES}${conversation.id}`, page, null);
+  let { data, loading, hasMore, error } = useQuery(`${api.GET_MESSAGES}${conversation.id}`, page, {});
   const [messages, setMessages] = useState([])
   const user = useSelector(userSelector);
   const [newMessage, setNewMessage] = useState('');
@@ -45,7 +45,7 @@ export default function Message({ conversation }) {
   }, [messages]);
 
   useEffect(() => {
-    
+
     if (!arrivalMessage || arrivalMessage.conversationId !== conversation.id) return;
     console.log(arrivalMessage);
     setMessages((prev) => [...prev, arrivalMessage]);

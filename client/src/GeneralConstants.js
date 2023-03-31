@@ -17,5 +17,11 @@ const GENERAL_CONSTANTS = {
     LIKE: 'LIKE',
     COMMENT: 'COMMENT',
   },
+  STATE_MEMBER: {
+    APPROVED: 'APPROVED',
+    PENDING: 'PENDING',
+    REJECTED: 'REJECTED',
+    BANNED: 'BANNED',
+  },
 };
 export default GENERAL_CONSTANTS;

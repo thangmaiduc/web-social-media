@@ -31,10 +31,22 @@
 }
 
 .postUsername {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   margin: 0 10px;
-  color: black;
+  /* color: grey; */
+}
+.postGroupName {
+  font-weight: 600;
+  margin: 0 10px;
+}
+.postUsername,
+.postGroupName {
+  cursor: pointer;
+}
+.postUsername:hover,
+.postGroupName:hover {
+  text-decoration: underline;
 }
 
 .postDate {

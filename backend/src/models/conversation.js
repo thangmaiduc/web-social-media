@@ -86,7 +86,6 @@ module.exports = (sequelize, DataTypes) => {
       }
       return title;
     }
-    
   }
   Conversation.init(
     {

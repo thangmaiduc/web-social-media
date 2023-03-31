@@ -20,6 +20,7 @@ import Search from './pages/search/Search';
 import ForgotPassword from './pages/forgotPassword/ForgotPassword';
 import './App.css'
 import Group from './pages/group/Group';
+import GroupDetail from './pages/groupDetail/GroupDetail';
 function App() {
   const dispatch = useDispatch();
   const user = useSelector(userSlice.userSelector);
@@ -58,27 +59,38 @@ function App() {
         <Route exact path="/">
           {user ? <Home /> : <Login />}
         </Route>
-        <Route path="/login">{user ? <Redirect to="/" /> : <Login />}</Route>
+        <Route path="/home">
+          {user ? <Home /> : <Login />}
+        </Route>
+        <Route path="/login">{user ? <Redirect to="/home" /> : <Login />}</Route>
         <Route path="/register">
-          {user ? <Redirect to="/" /> : <Register />}
+          {user ? <Redirect to="/home" /> : <Register />}
         </Route>
         <Route path="/forgot-password">
-          {user ? <Redirect to="/" /> : <ForgotPassword />}
+          {user ? <Redirect to="/home" /> : <ForgotPassword />}
         </Route>
         <Route path="/messenger/:conversationId">
-          {!user ? <Redirect to="/" /> : <Messenger />}
+          {!user ? <Redirect to="/home" /> : <Messenger />}
+        </Route>
+        <Route exact path="/messenger">
+          {!user ? <Redirect to="/home" /> : <Messenger />}
         </Route>
         <Route path="/profile/:username">
 
-          {!user ? <Redirect to="/" /> : <Profile />}
+          {!user ? <Redirect to="/home" /> : <Profile />}
         </Route>
-        <Route path="/groups/">
+        <Route path="/groups/:groupId">
 
-          {!user ? <Redirect to="/" /> : <Group />}
+          {!user ? <Redirect to="/home" /> : <GroupDetail />}
         </Route>
+        <Route exact path="/groups">
+
+          {!user ? <Redirect to="/home" /> : <Group />}
+        </Route>
+
         <Route path="/search/:searchText">
 
-          {!user ? <Redirect to="/" /> : <Search />}
+          {!user ? <Redirect to="/home" /> : <Search />}
         </Route>
       </Switch>
     </Router>

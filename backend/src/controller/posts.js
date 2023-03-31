@@ -28,7 +28,7 @@ exports.create = async (req, res, next) => {
     const { description, img, groupId = null } = req.body;
     let statePost = GeneralConstants.STATE_POST.PENDING;
     const userId = req.user.id;
-    const createPost = { ...req.body, userId, state: statePost };
+    const createPost = { ...req.body, userId, state: statePost, groupId };
     if (groupId !== null) {
       const checkGroup = await Group.findOne({
         where: {
@@ -55,7 +55,7 @@ exports.create = async (req, res, next) => {
       if (checkGroup.type === GeneralConstants.TYPE_GROUP.FREE) {
         statePost = GeneralConstants.STATE_POST.APPROVED;
       }
-      createPost.groupId = checkGroup.groupId;
+      // createPost.groupId = checkGroup.id;
     } else {
       statePost = GeneralConstants.STATE_POST.APPROVED;
     }
@@ -687,6 +687,100 @@ exports.queryTimeLine = async (req, res, next) => {
           attributes: [],
         },
         {
+          association: 'group',
+          attributes: ['title'],
+          // required: true,
+        },
+        {
+          model: CommentPost,
+          attributes: [],
+        },
+        {
+          association: 'user',
+          attributes: ['fullName', 'id', 'username', 'profilePicture'],
+        },
+      ],
+      order: [['id', 'DESC']],
+      group: 'id',
+      limit,
+      offset,
+      raw: true,
+      nest: true,
+    });
+
+    const postIds = posts.map((post) => post.id);
+
+    const userLikePosts = await LikePost.findAll({
+      where: {
+        postId: {
+          [Op.in]: postIds,
+        },
+        UserId: userId,
+      },
+      attributes: ['postId'],
+    });
+
+    const userLikePostIds = userLikePosts.map((item) => item.postId);
+    const postsAddIsLiked = posts.map((post) => {
+      let isLiked = false;
+      if (userLikePostIds.includes(post.id)) isLiked = true;
+      return {
+        ...post,
+        isLiked,
+      };
+    });
+
+    res.status(200).json({ data: postsAddIsLiked });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.queryTimeLineGroup = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    console.log(req.query);
+    const page = parseInt(_.get(req, 'query.page', 0));
+    const groupId = req.query.groupId;
+    console.log(page);
+    let limit = +req.query.limit || 10;
+    let offset = 0 + page * limit;
+    console.log('offset', offset);
+   
+    let where = {
+      userId,
+      state: GeneralConstants.STATE_MEMBER.APPROVED,
+    };
+    if (groupId) where.groupId = groupId;
+    const groupUserJoined = await GroupMember.findAll({
+      where,
+    });
+    const groupIds = groupUserJoined.map((item) => item.groupId);
+   
+    const posts = await Post.findAll({
+      subQuery: false,
+      where: {
+        groupId: {
+          [Op.in]: groupIds,
+        },
+        isBlock: false,
+      },
+      attributes: {
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(LikePosts.id))'), 'numLike'],
+          [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
+        ],
+      },
+      include: [
+        {
+          model: LikePost,
+          attributes: [],
+        },
+        {
+          association: 'group',
+          attributes: ['title'],
+          required: true,
+        },
+        {
           model: CommentPost,
           attributes: [],
         },
@@ -855,7 +949,7 @@ exports.getProfilePost = async (req, res, next) => {
           [sequelize.literal('COUNT(DISTINCT(CommentPosts.id))'), 'numComment'],
         ],
       },
-      where: { userId: user.id, isBlock: false },
+      where: { userId: user.id, isBlock: false, groupId: null },
       limit,
       offset,
       include: [

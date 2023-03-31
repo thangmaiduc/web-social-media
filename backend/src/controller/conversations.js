@@ -135,15 +135,17 @@ exports.getMemberOfGroup = async (req, res, next) => {
 
 //new group chat
 
-// exports.createV2 = async (req, res, next) => {
-//   try {
-//     const conversation = await Conversation.findByPk(3);
-//     await conversation.getTitle();
-//     res.status(200).json({ data: conversation });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+exports.createV2 = async (req, res, next) => {
+  try {
+    const conversation = await Conversation.findByPk(7);
+    await conversation.getDisplayName();
+    const data = await conversation.getImg();
+
+    res.status(200).json({ data });
+  } catch (error) {
+    next(error);
+  }
+};
 exports.create = async (req, res, next) => {
   try {
     let users = _.get(req, 'body.users', []);
@@ -304,13 +306,18 @@ exports.queryV2 = async (req, res, next) => {
           include: [
             {
               association: 'messages',
-              attributes: ['id', 'text', 'senderId', 'updatedAt'],
-              include: [
-                {
-                  association: 'user',
-                  attributes: ['fullName'],
-                },
+              attributes: [
+                'id',
+                // 'text', 'senderId', 'updatedAt'
               ],
+              // nested: true,
+              // all: true
+              // include: [
+              //   {
+              //     association: 'user',
+              //     attributes: ['fullName'],
+              //   },
+              // ],
             },
           ],
         },
@@ -319,10 +326,10 @@ exports.queryV2 = async (req, res, next) => {
         conversationId: { [Op.in]: conversationIds },
         userId: { [Op.ne]: userId },
       },
-      limit,
+      // limit,
       offset,
       order: [
-        ['conversation', 'messages', 'updatedAt', 'DESC'],
+        ['conversation', 'messages', 'id', 'DESC'],
         ['conversationId', 'DESC'],
       ],
 
@@ -330,7 +337,6 @@ exports.queryV2 = async (req, res, next) => {
     });
     let dataResponse = await Promise.all(
       participants.map(async (participant, idx) => {
-        const img = [];
         const participantsProfile = await Participant.findAll({
           where: {
             conversationId: participant.conversationId,
@@ -346,32 +352,40 @@ exports.queryV2 = async (req, res, next) => {
           ],
           limit: 2,
         });
-        if (_.isEmpty(participant.conversation.img)) {
-          participantsProfile.map((participant) =>
-            img.push(participant.user.profilePicture)
-          );
-        } else {
-          img.push(participant.conversation.img);
-        }
-        let title = '';
-        if (
-          participant.conversation.type ===
-          GeneralConstants.TYPE_CONVERSATION.PRIVATE
-        ) {
-          title = participantsProfile.find((item) => item.userId !== userId)
-            .user.fullName;
-        } else {
-          participantsProfile.forEach((item) => {
-            title += item.user.fullName + ', ';
-          });
-          title = title.substring(0, title.length - 2);
-        }
-        const latestMessage = participant.conversation.messages[0] || null;
-        // console.log('latestMessage', latestMessage);
-        // console.log(
-        //   'conversation.messages[0]',
-        //   JSON.stringify(participant.conversation)
-        // );
+
+        const img = await participant.conversation.getImg(userId);
+        // if (_.isEmpty(participant.conversation.img)) {
+        //   participantsProfile.map((participant) =>
+        //     img.push(participant.user.profilePicture)
+        //   );
+        // } else {
+        //   img.push(participant.conversation.img);
+        // }
+        let title = await participant.conversation.getDisplayName(userId);
+        // if (
+        //   participant.conversation.type ===
+        //   GeneralConstants.TYPE_CONVERSATION.PRIVATE
+        // ) {
+        //   title = participantsProfile.find((item) => item.userId !== userId)
+        //     .user.fullName;
+        // } else {
+        //   participantsProfile.forEach((item) => {
+        //     title += item.user.fullName + ', ';
+        //   });
+        //   title = title.substring(0, title.length - 2);
+        // }
+        const latestMessage = await Message.findOne({
+          where: {
+            conversationId: participant.conversationId,
+          },
+          include: [
+            {
+              association: 'user',
+            },
+          ],
+          order: [['id', 'DESC']],
+        });
+
         return {
           id: participant.conversationId,
           type: participant.conversation.type,
@@ -402,100 +416,100 @@ exports.queryV2 = async (req, res, next) => {
     next(error);
   }
 };
-exports.createV2 = async (req, res, next) => {
-  try {
-    let userIdsBody = _.get(req, 'body.users', []);
+// exports.createV2 = async (req, res, next) => {
+//   try {
+//     let userIdsBody = _.get(req, 'body.users', []);
 
-    userIdsBody = userIdsBody.filter((val) => val !== req.user.id);
-    if (userIdsBody.length == 0)
-      throw new api400Error('Không có người dùng nào');
-    let title = req.body.title || '';
-    const userId = req.user.id;
-    let newConversation = null;
-    let img = [];
-    if (userIdsBody.length === 1) {
-      const parner = await User.findByPk(userIdsBody[0]);
-      img = [parner.profilePicture];
-      if (!parner) throw new Api404Error('Không tìm thấy người dùng muốn thêm');
-      const parnerId = parner.id;
-      title = parner.fullName;
+//     userIdsBody = userIdsBody.filter((val) => val !== req.user.id);
+//     if (userIdsBody.length == 0)
+//       throw new api400Error('Không có người dùng nào');
+//     let title = req.body.title || '';
+//     const userId = req.user.id;
+//     let newConversation = null;
+//     let img = [];
+//     if (userIdsBody.length === 1) {
+//       const parner = await User.findByPk(userIdsBody[0]);
+//       img = [parner.profilePicture];
+//       if (!parner) throw new Api404Error('Không tìm thấy người dùng muốn thêm');
+//       const parnerId = parner.id;
+//       title = parner.fullName;
 
-      // let checkExist = await Conversation.findAll({
-      //   where: {
-      //     type: GeneralConstants.TYPE_CONVERSATION.PRIVATE,
-      //   },
-      //   include: [
-      //     {
-      //       association: 'participants',
-      //       attributes: ['userId'],
-      //       // attributes: ['userId', 'username', 'profilePicture', 'id'],
-      //       where: {
-      //         userId: {
-      //           [Op.in]: [userId, parnerId],
-      //         },
-      //       },
-      //       required: true,
-      //     },
-      //   ],
-      // });
-      // checkExist = checkExist.filter((item) => item.participants.length > 1);
-      // if (checkExist.length > 0) {
-      //   res
-      //     .status(200)
-      //     .json({ data: { ...checkExist[0].toJSON(), img, title } });
-      //   return;
-      // }
-      newConversation = await Conversation.create({
-        type: GeneralConstants.TYPE_CONVERSATION.PRIVATE,
-        creatorId: userId,
-      });
-      await Promise.all(
-        [userId, parnerId].map(
-          async (userId) =>
-            await Participant.create({
-              conversationId: newConversation.id,
-              userId,
-              isAdmin: true,
-            })
-        )
-      );
-      // res.status(201).json({ data: { ...newConversation.toJSON(), img } });
-    } else {
-      newConversation = await Conversation.create({
-        title,
-        creatorId: userId,
-        type: GeneralConstants.TYPE_CONVERSATION.PUBLIC,
-      });
-      const users = await User.findAll({
-        where: {
-          id: { [Op.in]: userIdsBody },
-          isBlock: false,
-        },
-        attributes: ['id', 'fullName', 'profilePicture'],
-      });
-      const participants = users.map((user) => {
-        img.push(user.profilePicture);
-        return {
-          userId: user.id,
-          conversationId: newConversation.id,
-          isAdmin: false,
-        };
-      });
-      await Participant.create({
-        userId,
-        conversationId: newConversation.id,
-        isAdmin: true,
-      });
-      await Participant.bulkCreate(participants);
-    }
-    res.status(201).json({
-      message: 'Create conversation successfully',
-      data: { ...newConversation.toJSON(), img, title },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//       // let checkExist = await Conversation.findAll({
+//       //   where: {
+//       //     type: GeneralConstants.TYPE_CONVERSATION.PRIVATE,
+//       //   },
+//       //   include: [
+//       //     {
+//       //       association: 'participants',
+//       //       attributes: ['userId'],
+//       //       // attributes: ['userId', 'username', 'profilePicture', 'id'],
+//       //       where: {
+//       //         userId: {
+//       //           [Op.in]: [userId, parnerId],
+//       //         },
+//       //       },
+//       //       required: true,
+//       //     },
+//       //   ],
+//       // });
+//       // checkExist = checkExist.filter((item) => item.participants.length > 1);
+//       // if (checkExist.length > 0) {
+//       //   res
+//       //     .status(200)
+//       //     .json({ data: { ...checkExist[0].toJSON(), img, title } });
+//       //   return;
+//       // }
+//       newConversation = await Conversation.create({
+//         type: GeneralConstants.TYPE_CONVERSATION.PRIVATE,
+//         creatorId: userId,
+//       });
+//       await Promise.all(
+//         [userId, parnerId].map(
+//           async (userId) =>
+//             await Participant.create({
+//               conversationId: newConversation.id,
+//               userId,
+//               isAdmin: true,
+//             })
+//         )
+//       );
+//       // res.status(201).json({ data: { ...newConversation.toJSON(), img } });
+//     } else {
+//       newConversation = await Conversation.create({
+//         title,
+//         creatorId: userId,
+//         type: GeneralConstants.TYPE_CONVERSATION.PUBLIC,
+//       });
+//       const users = await User.findAll({
+//         where: {
+//           id: { [Op.in]: userIdsBody },
+//           isBlock: false,
+//         },
+//         attributes: ['id', 'fullName', 'profilePicture'],
+//       });
+//       const participants = users.map((user) => {
+//         img.push(user.profilePicture);
+//         return {
+//           userId: user.id,
+//           conversationId: newConversation.id,
+//           isAdmin: false,
+//         };
+//       });
+//       await Participant.create({
+//         userId,
+//         conversationId: newConversation.id,
+//         isAdmin: true,
+//       });
+//       await Participant.bulkCreate(participants);
+//     }
+//     res.status(201).json({
+//       message: 'Create conversation successfully',
+//       data: { ...newConversation.toJSON(), img, title },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 exports.query = async (req, res, next) => {
   try {
     const page = parseInt(_.get(req, 'query.page', 0));

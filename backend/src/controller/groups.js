@@ -1,4 +1,6 @@
+const moment = require('moment');
 const User = require('../models').User;
+
 const Message = require('../models').Message;
 const _ = require('lodash');
 const GroupMember = require('../models').GroupMember;
@@ -20,7 +22,8 @@ exports.addMembers = async (req, res, next) => {
     let userId = req.user.id;
     let userIdsBody = _.get(req, 'body.users', []);
     userIdsBody = userIdsBody.filter((val) => val !== userId);
-    if (userIdsBody.length == 0) throw new api400Error('Không có người dùng nào');
+    if (userIdsBody.length == 0)
+      throw new api400Error('Không có người dùng nào');
     const group = await Group.findOne({
       where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
     });
@@ -28,7 +31,11 @@ exports.addMembers = async (req, res, next) => {
       throw new Api404Error('Không tìm thấy nhóm');
     }
     const checkRole = await GroupMember.findOne({
-      where: { userId, groupId: group.id, state: GeneralConstants.STATE_MEMBER.APPROVED },
+      where: {
+        userId,
+        groupId: group.id,
+        state: GeneralConstants.STATE_MEMBER.APPROVED,
+      },
     });
     if (!checkRole) throw new Api404Error('Chưa gia nhập nhóm');
     // * check lọc ra các thành viên chưa gia nhập
@@ -51,7 +58,8 @@ exports.addMembers = async (req, res, next) => {
         isAdmin: false,
         state: GeneralConstants.STATE_MEMBER.PENDING,
       };
-      if (checkRole.isAdmin) member.state = GeneralConstants.STATE_MEMBER.APPROVED;
+      if (checkRole.isAdmin)
+        member.state = GeneralConstants.STATE_MEMBER.APPROVED;
       return member;
     });
     await GroupMember.bulkCreate(members);
@@ -72,9 +80,12 @@ exports.updateGroup = async (req, res, next) => {
       where: { id: groupId },
     });
     if (!group) throw new Api404Error('Không tìm thấy nhóm');
-    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    const checkRole = await GroupMember.findOne({
+      where: { userId, groupId: group.id },
+    });
     if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
-    if (!checkRole.isAdmin) throw new api400Error('Không có quyền sửa tên nhóm');
+    if (!checkRole.isAdmin)
+      throw new api400Error('Không có quyền sửa tên nhóm');
 
     if (title) group.title = title;
     if (type) group.type = type;
@@ -94,9 +105,12 @@ exports.approve = async (req, res, next) => {
       where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
     });
     if (!group) throw new Api404Error('Không tìm thấy nhóm');
-    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    const checkRole = await GroupMember.findOne({
+      where: { userId, groupId: group.id },
+    });
     if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
-    if (!checkRole.isAdmin) throw new api400Error('Không có quyền duyệt thành viên');
+    if (!checkRole.isAdmin)
+      throw new api400Error('Không có quyền duyệt thành viên');
 
     const unapprovedMembers = await GroupMember.findAll({
       where: {
@@ -110,8 +124,11 @@ exports.approve = async (req, res, next) => {
         },
       },
     });
-    if (unapprovedMembers.length <= 0) throw new Api404Error('Không tìm thấy thành viên');
-    const unapprovedMemberIds = unapprovedMembers.map((unapprovedMember) => unapprovedMember.id);
+    if (unapprovedMembers.length <= 0)
+      throw new Api404Error('Không tìm thấy thành viên');
+    const unapprovedMemberIds = unapprovedMembers.map(
+      (unapprovedMember) => unapprovedMember.id
+    );
     await GroupMember.update(
       { state: GeneralConstants.STATE_MEMBER.APPROVED },
       {
@@ -138,9 +155,12 @@ exports.reject = async (req, res, next) => {
       where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
     });
     if (!group) throw new Api404Error('Không tìm thấy nhóm');
-    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    const checkRole = await GroupMember.findOne({
+      where: { userId, groupId: group.id },
+    });
     if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
-    if (!checkRole.isAdmin) throw new api400Error('Không có quyền duyệt thành viên');
+    if (!checkRole.isAdmin)
+      throw new api400Error('Không có quyền duyệt thành viên');
 
     const unapprovedMembers = await GroupMember.findAll({
       where: {
@@ -152,8 +172,11 @@ exports.reject = async (req, res, next) => {
         state: GeneralConstants.STATE_MEMBER.PENDING,
       },
     });
-    if (unapprovedMembers.length <= 0) throw new Api404Error('Không tìm thấy thành viên');
-    const unapprovedMemberIds = unapprovedMembers.map((unapprovedMember) => unapprovedMember.id);
+    if (unapprovedMembers.length <= 0)
+      throw new Api404Error('Không tìm thấy thành viên');
+    const unapprovedMemberIds = unapprovedMembers.map(
+      (unapprovedMember) => unapprovedMember.id
+    );
     await GroupMember.update(
       { state: GeneralConstants.STATE_MEMBER.REJECTED },
       {
@@ -180,9 +203,12 @@ exports.banMember = async (req, res, next) => {
       where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
     });
     if (!group) throw new Api404Error('Không tìm thấy nhóm');
-    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    const checkRole = await GroupMember.findOne({
+      where: { userId, groupId: group.id },
+    });
     if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
-    if (!checkRole.isAdmin) throw new api400Error('Không có quyền duyệt thành viên');
+    if (!checkRole.isAdmin)
+      throw new api400Error('Không có quyền duyệt thành viên');
 
     const unapprovedMembers = await GroupMember.findAll({
       where: {
@@ -193,8 +219,11 @@ exports.banMember = async (req, res, next) => {
         isAdmin: false,
       },
     });
-    if (unapprovedMembers.length <= 0) throw new Api404Error('Không tìm thấy thành viên');
-    const unapprovedMemberIds = unapprovedMembers.map((unapprovedMember) => unapprovedMember.id);
+    if (unapprovedMembers.length <= 0)
+      throw new Api404Error('Không tìm thấy thành viên');
+    const unapprovedMemberIds = unapprovedMembers.map(
+      (unapprovedMember) => unapprovedMember.id
+    );
     await GroupMember.update(
       { state: GeneralConstants.STATE_MEMBER.REJECTED },
       {
@@ -221,9 +250,12 @@ exports.deleteMember = async (req, res, next) => {
       where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
     });
     if (!group) throw new Api404Error('Không tìm thấy nhóm');
-    const checkRole = await GroupMember.findOne({ where: { userId, groupId: group.id } });
+    const checkRole = await GroupMember.findOne({
+      where: { userId, groupId: group.id },
+    });
     if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
-    if (!checkRole.isAdmin) throw new api400Error('Không có quyền duyệt thành viên');
+    if (!checkRole.isAdmin)
+      throw new api400Error('Không có quyền duyệt thành viên');
 
     const approvedMembers = await GroupMember.findAll({
       where: {
@@ -234,8 +266,11 @@ exports.deleteMember = async (req, res, next) => {
         isAdmin: false,
       },
     });
-    if (approvedMembers.length <= 0) throw new Api404Error('Không tìm thấy thành viên');
-    const approvedMemberIds = approvedMembers.map((approvedMember) => approvedMember.id);
+    if (approvedMembers.length <= 0)
+      throw new Api404Error('Không tìm thấy thành viên');
+    const approvedMemberIds = approvedMembers.map(
+      (approvedMember) => approvedMember.id
+    );
     await GroupMember.destroyMany({
       where: {
         id: {
@@ -254,7 +289,8 @@ exports.getMemberOfGroup = async (req, res, next) => {
   try {
     console.log(req.params, req.body);
     let userId = req.user.id;
-    const { groupId, state = GeneralConstants.STATE_MEMBER.APPROVED } = req.body;
+    const { groupId, state = GeneralConstants.STATE_MEMBER.APPROVED } =
+      req.body;
 
     const check = await Group.findOne({
       where: { id: groupId, state: GeneralConstants.STATE_GROUP.ACTIVATED },
@@ -263,17 +299,33 @@ exports.getMemberOfGroup = async (req, res, next) => {
       throw new Api404Error('Không tìm thấy nhóm chat');
     }
     if (state !== GeneralConstants.STATE_MEMBER.APPROVED) {
-      const checkRole = await GroupMember.findOne({ where: { userId, groupId: check.id } });
+      const checkRole = await GroupMember.findOne({
+        where: { userId, groupId: check.id },
+      });
       if (!checkRole) throw new Api404Error('Không tìm thấy nhóm');
-      if (!checkRole.isAdmin) throw new api400Error('Không có quyền lấy danh sách thành viên');
+      if (!checkRole.isAdmin)
+        throw new api400Error('Không có quyền lấy danh sách thành viên');
     }
-    const isMember = await GroupMember.findOne({ where: { userId, groupId: check.id } });
+    const isMember = await GroupMember.findOne({
+      where: { userId, groupId: check.id },
+    });
     if (!isMember) {
       throw new Api404Error('Không tìm thấy nhóm này');
     }
     let members = await GroupMember.findAll({
       where: { groupId: check.id, state },
-      include: [{ model: User, attributes: ['fullName', 'id', 'username', 'profilePicture', 'coverPicture'] }],
+      include: [
+        {
+          model: User,
+          attributes: [
+            'fullName',
+            'id',
+            'username',
+            'profilePicture',
+            'coverPicture',
+          ],
+        },
+      ],
     });
     const responseData = members.map((p) => {
       return {
@@ -285,7 +337,10 @@ exports.getMemberOfGroup = async (req, res, next) => {
         fullName: p.User.fullName,
       };
     });
-    res.status(200).json({ data: responseData, message: 'Lấy danh sách thành viên thành công' });
+    res.status(200).json({
+      data: responseData,
+      message: 'Lấy danh sách thành viên thành công',
+    });
   } catch (error) {
     next(error);
   }
@@ -325,6 +380,39 @@ exports.create = async (req, res, next) => {
     next(error);
   }
 };
+exports.getOne = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const userId = req.user.id;
+
+    let group = await Group.findByPk(id, {
+      where: {
+        state: GeneralConstants.STATE_GROUP.ACTIVATED,
+      },
+      include: [
+        {
+          model: GroupMember,
+          where: {
+            userId,
+          },
+        },
+      ],
+    });
+    if (!group) throw new Api404Error('not found group');
+    const dataResponse = {
+      id: group.id,
+      img: group.img,
+      title: group.title,
+      type: group.type,
+      isAdmin: _.get(group, 'GroupMembers.0.isAdmin', false),
+      state: _.get(group, 'GroupMembers.0.state', null),
+    };
+
+    res.status(200).json({ data: dataResponse });
+  } catch (error) {
+    next(error);
+  }
+};
 exports.query = async (req, res, next) => {
   try {
     const page = parseInt(_.get(req, 'query.page', 0));
@@ -335,40 +423,70 @@ exports.query = async (req, res, next) => {
     console.log('limit', limit);
     console.log('offset', offset);
     const userId = req.user.id;
-    const result = await client.search({
-      index: 'groups',
-      type: 'groups',
-      body: {
-        query: {
-          match: { title: textSearch },
-        },
-      },
-    });
-
-    const ids = result.hits.hits.map((item) => {
-      return item._id;
-    });
-
-    const where = {
-      id: {
-        [Op.in]: ids,
-      },
+    let where = {
       state: GeneralConstants.STATE_GROUP.ACTIVATED,
     };
+    let whereGroupMember = {};
+    if (!_.isEmpty(textSearch)) {
+      const result = await client.search({
+        index: 'groups',
+        type: 'groups',
+        body: {
+          query: {
+            match: { title: textSearch },
+          },
+        },
+      });
 
+      const ids = result.hits.hits.map((item) => {
+        return item._id;
+      });
+      where = {
+        ...where,
+        id: {
+          [Op.in]: ids,
+        },
+      };
+    } else {
+      whereGroupMember = {
+        state: GeneralConstants.STATE_MEMBER.APPROVED,
+        userId,
+      };
+    }
+    let dateFrom = moment().subtract(7, 'd').format('YYYY-MM-DD');
     const groups = await Group.findAll({
       subQuery: false,
       where,
       attributes: {
-        include: [[sequelize.literal('COUNT(DISTINCT(GroupMembers.userId))'), 'numMember']],
+        include: [
+          [sequelize.literal('COUNT(DISTINCT(posts.id))'), 'numPost7DayLatest'],
+        ],
+        // include: [
+        //   [
+        //     sequelize.literal('COUNT(DISTINCT(GroupMembers.userId))'),
+        //     'numMember',
+        //   ],
+        // ],
       },
       include: [
         {
           model: GroupMember,
           attributes: [],
+          where: whereGroupMember,
+        },
+        {
+          association: 'posts',
+          attributes: [],
+          where: {
+            createdAt: {
+              [Op.gte]: dateFrom,
+            },
+          },
         },
       ],
-      order: [[sequelize.literal('COUNT(DISTINCT(GroupMembers.userId))'), 'DESC']],
+      // order: [
+      //   [sequelize.literal('COUNT(DISTINCT(GroupMembers.userId))'), 'DESC'],
+      // ],
       group: 'id',
       limit,
       offset,
