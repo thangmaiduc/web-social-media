@@ -4,7 +4,7 @@ import conversationApi from '../../api/conversationApi';
 export const getConversations = createAsyncThunk(
   'messenger/get',
   async (params, thunkAPI) => {
-    const response = await conversationApi.getOfUser();
+    const response = await conversationApi.getOfUser({ limit: 3 });
     return response;
   }
 );
@@ -77,6 +77,8 @@ const messengerSlice = createSlice({
 
 // selector
 export const messengerSelector = (state) => state?.messenger?.items;
+export const firstMessengerSelector = (state) =>
+  state?.messenger?.items[0]?.id || 0;
 export const amountConversationSelector = (state) =>
   state.messenger.items.reduce((acc, item) => {
     if (!item.isView) return acc + 1;

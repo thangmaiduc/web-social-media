@@ -326,7 +326,7 @@ exports.queryV2 = async (req, res, next) => {
         conversationId: { [Op.in]: conversationIds },
         userId: { [Op.ne]: userId },
       },
-      // limit,
+      limit,
       offset,
       order: [
         ['conversation', 'messages', 'id', 'DESC'],

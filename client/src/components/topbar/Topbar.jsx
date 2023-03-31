@@ -11,7 +11,7 @@ import { ToastContainer } from '../../utility/toast';
 import WrapperPopper from '../popper/WrapperPopper';
 import userSlice, { userSelector } from '../../redux/slices/userSlice';
 import notificationSlice, { notificationSelector, amountNotificationSelector, viewNotification } from '../../redux/slices/notificationSlice';
-import messengerSlice, { amountConversationSelector, viewMessenger } from '../../redux/slices/messengerSlice';
+import messengerSlice, { amountConversationSelector, viewMessenger, firstMessengerSelector } from '../../redux/slices/messengerSlice';
 import './topbar.css';
 import { SocketContext } from '../../utility/socket';
 import MessagePopper from './MessagePopper';
@@ -27,6 +27,7 @@ export default function Topbar() {
   const notifications = useSelector(notificationSelector);
   const amountNotification = useSelector(amountNotificationSelector)
   const amountConversation = useSelector(amountConversationSelector)
+  const firstMessengerId = useSelector(firstMessengerSelector)
   const socket = useContext(SocketContext);
   // const [notifications, setNotifications] = useState(noti)
   const [anchorElNotification, setAnchorElNotification] = useState(null);
@@ -109,7 +110,7 @@ export default function Topbar() {
         <Menu>
           <MenuItem icon={<HomeIcon />} solidIcon={<HomeSolidIcon />} to={'/home'} />
           <MenuItem icon={<GroupUserIcon />} solidIcon={<GroupUserSolidIcon />} to={'/groups'} />
-          <MenuItem icon={<MessengerIcon />} solidIcon={<MessengerSolidIcon />} to={'/messenger'} />
+          <MenuItem icon={<MessengerIcon />} solidIcon={<MessengerSolidIcon />} to={'/messenger/'+firstMessengerId} />
         </Menu>
 
       </div>

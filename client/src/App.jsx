@@ -72,11 +72,7 @@ function App() {
         <Route path="/messenger/:conversationId">
           {!user ? <Redirect to="/home" /> : <Messenger />}
         </Route>
-        <Route exact path="/messenger">
-          {!user ? <Redirect to="/home" /> : <Messenger />}
-        </Route>
         <Route path="/profile/:username">
-
           {!user ? <Redirect to="/home" /> : <Profile />}
         </Route>
         <Route path="/groups/:groupId">

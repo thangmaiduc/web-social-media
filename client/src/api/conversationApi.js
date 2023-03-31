@@ -3,7 +3,11 @@ import api from './API';
 const conversationApi = {
   getOfUser: async (payload) => {
     const url = api.GET_CONVERSATIONS;
-    const response = await axiosClient.get(url, payload);
+    const response = await axiosClient.get(url, {
+      params: {
+        ...payload,
+      },
+    });
     return response.data;
   },
   viewMessenger: async (payload) => {
